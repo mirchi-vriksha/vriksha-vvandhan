@@ -21,6 +21,9 @@
 - `src/lib/public-campaign`, `src/app/movement`, and `src/components/movement` — cached anonymous-safe campaign summary, keyset Movement data, public wall, and accessible full-image dialog.
 - `src/lib/certificates`, `src/lib/email`, and `src/lib/deliveries` — server-only PDF/Storage, transactional delivery claims/templates/provider integration, and Admin operational reads.
 - `src/lib/export` and `src/app/api/admin/export` — bounded server-side seven-sheet workbook generation behind Admin authorization.
+- `src/lib/security` — server-only Turnstile Siteverify and HMAC-keyed database rate limiting; no raw client address or Turnstile token is persisted.
+- `src/lib/internal`, `src/lib/operations`, and `src/app/api/internal` — constant-time secret authorization plus bounded, idempotent draft cleanup and delivery catch-up jobs.
+- `src/app/api/webhooks/resend` — raw-body signed webhook verification and idempotent provider-state recording without storing recipient or payload.
 
 ## Staff and public publication boundary
 
@@ -30,7 +33,13 @@ Internal routes pass through the Next.js 16 Proxy for session refresh, but autho
 
 The homepage remains a Server Component tree. `/join` performs one server-side availability read and renders either a small Client Component form or a fail-closed state. Only the active form holds participant details, consent, the raw request token, and prepared image; none is persisted in browser storage.
 
-The prepare and finalise Route Handlers run explicitly on Node.js. They enforce same-origin JSON requests, strict Zod contracts, stable public errors, and server-only service access. The browser uploads directly with a scoped signed token, but only server-verified bytes can enter Pending Review through the atomic finalisation RPC.
+The prepare and finalise Route Handlers run explicitly on Node.js. They enforce same-origin JSON requests, strict Zod contracts, stable public errors, server-authoritative Turnstile, bounded HMAC abuse limits and server-only service access. The browser uploads directly with a scoped signed token, but only server-verified bytes can enter Pending Review through the atomic finalisation RPC.
+
+## Operations and delivery recovery
+
+Immediate email/certificate processing remains best effort after the authoritative moderation transaction. Database rows are durable work records. A scheduled internal worker recovers stale claims, lists bounded due jobs and invokes atomic claim/complete/fail RPCs. Retry scheduling is stored in the database; attempt five needs explicit Admin investigation. A separate bounded cleanup job removes expired Draft objects through Storage before conditionally deleting only Draft rows. Both jobs fail closed without a strong server secret.
+
+Resend `sent` means provider acceptance. Signed webhooks add independent delivered, bounced, complained, delayed and provider-failed timestamps. The event ID is the idempotency key; raw payloads and addresses are not retained.
 
 ## Visual-system boundary
 

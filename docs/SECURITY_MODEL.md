@@ -13,7 +13,9 @@
 
 The publishable key may reach the browser. `SUPABASE_SECRET_KEY` is validated lazily inside server-only code, bypasses RLS and must never be logged or returned. Participant email is readable only to Admin. Original photographs stay in the private `submission-originals` bucket and are viewed using short-lived signed URLs. The public bucket is only for trusted approved derivatives.
 
-`RESEND_API_KEY` is also server-only. Provider requests, recipient addresses, attachment bytes, signed URLs, and raw provider errors are never logged or stored. Staging sends fail closed without an explicit test-recipient override. Certificate downloads require Admin again and redirect to a fresh two-minute private signed URL.
+`RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `TURNSTILE_SECRET_KEY`, `ABUSE_HASH_SECRET` and cron secrets are server-only. Provider requests, recipient addresses, attachment bytes, signed URLs, Turnstile tokens, raw client addresses, and raw provider errors are never logged or stored. Staging sends fail closed without an explicit test-recipient override; production rejects an override. Certificate downloads require Admin again and redirect to a fresh two-minute private signed URL.
+
+Prepare calls perform authoritative Cloudflare Siteverify before creating a Draft. Production fails closed if Turnstile or the HMAC abuse secret is absent. Fixed-window limits store only a server-keyed SHA-256 HMAC, scope, count and expiry. Finalise uses the hashed request capability as the abuse key; Admin export uses the verified staff UUID.
 
 ## Security-definer helpers
 
@@ -27,7 +29,9 @@ Section 5 claim/complete/fail RPCs are executable only by `service_role` and re-
 
 ## Advisor review
 
-The post-migration staging Security Advisor reports zero errors. Its 12 warnings are the expected generic warning class for intentionally callable `SECURITY DEFINER` RPCs: two anonymous-safe projections and ten authenticated, role-checking staff/publication functions. Every function uses an empty fixed search path, explicit grants, validated arguments, and internal authorization; base-table RLS remains closed. The Performance Advisor reports zero errors/warnings and 11 informational unused-index notices on the newly exercised staging dataset. Those workflow, lookup, and foreign-key indexes are retained until representative production traffic exists. See the [Supabase Database Linter guidance](https://supabase.com/docs/guides/database/database-linter).
+The last pre-Section-6 staging Advisor run had zero Security errors; the exact warning baseline and the new operational migration must be rerun and recorded before completion. Every effective SECURITY DEFINER function is inventoried in `SECURITY_DEFINER_AUDIT.md`. Advisor warnings are never waived solely because they are warnings: the fixed search path, grants, actor source, parameters and output are reviewed individually. Production Advisor results are a launch gate. See the [Supabase Database Linter guidance](https://supabase.com/docs/guides/database/database-linter).
+
+Global response headers add CSP, clickjacking denial, no-sniff, strict referrer policy, constrained browser capabilities and production HSTS. CSP permits only the configured Supabase origin and Cloudflare Turnstile resources required by the application.
 
 ## Permanent deletion order
 

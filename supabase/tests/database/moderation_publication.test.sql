@@ -64,11 +64,18 @@ select is((select count(*) from public.certificates where submission_id='5100000
 select is((select count(*) from public.email_deliveries where submission_id='51000000-0000-4000-8000-000000000012' and kind='approval_certificate' and status='not_started'),1::bigint,'approval email placeholder is created once');
 select is((select count(*) from public.email_deliveries where submission_id='51000000-0000-4000-8000-000000000012' and status='sent'),0::bigint,'no email is marked sent');
 select is((select count(*) from public.certificates where submission_id='51000000-0000-4000-8000-000000000012' and status='generated'),0::bigint,'no certificate is generated');
+select is(
+  (select already_published from public.publish_submission('51000000-0000-4000-8000-000000000012',9002,'v1','card/9002-v1.webp',640,800,1000,'full/9002-v1.webp',1200,1200,2000,'A tree protected by a Vriksha Guardian')),
+  true,
+  'a second reviewer publication attempt converges to the existing publication'
+);
+select is((select count(*) from public.audit_logs where entity_id='51000000-0000-4000-8000-000000000012' and action='submission.approved'),1::bigint,'competing publication attempts create one approval audit event');
 
 select set_config('request.jwt.claim.sub','51000000-0000-4000-8000-000000000002',true);
 select lives_ok($$select public.confirm_submission_rejection('51000000-0000-4000-8000-000000000011','This photograph does not clearly show a tree.')$$,'Admin rejects Pending Review directly');
 select lives_ok($$select public.confirm_submission_rejection('51000000-0000-4000-8000-000000000011','This photograph does not clearly show a tree.')$$,'Final rejection is idempotent');
 select is((select count(*) from public.email_deliveries where submission_id='51000000-0000-4000-8000-000000000011' and kind='rejection'),1::bigint,'final rejection prepares exactly one delivery');
+select throws_ok($$select * from public.publish_submission('51000000-0000-4000-8000-000000000011',9011,'v1','card/9011-v1.webp',640,800,1000,'full/9011-v1.webp',1200,1200,2000,'Rejected tree')$$,'P0001','approval_conflict','approval racing after final rejection cannot change the final state');
 select lives_ok($$select * from public.publish_submission('51000000-0000-4000-8000-000000000010',9003,'v2','card/9003-v2.webp',640,800,1100,'full/9003-v2.webp',1200,1200,2100,'Asha Rao tree promise')$$,'Admin approves instead of confirming recommendation');
 
 select is((select current_count from public.get_public_campaign_summary()),2::bigint,'public count uses published media rule');
@@ -79,9 +86,11 @@ select ok(not ((select to_jsonb(entry) from public.list_public_movement_entries(
 select is((select count(*) from public.list_public_movement_entries(100,null,null)),2::bigint,'movement limit is safely capped without duplication');
 
 select lives_ok($$select * from public.trash_submission('51000000-0000-4000-8000-000000000012')$$,'Admin trashes Published record');
+select throws_ok($$select * from public.trash_submission('51000000-0000-4000-8000-000000000012')$$,'P0001','already_trashed','a second Trash request is conflict safe');
 select is((select current_count from public.get_public_campaign_summary()),1::bigint,'trash immediately decreases public count');
 select is((select count(*) from public.list_public_movement_entries(24,null,null) where guardian_number=9002),0::bigint,'trash hides Movement entry');
 select lives_ok($$select public.restore_published_submission('51000000-0000-4000-8000-000000000012','v3','card/9002-v3.webp',640,800,1200,'full/9002-v3.webp',1200,1200,2200)$$,'Published restore requires new immutable metadata');
+select throws_ok($$select public.restore_published_submission('51000000-0000-4000-8000-000000000012','v4','card/9002-v4.webp',640,800,1200,'full/9002-v4.webp',1200,1200,2200)$$,'P0001','restore_conflict','a second restore request is conflict safe');
 select is((select current_count from public.get_public_campaign_summary()),2::bigint,'restored Published record counts again');
 select throws_ok($$select public.delete_trashed_submission('51000000-0000-4000-8000-000000000012','Cannot delete active publication.')$$,'P0001','delete_requires_trash','permanent deletion requires Trash');
 

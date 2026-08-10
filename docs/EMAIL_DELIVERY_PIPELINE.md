@@ -12,11 +12,15 @@ Templates are lightweight responsive HTML with text fallbacks. Participant value
 
 ## Immediate processing and durability
 
-Next.js `after()` schedules a best-effort attempt only after the authoritative transaction succeeds. Database rows remain the durable truth and the Admin Delivery Center supplies manual retries. Scheduled catch-up is deferred to Section 6.
+Next.js `after()` schedules a best-effort attempt only after the authoritative transaction succeeds. Database rows remain the durable truth. Section 6 adds a secret-authenticated bounded catch-up endpoint that recovers stale claims and processes due work; Admin retains explicit retries.
 
-The service-only claim locks one eligible `not_started` or `failed` row, assigns a claim token, increments attempts, and moves it to `queued`. Resend receives the existing stable database `idempotency_key`. A `sent` row can never be reclaimed, so database idempotency outlives the provider window. Completion stores provider ID and template version. Failure stores only a safe code such as `resend_timeout`, `resend_rate_limited`, `resend_invalid_sender`, `resend_provider_error`, or `attachment_missing`.
+The service-only claim locks one eligible due `not_started` or `failed` row, assigns a claim token, increments attempts, and moves it to `queued`. Resend receives the existing stable database `idempotency_key`. A `sent` row can never be reclaimed, so database idempotency outlives the provider window. Completion stores provider ID and template version. Retryable failures schedule 1 minute, 5 minutes, 30 minutes and 2 hours; attempt five is manual. Only stable safe codes are retained.
 
 Email failure never changes publication, rejection, count, certificate, Guardian number, or media.
+
+## Provider webhook state
+
+`sent` means Resend accepted the request, not inbox delivery. `POST /api/webhooks/resend` verifies the raw body with the Resend/Svix signature secret and stores only event ID, provider message ID, event type and timestamps. Duplicate IDs return success without duplicate processing. Delivery Center/export distinguish accepted, delivered, bounced, complained, delayed and provider-failed states. Unsigned, malformed and oversized payloads are rejected; recipient and full payload are not stored.
 
 ## Environment safety
 

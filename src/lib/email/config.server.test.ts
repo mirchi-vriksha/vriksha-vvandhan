@@ -22,4 +22,11 @@ describe("email delivery configuration", () => {
       EMAIL_FROM: "Vriksha Test <test@example.test>", EMAIL_REPLY_TO: "reply@example.test", EMAIL_TEST_RECIPIENT: "approved@example.test",
     }).testRecipient).toBe("approved@example.test");
   });
+
+  it("forbids a staging recipient override in production", () => {
+    expect(() => getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "true", SUPABASE_TARGET_ENVIRONMENT: "production", RESEND_API_KEY: "test-key",
+      EMAIL_FROM: "Vriksha Test <test@example.test>", EMAIL_REPLY_TO: "reply@example.test", EMAIL_TEST_RECIPIENT: "qa@example.test",
+    })).toThrow("production_test_recipient_forbidden");
+  });
 });

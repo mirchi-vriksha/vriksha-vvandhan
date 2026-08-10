@@ -24,6 +24,8 @@ export type DeliveryRow = {
   displayName: string | null;
   submittedAt: string | null;
   deliveredAt: string | null;
+  providerEventAt: string | null;
+  providerEvent: string | null;
   attemptCount: number;
   lastErrorCode: string | null;
   objectPath: string | null;
@@ -69,8 +71,8 @@ export async function getDeliveryCenter(filters: DeliveryFilters) {
     return {
       summary: { certificate: { not_started: 1, queued: 0, generated: 1, failed: 1 }, email: { not_started: 1, queued: 0, sent: 1, failed: 1 } },
       rows: [
-        { id: "c1000000-0000-4000-8000-000000000001", submissionId: "e1000000-0000-4000-8000-000000000001", deliveryType: "certificate", kind: "certificate", status: "generated", guardianNumber: 42, displayName: "Asha Test", submittedAt: "2026-08-06T10:00:00.000Z", deliveredAt: "2026-08-06T11:00:00.000Z", attemptCount: 1, lastErrorCode: null, objectPath: "e1000000-0000-4000-8000-000000000001/vriksha-guardian-42-v1.pdf" },
-        { id: "d1000000-0000-4000-8000-000000000001", submissionId: "e1000000-0000-4000-8000-000000000001", deliveryType: "email", kind: "approval_certificate", status: "failed", guardianNumber: 42, displayName: "Asha Test", submittedAt: "2026-08-06T10:00:00.000Z", deliveredAt: null, attemptCount: 1, lastErrorCode: "resend_provider_error", objectPath: null },
+        { id: "c1000000-0000-4000-8000-000000000001", submissionId: "e1000000-0000-4000-8000-000000000001", deliveryType: "certificate", kind: "certificate", status: "generated", guardianNumber: 42, displayName: "Asha Test", submittedAt: "2026-08-06T10:00:00.000Z", deliveredAt: "2026-08-06T11:00:00.000Z", providerEventAt: null, providerEvent: null, attemptCount: 1, lastErrorCode: null, objectPath: "e1000000-0000-4000-8000-000000000001/vriksha-guardian-42-v1.pdf" },
+        { id: "d1000000-0000-4000-8000-000000000001", submissionId: "e1000000-0000-4000-8000-000000000001", deliveryType: "email", kind: "approval_certificate", status: "failed", guardianNumber: 42, displayName: "Asha Test", submittedAt: "2026-08-06T10:00:00.000Z", deliveredAt: null, providerEventAt: null, providerEvent: null, attemptCount: 1, lastErrorCode: "resend_provider_error", objectPath: null },
       ] as DeliveryRow[],
     };
   }
@@ -96,7 +98,7 @@ export async function getDeliveryCenter(filters: DeliveryFilters) {
     requests.push(query.order("updated_at", { ascending: false }).limit(100));
   } else requests.push(Promise.resolve({ data: [], error: null }));
   if (includeEmails) {
-    let query = queryClient.from("email_deliveries").select("id,submission_id,kind,status,attempt_count,sent_at,last_error_code,submissions!inner(display_name,guardian_number,submitted_at)");
+    let query = queryClient.from("email_deliveries").select("id,submission_id,kind,status,attempt_count,sent_at,delivered_at,bounced_at,complained_at,delivery_delayed_at,provider_failed_at,last_error_code,submissions!inner(display_name,guardian_number,submitted_at)");
     if (["not_started", "queued", "sent", "failed"].includes(filters.status ?? "")) query = query.eq("status", filters.status!);
     if (filters.kind && filters.kind !== "all") query = query.eq("kind", filters.kind);
     query = applyFilters(query, filters, "email");
@@ -108,12 +110,20 @@ export async function getDeliveryCenter(filters: DeliveryFilters) {
   const certificateRows = (certificateResult.data ?? []).map((value) => {
     const row = value as Record<string, unknown>;
     const submission = submissionOf(row.submissions);
-    return { id:String(row.id),submissionId:String(row.submission_id),deliveryType:"certificate" as const,kind:"certificate",status:String(row.status),guardianNumber:Number(submission.guardian_number)||null,displayName:typeof submission.display_name === "string" ? submission.display_name : null,submittedAt:typeof submission.submitted_at === "string" ? submission.submitted_at : null,deliveredAt:typeof row.generated_at === "string" ? row.generated_at : null,attemptCount:Number(row.attempt_count)||0,lastErrorCode:typeof row.last_error_code === "string" ? row.last_error_code : null,objectPath:typeof row.object_path === "string" ? row.object_path : null };
+    return { id:String(row.id),submissionId:String(row.submission_id),deliveryType:"certificate" as const,kind:"certificate",status:String(row.status),guardianNumber:Number(submission.guardian_number)||null,displayName:typeof submission.display_name === "string" ? submission.display_name : null,submittedAt:typeof submission.submitted_at === "string" ? submission.submitted_at : null,deliveredAt:typeof row.generated_at === "string" ? row.generated_at : null,providerEventAt:null,providerEvent:null,attemptCount:Number(row.attempt_count)||0,lastErrorCode:typeof row.last_error_code === "string" ? row.last_error_code : null,objectPath:typeof row.object_path === "string" ? row.object_path : null };
   });
   const emailRows = (emailResult.data ?? []).map((value) => {
     const row = value as Record<string, unknown>;
     const submission = submissionOf(row.submissions);
-    return { id:String(row.id),submissionId:String(row.submission_id),deliveryType:"email" as const,kind:String(row.kind),status:String(row.status),guardianNumber:Number(submission.guardian_number)||null,displayName:typeof submission.display_name === "string" ? submission.display_name : null,submittedAt:typeof submission.submitted_at === "string" ? submission.submitted_at : null,deliveredAt:typeof row.sent_at === "string" ? row.sent_at : null,attemptCount:Number(row.attempt_count)||0,lastErrorCode:typeof row.last_error_code === "string" ? row.last_error_code : null,objectPath:null };
+    const events = [
+      ["complained", row.complained_at],
+      ["bounced", row.bounced_at],
+      ["provider failed", row.provider_failed_at],
+      ["delivered", row.delivered_at],
+      ["delivery delayed", row.delivery_delayed_at],
+    ] as const;
+    const providerEvent = events.find(([, value]) => typeof value === "string") ?? null;
+    return { id:String(row.id),submissionId:String(row.submission_id),deliveryType:"email" as const,kind:String(row.kind),status:String(row.status),guardianNumber:Number(submission.guardian_number)||null,displayName:typeof submission.display_name === "string" ? submission.display_name : null,submittedAt:typeof submission.submitted_at === "string" ? submission.submitted_at : null,deliveredAt:typeof row.sent_at === "string" ? row.sent_at : null,providerEventAt:providerEvent && typeof providerEvent[1] === "string" ? providerEvent[1] : null,providerEvent:providerEvent?.[0] ?? null,attemptCount:Number(row.attempt_count)||0,lastErrorCode:typeof row.last_error_code === "string" ? row.last_error_code : null,objectPath:null };
   });
   return {
     summary: { certificate: Object.fromEntries(counts), email: Object.fromEntries(emailCounts) },

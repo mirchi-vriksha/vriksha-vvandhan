@@ -2,6 +2,7 @@ import { ForbiddenError, UnauthenticatedError } from "@/lib/auth/errors";
 import { requireRole } from "@/lib/auth/dal";
 import { buildCampaignWorkbook } from "@/lib/export/campaign-workbook.server";
 import { loadCampaignExportData } from "@/lib/export/load-campaign-export.server";
+import { consumeRateLimit, EXPORT_RATE_LIMITS } from "@/lib/security/rate-limit.server";
 import { callUntypedRpc } from "@/lib/supabase/rpc.server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -20,6 +21,13 @@ function exportFilename(now: Date): string {
 export async function GET(): Promise<Response> {
   try {
     const session = await requireRole("admin");
+    const allowed = await consumeRateLimit(`staff:${session.userId}`, EXPORT_RATE_LIMITS);
+    if (!allowed) {
+      return Response.json(
+        { error: "rate_limited" },
+        { status: 429, headers: { ...noStoreHeaders, "Retry-After": "300" } },
+      );
+    }
     const exportedAt = new Date();
     const data = await loadCampaignExportData();
     const bytes = await buildCampaignWorkbook(data, { exportedAt, exportedBy: session.displayName });

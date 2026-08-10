@@ -11,7 +11,7 @@ export function AdminNav({ session }: { session: StaffSession }) {
     { href: "/admin/submissions?status=published", label: "Published", icon: Archive },
     ...(session.role === "admin" ? [
       { href: "/admin/deliveries", label: "Deliveries", icon: Send },
-      { href: "/admin/submissions?status=trashed", label: "Trash", icon: Trash2 },
+      { href: "/admin/trash", label: "Trash", icon: Trash2 },
       { href: "/admin/team", label: "Team", icon: Users },
       { href: "/admin/settings", label: "Settings", icon: Settings },
     ] : []),

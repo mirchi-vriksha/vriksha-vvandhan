@@ -20,6 +20,8 @@ values ('40000000-0000-4000-8000-000000000010', '40000000-0000-4000-8000-0000000
 insert into public.certificates (submission_id) values ('40000000-0000-4000-8000-000000000010');
 insert into public.email_deliveries (submission_id, kind, idempotency_key)
 values ('40000000-0000-4000-8000-000000000010', 'submission_received', 'rls-received');
+insert into public.email_webhook_events(event_id,provider_message_id,event_type,event_created_at)
+values ('rls-event','rls-provider','email.delivered',now());
 insert into public.audit_logs (actor_id, action, entity_type, entity_id)
 values ('40000000-0000-4000-8000-000000000002', 'test', 'submission', '40000000-0000-4000-8000-000000000010');
 
@@ -28,6 +30,7 @@ select throws_ok($$select * from public.submissions$$, '42501', null, 'Anonymous
 select throws_ok($$insert into public.submissions default values$$, '42501', null, 'Anonymous cannot insert');
 select throws_ok($$update public.submissions set display_name = 'x'$$, '42501', null, 'Anonymous cannot update');
 select throws_ok($$delete from public.submissions$$, '42501', null, 'Anonymous cannot delete');
+select throws_ok($$select * from public.email_webhook_events$$, '42501', null, 'Anonymous cannot read webhook events');
 reset role;
 
 set local role authenticated;
@@ -44,6 +47,7 @@ select is((select count(*) from public.submission_consents), 1::bigint, 'Reviewe
 select is((select count(*) from public.submission_media), 1::bigint, 'Reviewer reads media');
 select is((select count(*) from public.certificates), 1::bigint, 'Reviewer reads certificate status');
 select is((select count(*) from public.email_deliveries), 1::bigint, 'Reviewer reads email status');
+select throws_ok($$select * from public.email_webhook_events$$, '42501', null, 'Reviewer cannot read webhook event internals');
 select is((select count(*) from public.submission_contacts), 0::bigint, 'Reviewer cannot read participant email');
 select is((select count(*) from public.audit_logs), 0::bigint, 'Reviewer cannot read audit logs');
 select throws_ok($$update public.submissions set display_name = 'x'$$, '42501', null, 'Reviewer cannot mutate');

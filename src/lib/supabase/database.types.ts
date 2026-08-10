@@ -7,14 +7,32 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.15"
-  }
   private: {
     Tables: {
-      [_ in never]: never
+      application_rate_limits: {
+        Row: {
+          expires_at: string
+          key_hash: string
+          request_count: number
+          scope: string
+          window_started_at: string
+        }
+        Insert: {
+          expires_at: string
+          key_hash: string
+          request_count?: number
+          scope: string
+          window_started_at: string
+        }
+        Update: {
+          expires_at?: string
+          key_hash?: string
+          request_count?: number
+          scope?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -119,6 +137,7 @@ export type Database = {
           generated_at: string | null
           id: string
           last_error_code: string | null
+          next_attempt_at: string | null
           object_path: string | null
           queued_at: string | null
           status: Database["public"]["Enums"]["certificate_status"]
@@ -137,6 +156,7 @@ export type Database = {
           generated_at?: string | null
           id?: string
           last_error_code?: string | null
+          next_attempt_at?: string | null
           object_path?: string | null
           queued_at?: string | null
           status?: Database["public"]["Enums"]["certificate_status"]
@@ -155,6 +175,7 @@ export type Database = {
           generated_at?: string | null
           id?: string
           last_error_code?: string | null
+          next_attempt_at?: string | null
           object_path?: string | null
           queued_at?: string | null
           status?: Database["public"]["Enums"]["certificate_status"]
@@ -175,13 +196,19 @@ export type Database = {
       email_deliveries: {
         Row: {
           attempt_count: number
+          bounced_at: string | null
           claim_token: string | null
+          complained_at: string | null
           created_at: string
+          delivered_at: string | null
+          delivery_delayed_at: string | null
           id: string
           idempotency_key: string
           kind: Database["public"]["Enums"]["email_delivery_kind"]
           last_attempt_at: string | null
           last_error_code: string | null
+          next_attempt_at: string | null
+          provider_failed_at: string | null
           provider_message_id: string | null
           queued_at: string | null
           sent_at: string | null
@@ -192,13 +219,19 @@ export type Database = {
         }
         Insert: {
           attempt_count?: number
+          bounced_at?: string | null
           claim_token?: string | null
+          complained_at?: string | null
           created_at?: string
+          delivered_at?: string | null
+          delivery_delayed_at?: string | null
           id?: string
           idempotency_key: string
           kind: Database["public"]["Enums"]["email_delivery_kind"]
           last_attempt_at?: string | null
           last_error_code?: string | null
+          next_attempt_at?: string | null
+          provider_failed_at?: string | null
           provider_message_id?: string | null
           queued_at?: string | null
           sent_at?: string | null
@@ -209,13 +242,19 @@ export type Database = {
         }
         Update: {
           attempt_count?: number
+          bounced_at?: string | null
           claim_token?: string | null
+          complained_at?: string | null
           created_at?: string
+          delivered_at?: string | null
+          delivery_delayed_at?: string | null
           id?: string
           idempotency_key?: string
           kind?: Database["public"]["Enums"]["email_delivery_kind"]
           last_attempt_at?: string | null
           last_error_code?: string | null
+          next_attempt_at?: string | null
+          provider_failed_at?: string | null
           provider_message_id?: string | null
           queued_at?: string | null
           sent_at?: string | null
@@ -233,6 +272,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      email_webhook_events: {
+        Row: {
+          event_created_at: string
+          event_id: string
+          event_type: string
+          provider_message_id: string
+          received_at: string
+        }
+        Insert: {
+          event_created_at: string
+          event_id: string
+          event_type: string
+          provider_message_id: string
+          received_at?: string
+        }
+        Update: {
+          event_created_at?: string
+          event_id?: string
+          event_type?: string
+          provider_message_id?: string
+          received_at?: string
+        }
+        Relationships: []
       }
       staff_profiles: {
         Row: {
@@ -571,6 +634,7 @@ export type Database = {
     Functions: {
       claim_certificate_generation: {
         Args: {
+          p_allow_exhausted: boolean
           p_force_regeneration: boolean
           p_submission_id: string
           p_template_version: string
@@ -585,7 +649,7 @@ export type Database = {
         }[]
       }
       claim_email_delivery: {
-        Args: { p_delivery_id: string }
+        Args: { p_allow_exhausted: boolean; p_delivery_id: string }
         Returns: {
           certificate_bucket: string
           certificate_path: string
@@ -623,6 +687,15 @@ export type Database = {
       confirm_submission_rejection: {
         Args: { p_comment: string; p_submission_id: string }
         Returns: undefined
+      }
+      consume_application_rate_limit: {
+        Args: {
+          p_key_hash: string
+          p_limit: number
+          p_scope: string
+          p_window_seconds: number
+        }
+        Returns: boolean
       }
       delete_trashed_submission: {
         Args: { p_reason: string; p_submission_id: string }
@@ -686,6 +759,18 @@ export type Database = {
           metric_label: string
           submissions_open: boolean
           target_count: number
+        }[]
+      }
+      list_due_certificate_work: {
+        Args: { p_limit: number }
+        Returns: {
+          submission_id: string
+        }[]
+      }
+      list_due_email_work: {
+        Args: { p_limit: number }
+        Returns: {
+          delivery_id: string
         }[]
       }
       list_public_movement_entries: {
@@ -758,6 +843,7 @@ export type Database = {
           guardian_number: number
         }[]
       }
+      purge_expired_rate_limits: { Args: { p_limit?: number }; Returns: number }
       recommend_submission_rejection: {
         Args: { p_comment: string; p_submission_id: string }
         Returns: undefined
@@ -765,6 +851,22 @@ export type Database = {
       record_campaign_data_export: {
         Args: { p_row_count: number }
         Returns: undefined
+      }
+      record_resend_webhook_event: {
+        Args: {
+          p_event_created_at: string
+          p_event_id: string
+          p_event_type: string
+          p_provider_message_id: string
+        }
+        Returns: boolean
+      }
+      recover_stale_delivery_claims: {
+        Args: { p_stale_minutes?: number }
+        Returns: {
+          certificates_recovered: number
+          emails_recovered: number
+        }[]
       }
       reserve_guardian_number_for_publication: {
         Args: { p_actor_id: string; p_submission_id: string }

@@ -14,7 +14,9 @@ const idSchema = z.uuid();
 export async function retryCertificateAction(formData: FormData) {
   await requireRole("admin");
   const submissionId = idSchema.parse(formData.get("submissionId"));
-  if (!isStaffE2EAdapterEnabled()) await processCertificateGeneration(submissionId);
+  if (!isStaffE2EAdapterEnabled()) {
+    await processCertificateGeneration(submissionId, { allowExhaustedRetry: true });
+  }
   revalidatePath("/admin/deliveries");
   redirect("/admin/deliveries?result=certificate_retry");
 }
@@ -31,7 +33,9 @@ export async function regenerateCertificateAction(formData: FormData) {
 export async function retryEmailAction(formData: FormData) {
   await requireRole("admin");
   const deliveryId = idSchema.parse(formData.get("deliveryId"));
-  if (!isStaffE2EAdapterEnabled()) await processEmailDelivery(deliveryId);
+  if (!isStaffE2EAdapterEnabled()) {
+    await processEmailDelivery(deliveryId, {}, { allowExhaustedRetry: true });
+  }
   revalidatePath("/admin/deliveries");
   redirect("/admin/deliveries?result=email_retry");
 }

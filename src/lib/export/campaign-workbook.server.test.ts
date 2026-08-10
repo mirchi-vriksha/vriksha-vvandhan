@@ -65,4 +65,17 @@ describe("campaign XLSX export", () => {
     expect(bytes.byteLength).toBeLessThan(10_000_000);
     expect(performance.now() - started).toBeLessThan(15_000);
   }, 20_000);
+
+  it("exports 5,000 synthetic rows without exceeding the operational workbook cap", async () => {
+    const started = performance.now();
+    const bytes = await buildCampaignWorkbook(fixtureData(5_000), {
+      exportedAt: new Date("2026-08-07T10:00:00.000Z"),
+      exportedBy: "Admin Test",
+    });
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(bytes as never);
+    expect(workbook.getWorksheet("Submissions")!.rowCount).toBe(5_001);
+    expect(bytes.byteLength).toBeLessThan(30_000_000);
+    expect(performance.now() - started).toBeLessThan(45_000);
+  }, 60_000);
 });

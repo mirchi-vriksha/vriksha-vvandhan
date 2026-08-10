@@ -1,6 +1,15 @@
 import { ZodError } from "zod";
 
 import { jsonApiError } from "@/lib/submissions/api-errors";
+import {
+  consumeRateLimit,
+  PREPARE_RATE_LIMITS,
+  trustedClientAddress,
+} from "@/lib/security/rate-limit.server";
+import {
+  TurnstileVerificationError,
+  verifyTurnstileToken,
+} from "@/lib/security/turnstile.server";
 import { acceptsSmallJson, isSameOriginRequest } from "@/lib/submissions/origin.server";
 import {
   prepareSubmissionRequestSchema,
@@ -33,11 +42,21 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
+    const remoteIp = trustedClientAddress(request);
+    const allowed = await consumeRateLimit(
+      `ip:${remoteIp ?? "unavailable"}`,
+      PREPARE_RATE_LIMITS,
+    );
+    if (!allowed) return jsonApiError("rate_limited", 429);
+    await verifyTurnstileToken(input.turnstileToken, remoteIp);
     return Response.json(await preparePublicSubmission(input), {
       status: 200,
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
+    if (error instanceof TurnstileVerificationError) {
+      return jsonApiError("verification_failed", error.reason === "unavailable" ? 503 : 400);
+    }
     if (error instanceof SubmissionServiceError) {
       const status =
         error.code === "submissions_closed" ? 409 :

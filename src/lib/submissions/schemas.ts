@@ -30,6 +30,13 @@ export const requestTokenSchema = z
 
 export const preparedExtensionSchema = z.enum(["webp", "jpg"]);
 
+export const turnstileTokenSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(2048)
+  .optional();
+
 export const prepareSubmissionRequestSchema = z
   .object({
     displayName: displayNameSchema,
@@ -38,6 +45,7 @@ export const prepareSubmissionRequestSchema = z
     termsAccepted: z.literal(true),
     requestToken: requestTokenSchema,
     preparedExtension: preparedExtensionSchema,
+    turnstileToken: turnstileTokenSchema,
   })
   .strict();
 
@@ -80,6 +88,8 @@ export const publicApiErrorCodeSchema = z.enum([
   "invalid_request",
   "submissions_closed",
   "submission_limit_reached",
+  "rate_limited",
+  "verification_failed",
   "draft_expired",
   "invalid_draft",
   "consent_required",

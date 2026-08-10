@@ -2,6 +2,7 @@ import { ZodError } from "zod";
 import { after } from "next/server";
 
 import { processSubmissionDelivery } from "@/lib/email/delivery-orchestration.server";
+import { consumeRateLimit, FINALIZE_RATE_LIMITS } from "@/lib/security/rate-limit.server";
 import { jsonApiError } from "@/lib/submissions/api-errors";
 import { acceptsSmallJson, isSameOriginRequest } from "@/lib/submissions/origin.server";
 import {
@@ -35,6 +36,11 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
+    const allowed = await consumeRateLimit(
+      `capability:${input.requestToken}`,
+      FINALIZE_RATE_LIMITS,
+    );
+    if (!allowed) return jsonApiError("rate_limited", 429);
     const result = await finalizePublicSubmission(input);
     after(async () => {
       await processSubmissionDelivery(input.submissionId, "submission_received").catch(() => {

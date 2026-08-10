@@ -60,11 +60,13 @@ function templateFor(claim: EmailClaim): TransactionalEmail {
 
 export function safeEmailErrorCode(error: unknown): string {
   if (error instanceof Error) {
-    if (["attachment_missing", "rejection_comment_missing"].includes(error.message)) return error.message;
+    if (["attachment_missing", "rejection_comment_missing", "email_completion_failed"].includes(error.message)) return error.message;
     const message = error.message.toLowerCase();
     if (message.includes("timeout") || message.includes("timed out")) return "resend_timeout";
     if (message.includes("rate") || message.includes("429")) return "resend_rate_limited";
     if (message.includes("sender") || message.includes("domain")) return "resend_invalid_sender";
+    if (message.includes("recipient") || message.includes("invalid_email")) return "resend_invalid_recipient";
+    if (/\b5\d\d\b/.test(message) || message.includes("temporar")) return "resend_temporary_error";
   }
   return "resend_provider_error";
 }
@@ -72,7 +74,10 @@ export function safeEmailErrorCode(error: unknown): string {
 const defaults: ProcessorDependencies = {
   configuration: getEmailConfiguration,
   async claim(deliveryId) {
-    const result = await callUntypedRpc<EmailClaim[]>(getServiceSupabaseClient(), "claim_email_delivery", { p_delivery_id: deliveryId });
+    const result = await callUntypedRpc<EmailClaim[]>(getServiceSupabaseClient(), "claim_email_delivery", {
+      p_delivery_id: deliveryId,
+      p_allow_exhausted: false,
+    });
     if (result.error) throw new Error("email_claim_failed");
     return result.data?.[0] ?? null;
   },
@@ -111,8 +116,19 @@ const defaults: ProcessorDependencies = {
 export async function processEmailDelivery(
   deliveryId: string,
   dependencies: Partial<ProcessorDependencies> = {},
+  options: { allowExhaustedRetry?: boolean } = {},
 ): Promise<{ outcome: "disabled" | "not_eligible" | "sent"; providerMessageId?: string }> {
   const processor = { ...defaults, ...dependencies };
+  if (options.allowExhaustedRetry && !dependencies.claim) {
+    processor.claim = async (id) => {
+      const result = await callUntypedRpc<EmailClaim[]>(getServiceSupabaseClient(), "claim_email_delivery", {
+        p_delivery_id: id,
+        p_allow_exhausted: true,
+      });
+      if (result.error) throw new Error("email_claim_failed");
+      return result.data?.[0] ?? null;
+    };
+  }
   const configuration = processor.configuration();
   if (!configuration.enabled) return { outcome: "disabled" };
   const claim = await processor.claim(deliveryId);

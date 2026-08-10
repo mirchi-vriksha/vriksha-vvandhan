@@ -2240,6 +2240,28 @@ svg {
 .checkbox-field span { color: var(--muted-ink); font-size: 0.86rem; }
 .checkbox-field a { color: var(--action-red); text-decoration: underline; text-underline-offset: 0.2em; }
 
+.turnstile-field {
+  min-width: 0;
+  margin-top: 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: var(--surface-soft);
+  padding: 1rem;
+}
+
+.turnstile-field__label {
+  margin: 0 0 0.7rem;
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.turnstile-field__widget {
+  width: 100%;
+  min-height: 65px;
+  overflow: hidden;
+}
+
 .submission-error-summary {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -2478,12 +2500,12 @@ svg {
 .admin-compact-list span { color: var(--muted-ink); font-size: .75rem; }
 .admin-compact-list a, .admin-table a { color: var(--action-red); font-weight: 800; }
 .admin-empty { margin: 1.2rem 0 0; color: var(--muted-ink); }
-.admin-filters { contain: inline-size paint; display: flex; gap: .4rem; overflow-x: auto; padding-bottom: .5rem; }
+.admin-filters { width: 100%; min-width: 0; max-width: 100%; contain: inline-size paint; display: flex; gap: .4rem; overflow-x: auto; padding-bottom: .5rem; }
 .admin-filters a { flex: 0 0 auto; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); padding: .55rem .85rem; font-size: .75rem; font-weight: 800; }
 .admin-filters a[aria-current="page"] { border-color: var(--forest-accent); background: var(--forest-accent); color: white; }
 .admin-search { display: flex; align-items: end; gap: .7rem; margin-top: 1rem; }
 .admin-search label { width: min(480px, 100%); display: grid; gap: .3rem; font-size: .76rem; font-weight: 800; }
-.admin-table-wrap { contain: inline-size paint; max-width: 100%; overflow-x: auto; }
+.admin-table-wrap { width: 100%; min-width: 0; max-width: 100%; contain: inline-size paint; overflow-x: auto; }
 .admin-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
 .admin-table th, .admin-table td { border-bottom: 1px solid var(--line); padding: .8rem .65rem; text-align: left; white-space: nowrap; }
 .admin-table th { color: var(--muted-ink); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; }
@@ -2564,12 +2586,13 @@ svg {
 
 @media (max-width: 850px) {
   .admin-sidebar { display: none; }
-  .admin-mobile-header { display: block; border-bottom: 1px solid var(--line); background: var(--surface); padding: .75rem 1rem; }
+  .admin-mobile-header { display: block; max-width: 100vw; overflow: hidden; border-bottom: 1px solid var(--line); background: var(--surface); padding: .75rem 1rem; }
   .admin-mobile-header > span { font-family: var(--font-editorial), Georgia, serif; font-size: 1.25rem; font-weight: 700; }
-  .admin-mobile-header .admin-nav { contain: inline-size paint; max-width: 100%; margin-top: .5rem; overflow-x: auto; }
+  .admin-mobile-header .admin-nav { width: 100%; min-width: 0; max-width: 100%; contain: inline-size paint; margin-top: .5rem; overflow-x: auto; }
   .admin-mobile-header .admin-nav ul { display: flex; }
   .admin-mobile-header .admin-nav a { white-space: nowrap; }
-  .admin-main { width: 100%; min-width: 0; margin-left: 0; }
+  .admin-main { width: 100%; min-width: 0; max-width: 100vw; margin-left: 0; overflow-x: hidden; }
+  .admin-main > * { min-width: 0; max-width: 100%; }
   .admin-detail-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {

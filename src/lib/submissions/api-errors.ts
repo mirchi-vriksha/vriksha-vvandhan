@@ -4,6 +4,8 @@ const messages: Record<PublicApiErrorCode, string> = {
   invalid_request: "Check the highlighted details and try again.",
   submissions_closed: "Submissions are not open right now. Please return to the movement soon.",
   submission_limit_reached: "This address has reached the current submission limit. Please try again later.",
+  rate_limited: "Too many attempts were made. Please wait a moment and try again.",
+  verification_failed: "We couldn’t verify this submission. Please try again.",
   draft_expired: "Your secure submission session expired. Start a new submission and try again.",
   invalid_draft: "We could not verify this secure submission session. Please start again.",
   consent_required: "Publication consent and campaign terms must both be accepted.",
@@ -15,6 +17,7 @@ const messages: Record<PublicApiErrorCode, string> = {
 
 const retryableCodes = new Set<PublicApiErrorCode>([
   "media_not_ready",
+  "verification_failed",
   "temporarily_unavailable",
 ]);
 
@@ -52,4 +55,3 @@ export function jsonApiError(code: PublicApiErrorCode, status: number): Response
     headers: { "Cache-Control": "no-store" },
   });
 }
-

@@ -8,6 +8,7 @@ import { PhotoSelector } from "@/components/submission/photo-selector";
 import { SubmissionErrorSummary } from "@/components/submission/submission-error-summary";
 import { SubmissionProgress, type SubmissionStage } from "@/components/submission/submission-progress";
 import { SubmissionSuccess } from "@/components/submission/submission-success";
+import { TurnstileWidget } from "@/components/submission/turnstile-widget";
 import { PUBLIC_SUBMISSION, PUBLIC_SUBMISSION_COPY } from "@/config/public-submission";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import {
@@ -25,13 +26,23 @@ import {
   type PublicApiError,
 } from "@/lib/submissions/schemas";
 
-type FieldErrors = Partial<Record<"displayName" | "email" | "publicationConsent" | "termsAccepted" | "photo", string>>;
+type FieldErrors = Partial<Record<"displayName" | "email" | "publicationConsent" | "termsAccepted" | "photo" | "turnstile", string>>;
+
+type PublicSubmissionFormProps = {
+  turnstile?: {
+    enabled: boolean;
+    siteKey: string | null;
+    action: string;
+  };
+};
 
 async function readApiResponse(response: Response): Promise<unknown> {
   try { return await response.json(); } catch { return null; }
 }
 
-export function PublicSubmissionForm() {
+export function PublicSubmissionForm({
+  turnstile = { enabled: false, siteKey: null, action: "public_submission_prepare" },
+}: PublicSubmissionFormProps) {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [publicationConsent, setPublicationConsent] = useState(false);
@@ -44,6 +55,8 @@ export function PublicSubmissionForm() {
   const [apiError, setApiError] = useState<PublicApiError | null>(null);
   const [stage, setStage] = useState<SubmissionStage | null>(null);
   const [complete, setComplete] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileResetNonce, setTurnstileResetNonce] = useState(0);
   const requestTokenRef = useRef<string | null>(null);
   const compressionAbortRef = useRef<AbortController | null>(null);
   const previewUrlRef = useRef<string | null>(null);
@@ -118,9 +131,13 @@ export function PublicSubmissionForm() {
       termsAccepted,
       requestToken,
       preparedExtension: preparedImage?.extension,
+      turnstileToken: turnstileToken ?? undefined,
     });
     const errors: FieldErrors = {};
     if (!preparedImage) errors.photo = "Choose and prepare one photograph.";
+    if (turnstile.enabled && !turnstileToken) {
+      errors.turnstile = "Complete the spam-protection check.";
+    }
     if (!parsed.success) {
       for (const issue of parsed.error.issues) {
         const field = issue.path[0];
@@ -198,6 +215,10 @@ export function PublicSubmissionForm() {
       window.setTimeout(() => summaryRef.current?.focus(), 0);
     } finally {
       setStage(null);
+      if (turnstile.enabled) {
+        setTurnstileToken(null);
+        setTurnstileResetNonce((value) => value + 1);
+      }
     }
   };
 
@@ -284,6 +305,16 @@ export function PublicSubmissionForm() {
         </label>
         {fieldErrors.termsAccepted ? <p id="terms-error" className="field-error">{fieldErrors.termsAccepted}</p> : null}
       </fieldset>
+
+      {turnstile.enabled && turnstile.siteKey ? (
+        <TurnstileWidget
+          siteKey={turnstile.siteKey}
+          action={turnstile.action}
+          resetNonce={turnstileResetNonce}
+          error={fieldErrors.turnstile}
+          onTokenChange={setTurnstileToken}
+        />
+      ) : null}
 
       {stage ? <SubmissionProgress stage={stage} /> : null}
       <button className="button button--primary submission-submit" type="submit" disabled={Boolean(stage) || preparing}>

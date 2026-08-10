@@ -30,7 +30,9 @@
     "staging:benchmark-review-thumbnails": "node --env-file-if-exists=.env.local scripts/benchmark-review-thumbnail-queue.mjs",
     "certificate:preview": "NODE_OPTIONS=--conditions=react-server tsx scripts/render-certificate-preview.ts",
     "test:staging:certificate-email": "NODE_OPTIONS=--conditions=react-server tsx --env-file-if-exists=.env.local scripts/staging-certificate-email-smoke.mjs",
-    "test:export": "NODE_OPTIONS=--conditions=react-server tsx scripts/verify-campaign-export.ts"
+    "test:export": "NODE_OPTIONS=--conditions=react-server tsx scripts/verify-campaign-export.ts",
+    "test:load:public": "node scripts/load-test-public.mjs",
+    "test:load:staging-workflows": "node --env-file-if-exists=.env.local scripts/load-test-staging-workflows.mjs"
   },
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"

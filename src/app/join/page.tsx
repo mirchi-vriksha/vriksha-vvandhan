@@ -6,6 +6,10 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { CampaignImage } from "@/components/shared/campaign-image";
 import { hasServerSupabaseEnvironment } from "@/lib/env/server";
+import {
+  getPublicTurnstileConfiguration,
+  TURNSTILE_WIDGET_ACTION,
+} from "@/lib/security/turnstile.server";
 import { getPublicSubmissionAvailability } from "@/lib/submissions/service.server";
 
 export const metadata: Metadata = {
@@ -26,9 +30,15 @@ const joinImage = {
 };
 
 export default async function JoinPage() {
-  const availability = hasServerSupabaseEnvironment()
+  let availability = hasServerSupabaseEnvironment()
     ? await getPublicSubmissionAvailability()
     : "unavailable";
+  let turnstile = { enabled: false, siteKey: null as string | null };
+  try {
+    turnstile = getPublicTurnstileConfiguration();
+  } catch {
+    availability = "unavailable";
+  }
 
   return (
     <>
@@ -45,7 +55,9 @@ export default async function JoinPage() {
           <CampaignImage image={joinImage} sizes="(max-width: 767px) 92vw, 38vw" className="join-intro__image" preload />
         </section>
         <div className="join-form-shell shell">
-          {availability === "open" ? <PublicSubmissionForm /> : <SubmissionAvailability state={availability} />}
+          {availability === "open" ? (
+            <PublicSubmissionForm turnstile={{ ...turnstile, action: TURNSTILE_WIDGET_ACTION }} />
+          ) : <SubmissionAvailability state={availability} />}
         </div>
       </main>
       <SiteFooter />

@@ -30,5 +30,8 @@ export function getEmailConfiguration(environment: Record<string, string | undef
   if (targetEnvironment === "staging" && !testRecipient) {
     throw new Error("staging_test_recipient_required");
   }
+  if (targetEnvironment === "production" && testRecipient) {
+    throw new Error("production_test_recipient_forbidden");
+  }
   return { enabled, apiKey, from, replyTo, targetEnvironment, testRecipient };
 }

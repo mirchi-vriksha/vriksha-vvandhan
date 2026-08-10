@@ -17,6 +17,7 @@ select has_table('public', 'submission_consents', 'submission_consents table exi
 select has_table('public', 'submission_media', 'submission_media table exists');
 select has_table('public', 'certificates', 'certificates table exists');
 select has_table('public', 'email_deliveries', 'email_deliveries table exists');
+select has_table('public', 'email_webhook_events', 'email_webhook_events table exists');
 select has_table('public', 'audit_logs', 'audit_logs table exists');
 
 select has_pk('public', 'staff_profiles', 'staff_profiles has a primary key');
@@ -52,7 +53,8 @@ join pg_catalog.pg_namespace as n on n.oid = c.relnamespace
 where n.nspname = 'public'
   and c.relname in (
     'staff_profiles', 'campaign_settings', 'submissions', 'submission_contacts',
-    'submission_consents', 'submission_media', 'certificates', 'email_deliveries', 'audit_logs'
+    'submission_consents', 'submission_media', 'certificates', 'email_deliveries',
+    'email_webhook_events', 'audit_logs'
   );
 
 select is((select public from storage.buckets where id = 'submission-originals'), false, 'original bucket is private');

@@ -31,13 +31,14 @@ function certificateErrorCode(error: unknown): string {
 
 export async function processCertificateGeneration(
   submissionId: string,
-  options: { forceRegeneration?: boolean } = {},
+  options: { forceRegeneration?: boolean; allowExhaustedRetry?: boolean } = {},
 ): Promise<CertificateProcessResult> {
   const service = getServiceSupabaseClient();
   const { data, error } = await callUntypedRpc<CertificateClaim[]>(service, "claim_certificate_generation", {
     p_submission_id: submissionId,
     p_template_version: CERTIFICATE_TEMPLATE_VERSION,
     p_force_regeneration: options.forceRegeneration === true,
+    p_allow_exhausted: options.allowExhaustedRetry === true,
   });
   if (error) throw new Error("certificate_claim_failed");
   const claim = data?.[0];
@@ -62,8 +63,21 @@ export async function processCertificateGeneration(
       cacheControl: "0",
       upsert: false,
     });
-    if (upload.error) throw upload.error;
-    uploaded = true;
+    if (upload.error) {
+      const message = upload.error.message.toLowerCase();
+      if (!message.includes("duplicate") && !message.includes("already exists")) {
+        throw upload.error;
+      }
+      const existing = await service.storage.from(CERTIFICATES_BUCKET).download(objectPath);
+      if (existing.error || !existing.data) throw upload.error;
+      const existingBytes = Buffer.from(await existing.data.arrayBuffer());
+      const existingSha = createHash("sha256").update(existingBytes).digest("hex");
+      if (existingBytes.byteLength !== certificate.byteLength || existingSha !== certificate.sha256) {
+        throw new Error("storage_conflict");
+      }
+    } else {
+      uploaded = true;
+    }
 
     const verification = await service.storage.from(CERTIFICATES_BUCKET).download(objectPath);
     if (verification.error || !verification.data) throw new Error("certificate_upload_verification_failed");

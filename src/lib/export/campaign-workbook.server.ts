@@ -159,8 +159,11 @@ export async function buildCampaignWorkbook(data: CampaignExportData, context: C
     { header: "Kind", key: "kind", width: 24 }, { header: "Status", key: "status", width: 18 },
     { header: "Attempt Count", key: "attemptCount", width: 16, kind: "number" }, { header: "Queued At", key: "queuedAt", width: 22, kind: "date" },
     { header: "Last Attempt At", key: "lastAttemptAt", width: 22, kind: "date" }, { header: "Sent At", key: "sentAt", width: 22, kind: "date" },
+    { header: "Delivered At", key: "deliveredAt", width: 22, kind: "date" }, { header: "Bounced At", key: "bouncedAt", width: 22, kind: "date" },
+    { header: "Complained At", key: "complainedAt", width: 22, kind: "date" }, { header: "Delivery Delayed At", key: "deliveryDelayedAt", width: 22, kind: "date" },
+    { header: "Provider Failed At", key: "providerFailedAt", width: 22, kind: "date" },
     { header: "Provider Message ID", key: "providerMessageId", width: 36 }, { header: "Last Error Code", key: "lastErrorCode", width: 28 },
-  ], data.emailDeliveries.map((row) => ({ submissionId: text(row.submission_id), guardianNumber: guardianBySubmission.get(String(row.submission_id)) ?? null, kind: text(row.kind), status: text(row.status), attemptCount: asNumber(row.attempt_count), queuedAt: asDate(row.queued_at), lastAttemptAt: asDate(row.last_attempt_at), sentAt: asDate(row.sent_at), providerMessageId: text(row.provider_message_id), lastErrorCode: text(row.last_error_code) })));
+  ], data.emailDeliveries.map((row) => ({ submissionId: text(row.submission_id), guardianNumber: guardianBySubmission.get(String(row.submission_id)) ?? null, kind: text(row.kind), status: text(row.status), attemptCount: asNumber(row.attempt_count), queuedAt: asDate(row.queued_at), lastAttemptAt: asDate(row.last_attempt_at), sentAt: asDate(row.sent_at), deliveredAt: asDate(row.delivered_at), bouncedAt: asDate(row.bounced_at), complainedAt: asDate(row.complained_at), deliveryDelayedAt: asDate(row.delivery_delayed_at), providerFailedAt: asDate(row.provider_failed_at), providerMessageId: text(row.provider_message_id), lastErrorCode: text(row.last_error_code) })));
 
   const audit = workbook.addWorksheet("Audit", { views: [{ showGridLines: false }] });
   setupSheet(audit, [
