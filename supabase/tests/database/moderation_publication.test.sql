@@ -69,7 +69,7 @@ select is(
   true,
   'a second reviewer publication attempt converges to the existing publication'
 );
-set local role service_role;
+reset role;
 select is((select count(*) from public.audit_logs where entity_id='51000000-0000-4000-8000-000000000012' and action='submission.approved'),1::bigint,'competing publication attempts create one approval audit event');
 
 set local role authenticated;
