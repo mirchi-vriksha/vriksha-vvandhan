@@ -69,8 +69,10 @@ select is(
   true,
   'a second reviewer publication attempt converges to the existing publication'
 );
+set local role service_role;
 select is((select count(*) from public.audit_logs where entity_id='51000000-0000-4000-8000-000000000012' and action='submission.approved'),1::bigint,'competing publication attempts create one approval audit event');
 
+set local role authenticated;
 select set_config('request.jwt.claim.sub','51000000-0000-4000-8000-000000000002',true);
 select lives_ok($$select public.confirm_submission_rejection('51000000-0000-4000-8000-000000000011','This photograph does not clearly show a tree.')$$,'Admin rejects Pending Review directly');
 select lives_ok($$select public.confirm_submission_rejection('51000000-0000-4000-8000-000000000011','This photograph does not clearly show a tree.')$$,'Final rejection is idempotent');
