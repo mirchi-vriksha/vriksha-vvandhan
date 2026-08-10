@@ -60,7 +60,13 @@ GitHub Actions run `31086282375` passed before remote mutation. The linked dry-r
 
 The post-migration security advisor returned no notices. The three actionable performance findings named for Section 3 are resolved: `submissions.trashed_by` is indexed, the staff-profile Auth lookup uses an init plan, and the duplicate permissive staff-profile SELECT policies are consolidated. The remaining performance notices are informational unused-index results expected on an empty staging database; no future workflow index was removed merely to silence them. [Supabase explains this informational lint here.](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index)
 
-The staging smoke command is implemented but has not run because ignored `.env.local` does not yet contain the real staging application values. No smoke result is claimed. Section 3 remains one live verification short of its full definition of done.
+The final credentialed smoke passed against the linked hosted staging project on 10 August 2026 from starting commit `b8f9493c4936c20936d04662e0b74fcbeb1e827d`. The guarded helper used the real local prepare/finalise route boundaries, a generated non-personal JPEG, a direct signed upload into the private `submission-originals` bucket, trusted server verification and the current private review-thumbnail path.
+
+Submission `74f87222-ca03-4c9a-a75c-e13364ef56ab` reached `pending_review` with `submitted_at` set, media `uploaded`, verified JPEG metadata and a private `240×300` review thumbnail. Guardian, approval, publication and rejection fields remained null. No certificate existed; the one `submission_received` delivery remained an unsent `not_started` placeholder with zero attempts; no public derivative or Movement Wall entry appeared.
+
+Repeating finalise returned the same Pending Review result, and repeating prepare returned the same submission with no upload required. Exactly one contact, consent, media row and email placeholder remained before cleanup. The public count stayed `0`, the target stayed `983`, and the public Movement Wall snapshot did not change.
+
+Cleanup removed the private original and review thumbnail through the Storage API, deleted the non-counting synthetic submission and all cascaded related rows, verified no Storage object or database row remained, restored the original closed-submission setting, and re-verified the `0 / 983` public baseline. Section 3 is complete.
 
 Known launch blockers remain: final legal consent wording, final campaign terms, privacy/retention period, minor-participant policy, email sender/domain, campaign dates, production project, production rate limiting, Turnstile, and final image/media rights.
 

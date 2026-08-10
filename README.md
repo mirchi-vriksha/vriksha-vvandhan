@@ -6,7 +6,7 @@ Vriksha Vvandhan is Mirchi's Raksha Bandhan campaign inviting people to protect 
 
 1. **Premium public experience** — responsive campaign homepage, tracker UI and progressively enhanced Promise Reel. Complete; Section 4 now supplies the tracker’s live count.
 2. **Backend foundation** — Supabase schema, RLS, staff roles, Storage rules, server clients, authorization DAL, tests and CI. Complete and verified on staging.
-3. **Public submission flow** — display name, email, one privately uploaded photograph, publication consent, terms acceptance, server verification and Pending Review confirmation. Source, CI and staging migration are verified; the credentialed staging smoke result is tracked in `docs/SECTION_3_REPORT.md`.
+3. **Public submission flow** — display name, email, one privately uploaded photograph, publication consent, terms acceptance, server verification and Pending Review confirmation. Complete and hosted-staging verified; the credentialed smoke evidence is recorded in `docs/SECTION_3_REPORT.md`.
 4. **Internal operations and publication** — staff portal, moderation workflow, Guardian assignment, public Movement Wall and live derived count. Complete and staging-verified.
 5. **Certificates, delivery operations and export** — personalized private PDFs, transactional email, Admin retries/downloads, and sensitive audited XLSX export. Implemented; final staging/CI gates are tracked in `docs/SECTION_5_REPORT.md`.
 6. **Hardening and launch** — retention, load, accessibility, security and operational launch checks.

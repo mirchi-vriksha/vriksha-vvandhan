@@ -30,3 +30,5 @@ Section 5 started from company `main` commit `bfec2dec506282cd7a6a5ed59278e527d5
 ## Completion gates
 
 Section 5 remains **in progress** until a real explicit-recipient staging email and duplicate retry pass. Company-controlled Resend configuration is not present locally, so email remains safely disabled. Advisor warnings also remain visible for a later, separately reviewed hardening change. No email success or Section 5 completion is claimed before the required gates.
+
+The pre-Section-6 email gate was rechecked on 10 August 2026. `SUPABASE_TARGET_ENVIRONMENT=staging` and the linked hosted-staging project were confirmed, but `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`, `EMAIL_TEST_RECIPIENT`, and `EMAIL_SENDING_ENABLED` were absent. In accordance with the fail-closed delivery policy, no provider call, recipient lookup, certificate email, rejection email, failure/retry test or duplicate-send test was attempted. Sender-domain verification is therefore also unverified. Gate B remains blocked on company-controlled staging email configuration; Section 5 is not complete and Section 6 has not started.
