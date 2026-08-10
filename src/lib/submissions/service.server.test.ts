@@ -11,7 +11,9 @@ const mocks = vi.hoisted(() => {
     verify: vi.fn(),
     generateThumbnail: vi.fn(),
     uploadThumbnail: vi.fn(),
+    createSignedUpload: vi.fn(),
     remove: vi.fn(),
+    list: vi.fn(),
     maybeSingle: vi.fn(),
     rpc: vi.fn(),
     deleteEq: vi.fn(),
@@ -35,8 +37,11 @@ vi.mock("@/lib/supabase/service", () => ({
   getServiceSupabaseClient: () => ({
     from: () => submissionsQuery,
     rpc: mocks.rpc,
-    storage: { from: () => ({ remove: mocks.remove }) },
+    storage: { from: () => ({ list: mocks.list, remove: mocks.remove }) },
   }),
+}));
+vi.mock("@/lib/storage/signed-upload.server", () => ({
+  createOriginalSignedUpload: mocks.createSignedUpload,
 }));
 vi.mock("@/lib/submissions/verify-uploaded-image.server", () => ({
   UploadedImageVerificationError: mocks.VerificationError,
@@ -49,6 +54,7 @@ vi.mock("@/lib/storage/review-thumbnail.server", () => ({
 
 import {
   finalizePublicSubmission,
+  preparePublicSubmission,
   SubmissionServiceError,
 } from "@/lib/submissions/service.server";
 
@@ -70,6 +76,12 @@ beforeEach(() => {
     error: null,
   });
   mocks.remove.mockResolvedValue({ error: null });
+  mocks.list.mockResolvedValue({ data: [], error: null });
+  mocks.createSignedUpload.mockResolvedValue({
+    bucket: "submission-originals",
+    path: `${input.submissionId}/original.jpg`,
+    token: "signed-upload-token",
+  });
   mocks.verify.mockResolvedValue({
     data: Buffer.from([1, 2, 3]),
     mimeType: "image/webp",
@@ -92,6 +104,36 @@ beforeEach(() => {
   mocks.rpc.mockResolvedValue({
     data: [{ submission_id: input.submissionId, status: "pending_review" }],
     error: null,
+  });
+});
+
+describe("submission preparation", () => {
+  it("accepts the timezone-offset timestamp returned by hosted Postgres", async () => {
+    mocks.maybeSingle.mockResolvedValue({ data: null, error: null });
+    mocks.rpc.mockResolvedValue({
+      data: [{
+        submission_id: input.submissionId,
+        status: "draft",
+        original_path: `${input.submissionId}/original.jpg`,
+        original_extension: "jpg",
+        draft_expires_at: "2026-08-11T09:30:00+00:00",
+      }],
+      error: null,
+    });
+
+    await expect(preparePublicSubmission({
+      displayName: "Staging test",
+      email: "staging@example.invalid",
+      publicationConsent: true,
+      termsAccepted: true,
+      requestToken: input.requestToken,
+      preparedExtension: "jpg",
+    })).resolves.toMatchObject({
+      submissionId: input.submissionId,
+      status: "draft",
+      draftExpiresAt: "2026-08-11T09:30:00+00:00",
+      uploadRequired: true,
+    });
   });
 });
 

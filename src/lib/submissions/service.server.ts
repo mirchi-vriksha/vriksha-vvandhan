@@ -29,7 +29,7 @@ const prepareRpcRowSchema = z.object({
   status: z.enum(["draft", "pending_review"]),
   original_path: z.string().min(1).max(500),
   original_extension: z.enum(["webp", "jpg"]),
-  draft_expires_at: z.iso.datetime(),
+  draft_expires_at: z.iso.datetime({ offset: true }),
 });
 
 const finaliseRpcRowSchema = z.object({
