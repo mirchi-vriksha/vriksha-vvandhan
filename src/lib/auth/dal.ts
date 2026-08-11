@@ -88,7 +88,9 @@ export async function getOptionalStaffSessionWithClient(
 export async function getOptionalStaffSession(): Promise<StaffSession | null> {
   if (isStaffE2EAdapterEnabled()) {
     const role = (await cookies()).get(STAFF_E2E_COOKIE)?.value;
-    if (role === "admin" || role === "reviewer") return staffE2ESession(role);
+    return role === "admin" || role === "reviewer"
+      ? staffE2ESession(role)
+      : null;
   }
   const client = await createServerSupabaseClient();
   return getOptionalStaffSessionWithClient(
