@@ -15,9 +15,9 @@ const manrope = Manrope({
   display: "swap",
 });
 
-const campaignTitle = "Vriksha Vvandhan | Protect the Protector";
+const campaignTitle = "Vriksha Bandhan by Mirchi | Protect the Protector";
 const campaignDescription =
-  "This Raksha Bandhan, join Mirchi’s Vriksha Vvandhan movement and make a promise to protect and nurture a tree.";
+  "Join Mirchi’s Vriksha Bandhan movement and make a promise of protection to a tree this Raksha Bandhan.";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
@@ -33,21 +33,12 @@ export const metadata: Metadata = {
     title: campaignTitle,
     description: campaignDescription,
     url: "/",
-    siteName: "Vriksha Vvandhan",
-    images: [
-      {
-        url: "/opengraph-image.jpg",
-        width: 1200,
-        height: 670,
-        alt: "Vriksha Vvandhan — This Raksha Bandhan, protect the protector",
-      },
-    ],
+    siteName: "Vriksha Bandhan",
   },
   twitter: {
     card: "summary_large_image",
     title: campaignTitle,
     description: campaignDescription,
-    images: ["/opengraph-image.jpg"],
   },
 };
 
@@ -59,7 +50,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-IN" className={`${fraunces.variable} ${manrope.variable}`}>
+    <html
+      lang="en-IN"
+      className={`${fraunces.variable} ${manrope.variable}`}
+      data-scroll-behavior="smooth"
+    >
       <body>{children}</body>
     </html>
   );

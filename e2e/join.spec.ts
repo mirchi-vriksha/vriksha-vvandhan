@@ -9,18 +9,26 @@ test("join page reflects the connected campaign availability and has no console 
 
   const response = await page.goto("/join");
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1, name: "Make your promise visible." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Tie a Rakhi to a Tree" })).toBeVisible();
+  await expect(page.getByText("About Vriksha Bandhan")).toBeVisible();
+  await expect(page.locator("#how-to-participate")).toContainText("Upload & inspire others");
   const form = page.locator("form.public-submission-form");
   if (await form.count()) {
     await expect(form).toBeVisible();
     await expect(page.getByLabel("Display name")).toBeVisible();
+    const instructionBeforeForm = await page.evaluate(() => {
+      const instructions = document.querySelector("#submission-instructions");
+      const formElement = document.querySelector("form.public-submission-form");
+      return Boolean(instructions && formElement && (instructions.compareDocumentPosition(formElement) & Node.DOCUMENT_POSITION_FOLLOWING));
+    });
+    expect(instructionBeforeForm).toBe(true);
   } else {
     await expect(page.getByRole("heading", { name: /Submissions (are temporarily unavailable|opening soon)\./ })).toBeVisible();
   }
   expect(errors).toEqual([]);
 });
 
-for (const width of [360, 390]) {
+for (const width of [320, 360, 375, 390, 430]) {
   test(`join and legal pages have no horizontal overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     for (const path of ["/join", "/campaign-terms", "/privacy"]) {

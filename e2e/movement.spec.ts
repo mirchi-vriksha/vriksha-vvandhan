@@ -4,7 +4,8 @@ import { expect, test } from "@playwright/test";
 test("Movement Wall renders an honest count and safe empty state", async ({ page }) => {
   const response = await page.goto("/movement");
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1, name: "The Vriksha Vvandhan Movement Wall" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Vriksha Bandhan Movement Wall" })).toBeVisible();
+  await expect(page.getByText("Promises of protection, taking root across Mumbai.")).toBeVisible();
   await expect(page.getByText("No approved promises are public yet.")).toBeVisible();
   await expect(page.locator(".movement-page__count strong")).toHaveText(/^(—|\d+)$/);
 });

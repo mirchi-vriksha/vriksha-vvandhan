@@ -10,8 +10,11 @@ test("homepage loads without browser console errors", async ({ page }) => {
   const response = await page.goto("/");
 
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Vriksha Vvandhan");
-  await expect(page.getByText("Protect the protector.", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Vriksha Bandhan");
+  await expect(page.locator(".campaign-hero__tagline")).toHaveText(
+    "It’s time to protect the protector.",
+  );
+  await expect(page.getByText(/Vriksha Vvandhan/i)).toHaveCount(0);
   await expect(page.getByText("This Raksha Bandhan", { exact: true })).toHaveCount(0);
   expect(errors).toEqual([]);
 });
@@ -44,20 +47,19 @@ test("homepage uses the warm campaign canvas and transparent rakhi ornament", as
   expect(surfaces.trackerText).toContain("983");
 });
 
-test("homepage removes the conventional header and keeps both hero journeys", async ({ page }) => {
+test("homepage provides concise navigation and keeps both hero journeys", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
 
-  await expect(page.locator(".site-header")).toHaveCount(0);
-  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Open navigation menu" })).toHaveCount(0);
+  await expect(page.locator(".site-header")).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
 
   await page.locator(".campaign-hero").getByRole("link", { name: "How It Works" }).click();
-  await expect(page).toHaveURL(/#how-it-works$/);
-  await expect(page.locator("#how-it-works")).toBeInViewport();
+  await expect(page).toHaveURL(/\/join#how-to-participate$/);
+  await expect(page.locator("#how-to-participate")).toBeInViewport();
 
   await page.goto("/");
-  await page.locator(".campaign-hero").getByRole("link", { name: "Join the Movement" }).click();
+  await page.locator(".campaign-hero").getByRole("link", { name: "Tie a Rakhi to a Tree" }).click();
   await expect(page).toHaveURL(/\/join$/);
 });
 
@@ -132,7 +134,7 @@ test("hero remains usable at a 200 percent layout-equivalent viewport", async ({
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.locator(".hero-media__frame")).toBeVisible();
   await expect(
-    page.locator(".campaign-hero").getByRole("link", { name: "Join the Movement" }),
+    page.locator(".campaign-hero").getByRole("link", { name: "Tie a Rakhi to a Tree" }),
   ).toBeVisible();
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,

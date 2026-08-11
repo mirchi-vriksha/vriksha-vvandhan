@@ -2,7 +2,7 @@
 
 ## Section 1.1 refinement
 
-The original hero has been redesigned as the premium mobile-first “Living Promise Hero” and then aligned to the campaign-wide light visual system. Mirchi and the temporary Vriksha Vvandhan lockup form a prominent masthead; the concise message, white `417 / 983` tracker with red progress, Rakhi-red action, tree-Rakhi image and internally scrolling Promise Ribbon establish a clear hierarchy. Portrait tablet remains stacked through 959px, while desktop uses image-left/message-right composition. The circular Promise Halo, grain and dark hero gradients were removed. See `docs/HERO_REDESIGN.md` and `docs/LIGHT_VISUAL_SYSTEM.md` for the full rationale.
+The original hero has been redesigned as the premium mobile-first “Living Promise Hero” and then aligned to the campaign-wide light visual system. Mirchi and live HTML `Vriksha Bandhan` text form a prominent masthead; the concise message, dynamic tracker, Rakhi-red action, tree-Rakhi image and internally scrolling Promise Reel establish a clear hierarchy. Portrait tablet remains stacked through 959px, while desktop uses image-left/message-right composition. The circular Promise Halo, grain and dark hero gradients were removed. See `docs/HERO_REDESIGN.md` and `docs/LIGHT_VISUAL_SYSTEM.md` for the full rationale.
 
 ## Section 1.2 refinement
 

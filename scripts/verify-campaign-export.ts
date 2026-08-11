@@ -19,7 +19,7 @@ async function main() {
     consents: [], media: [], certificates: [], emailDeliveries: [], audit: [], targetCount: 983,
   };
   const bytes = await buildCampaignWorkbook(data, { exportedAt: new Date("2026-08-07T10:00:00.000Z"), exportedBy: "Section 5 Verification" });
-  const outputPath = "/private/tmp/Vriksha-Vvandhan-Campaign-Export-Verification.xlsx";
+  const outputPath = "/private/tmp/Vriksha-Bandhan-Campaign-Export-Verification.xlsx";
   await writeFile(outputPath, bytes);
   const parsed = new ExcelJS.Workbook();
   await parsed.xlsx.load(bytes as never);

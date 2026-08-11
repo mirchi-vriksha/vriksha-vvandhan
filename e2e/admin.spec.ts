@@ -120,7 +120,14 @@ test("queue text is usable before one batched private thumbnail response", async
   expect(signingRequests).toHaveLength(1);
   expect(signingRequests[0]).not.toContain("original");
   expect(signingRequests[0]).not.toContain("review-thumb");
-  expect(await page.locator('link[rel="preload"][as="image"]').count()).toBe(0);
+  const imagePreloads = await page
+    .locator('link[rel="preload"][as="image"]')
+    .evaluateAll((links) => links.map((link) => ({
+      href: (link as HTMLLinkElement).href,
+      imageSrcSet: (link as HTMLLinkElement).imageSrcset,
+    })));
+  expect(imagePreloads).toHaveLength(1);
+  expect(decodeURIComponent(JSON.stringify(imagePreloads[0]))).toContain("/brand/mirchi-logo.png");
   expect(errors).toEqual([]);
 });
 

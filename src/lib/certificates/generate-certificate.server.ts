@@ -120,7 +120,7 @@ function drawTrackedText(page: PDFPage, font: PDFFont, line: NameLine) {
 
 export async function generateCertificate(input: CertificateInput): Promise<CertificateResult> {
   const [masterBytes, fontBytes] = await Promise.all([
-    readFile(path.join(process.cwd(), "src/assets/certificate/vriksha-vvandhan-certificate-master.png")),
+    readFile(path.join(process.cwd(), "src/assets/certificate/vriksha-bandhan-certificate-master.png")),
     readFile(path.join(process.cwd(), "src/assets/fonts/Marcellus-Regular.ttf")),
   ]);
   const approvedAt = input.approvedAt instanceof Date ? input.approvedAt : new Date(input.approvedAt);
@@ -129,10 +129,10 @@ export async function generateCertificate(input: CertificateInput): Promise<Cert
   const document = await PDFDocument.create({ updateMetadata: false });
   document.registerFontkit(fontkit);
   document.setTitle(`Vriksha Guardian ${formatGuardianNumber(input.guardianNumber)}`);
-  document.setAuthor("Vriksha Vvandhan by Mirchi");
-  document.setCreator("Vriksha Vvandhan certificate service");
-  document.setProducer(`Vriksha Vvandhan ${CERTIFICATE_TEMPLATE_VERSION}`);
-  document.setSubject("Campaign recognition certificate");
+  document.setAuthor("Vriksha Bandhan by Mirchi");
+  document.setCreator(`Vriksha Bandhan certificate service · ${CERTIFICATE_TEMPLATE_VERSION}`);
+  document.setProducer(`Vriksha Bandhan ${CERTIFICATE_TEMPLATE_VERSION}`);
+  document.setSubject(`Campaign recognition certificate · ${CERTIFICATE_TEMPLATE_VERSION}`);
   document.setCreationDate(approvedAt);
   document.setModificationDate(approvedAt);
 

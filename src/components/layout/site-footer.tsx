@@ -6,15 +6,17 @@ export function SiteFooter() {
       <div className="shell site-footer__inner">
         <LogoLockup />
         <div className="site-footer__campaign">
-          <p>#VrikshaVvandhan</p>
-          <p>This Raksha Bandhan, protect the protector.</p>
-          <nav aria-label="Campaign policies">
+          <p>Vriksha Bandhan by Mirchi</p>
+          <p>It’s time to protect the protector.</p>
+          <nav aria-label="Vriksha Bandhan links">
+            <a href="/join">Tie a Rakhi to a Tree</a>
+            <a href="/movement">Movement Wall</a>
             <a href="/campaign-terms">Campaign terms</a>
             <a href="/privacy">Privacy</a>
           </nav>
         </div>
         <p className="site-footer__copyright">
-          © {new Date().getFullYear()} Mirchi. Campaign website concept.
+          © {new Date().getFullYear()} Mirchi. Vriksha Bandhan.
         </p>
       </div>
     </footer>

@@ -20,9 +20,9 @@ export const PUBLIC_SUBMISSION = {
 
 export const PUBLIC_SUBMISSION_COPY = {
   publicationConsent:
-    "I allow Mirchi to review this submission and, if approved, publish my display name and photograph as part of the Vriksha Vvandhan campaign.",
+    "I allow Mirchi to review this submission and, if approved, publish my display name and photograph as part of the Vriksha Bandhan campaign.",
   termsAcceptance:
-    "I confirm that I have the right to share this photograph and agree to the Vriksha Vvandhan campaign terms.",
+    "I confirm that I have the right to share this photograph and agree to the Vriksha Bandhan campaign terms.",
   emailHelp:
     "We’ll use this address to contact you after review and send your certificate if approved.",
 } as const;
@@ -31,4 +31,3 @@ export const PUBLIC_SUBMISSION_ACCEPT =
   ".jpg,.jpeg,.png,.webp,.heic,.heif,image/jpeg,image/png,image/webp,image/heic,image/heif";
 
 export type PreparedImageExtension = "webp" | "jpg";
-

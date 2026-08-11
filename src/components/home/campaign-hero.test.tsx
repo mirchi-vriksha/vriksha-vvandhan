@@ -11,9 +11,8 @@ describe("CampaignHero", () => {
     expect(screen.getByRole("img", { name: "Mirchi" })).toBeInTheDocument();
     expect(screen.getByText("Presents")).toBeInTheDocument();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 1, name: "Vriksha Vvandhan" })).toBeInTheDocument();
-    expect(screen.getByText("Ek Tasveer. Ek Vaada. Ek Hara Kal.")).toBeInTheDocument();
-    expect(screen.queryByText("Protect the protector.")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Vriksha Bandhan" })).toBeInTheDocument();
+    expect(screen.getByText("It’s time to protect the protector.")).toBeInTheDocument();
     expect(screen.queryByText("This Raksha Bandhan")).not.toBeInTheDocument();
   });
 
@@ -24,13 +23,13 @@ describe("CampaignHero", () => {
     expect(screen.getByRole("img", {
       name: "Campaign promise count is currently unavailable. Target: 983 Vriksha promises.",
     })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Join the Movement" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Tie a Rakhi to a Tree" })).toHaveAttribute(
       "href",
       "/join",
     );
     expect(screen.getByRole("link", { name: "How It Works" })).toHaveAttribute(
       "href",
-      "#how-it-works",
+      "/join#how-to-participate",
     );
   });
 

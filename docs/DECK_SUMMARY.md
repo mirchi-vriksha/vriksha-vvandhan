@@ -1,6 +1,6 @@
 # Campaign Deck Summary
 
-Source reviewed in full: `/Users/jaypandey/Downloads/Mirchi X Vriksha Vvandhan.pptx` (16 slides). The deck is treated as campaign source material and visual direction, not a webpage layout.
+Historical source reviewed in full: `/Users/jaypandey/Downloads/Mirchi X Vriksha Vvandhan.pptx` (16 slides). The original filename and quotations below preserve the former development spelling for provenance; the current official public name is **Vriksha Bandhan**.
 
 ## Slide-by-slide confirmed content
 
@@ -23,8 +23,8 @@ Source reviewed in full: `/Users/jaypandey/Downloads/Mirchi X Vriksha Vvandhan.p
 
 ## Confirmed content used in Section 1
 
-- Official spelling: **Vriksha Vvandhan**.
-- Hashtag: **#VrikshaVvandhan**.
+- Historical deck spelling: **Vriksha Vvandhan**; superseded by the locked official public name **Vriksha Bandhan**.
+- Historical deck hashtag: **#VrikshaVvandhan**; not used in the simplified public experience.
 - Campaign line: **This Raksha Bandhan Protect the Protector**.
 - Core tension, `417 / 983` mock tracker, four-step participation journey, First Rakhi Moment, digital/on-ground concepts, Ped Ka Paigaam sample, and final campaign line.
 - Visual palette and mood: sunlight, ivory paper, tree bark, forest green, Rakhi red and ceremonial gold.

@@ -15,7 +15,10 @@ export function SubmissionAvailability({ state }: { state: "closed" | "unavailab
           ? "The secure submission service is not available right now. No personal details have been collected."
           : "The campaign story is live, while private photograph submissions remain closed until the Mirchi team opens them."}
       </p>
-      <Link className="button button--primary" href="/"><ArrowLeft aria-hidden="true" size={18} /> Back to the Movement</Link>
+      <Link className="button button--primary" href="/">
+        <ArrowLeft aria-hidden="true" size={18} />
+        <span>Back to the Movement</span>
+      </Link>
     </section>
   );
 }

@@ -120,7 +120,7 @@ export function MobileNavigation({ items }: MobileNavigationProps) {
               className="button button--primary mobile-navigation__cta"
               onClick={() => closeMenu({ restoreFocus: false })}
             >
-              Join the Movement
+              Tie a Rakhi to a Tree
             </a>
           </div>
         </div>

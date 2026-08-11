@@ -31,7 +31,7 @@ Run the dry run first and have a second operator confirm the project ref. Never 
 ## Auth settings
 
 - Disable public and anonymous signup; staff users are invite/admin-created only.
-- Minimum password length: at least 12; require a strong mix supported by company policy.
+- Minimum password length: at least 8; require a strong mix supported by company policy.
 - Enable leaked-password protection (Pwned Passwords).
 - Require confirmed email, use company-managed staff addresses, and recommend/require MFA for Admins where operationally possible.
 - Create only approved staff Auth users, then matching active `staff_profiles`; roles live only in `staff_profiles`, never user metadata.

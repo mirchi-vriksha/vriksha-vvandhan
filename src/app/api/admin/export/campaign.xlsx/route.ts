@@ -15,7 +15,7 @@ function exportFilename(now: Date): string {
   const stamp = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
   }).format(now).replace(" ", "-").replace(":", "");
-  return `Vriksha-Vvandhan-Campaign-Export-${stamp}.xlsx`;
+  return `Vriksha-Bandhan-Campaign-Export-${stamp}.xlsx`;
 }
 
 export async function GET(): Promise<Response> {

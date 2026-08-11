@@ -21,7 +21,7 @@ export default async function AdminOverviewPage() {
     cards.push(["Failed Deliveries", counts.certificate_failed + counts.email_failed, "/admin/deliveries?status=failed"]);
   }
   return <>
-    <header className="admin-page-header"><div><p>Vriksha Vvandhan operations</p><h1>Overview</h1></div><AdminRefreshControls refreshedAt={new Date().toISOString()} /></header>
+    <header className="admin-page-header"><div><p>Vriksha Bandhan operations</p><h1>Overview</h1></div><AdminRefreshControls refreshedAt={new Date().toISOString()} /></header>
     <section className="admin-stat-grid" aria-label="Submission counts">{cards.map(([label,count,href]) => <Link href={href} key={label}><span>{label}</span><strong>{count}</strong><small>Open queue</small></Link>)}</section>
     <p className="admin-intro">Oldest unreviewed: {oldestAgeHours === null ? "None" : `${oldestAgeHours} hours`}</p>
     <section className="admin-panel"><div className="admin-panel__heading"><div><p>Review next</p><h2>Latest pending submissions</h2></div><Link href="/admin/submissions?status=pending_review">View queue</Link></div>

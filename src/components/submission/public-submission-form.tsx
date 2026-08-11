@@ -29,6 +29,7 @@ import {
 type FieldErrors = Partial<Record<"displayName" | "email" | "publicationConsent" | "termsAccepted" | "photo" | "turnstile", string>>;
 
 type PublicSubmissionFormProps = {
+  instructionsId?: string;
   turnstile?: {
     enabled: boolean;
     siteKey: string | null;
@@ -41,6 +42,7 @@ async function readApiResponse(response: Response): Promise<unknown> {
 }
 
 export function PublicSubmissionForm({
+  instructionsId,
   turnstile = { enabled: false, siteKey: null, action: "public_submission_prepare" },
 }: PublicSubmissionFormProps) {
   const [displayName, setDisplayName] = useState("");
@@ -226,7 +228,13 @@ export function PublicSubmissionForm({
   const summaryMessages = [...Object.values(fieldErrors).filter(Boolean), apiError?.message].filter(Boolean) as string[];
 
   return (
-    <form className="public-submission-form" ref={formRef} onSubmit={submit} noValidate>
+    <form
+      className="public-submission-form"
+      ref={formRef}
+      onSubmit={submit}
+      noValidate
+      aria-describedby={instructionsId}
+    >
       <SubmissionErrorSummary
         title={apiError ? "We couldn’t complete the submission" : undefined}
         messages={[...new Set(summaryMessages)]}

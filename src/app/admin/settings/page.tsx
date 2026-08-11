@@ -26,7 +26,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
     <section className="admin-panel admin-settings" aria-labelledby="delivery-configuration-title">
       <div><p>Section 5 operations</p><h2 id="delivery-configuration-title">Delivery configuration</h2></div>
       <dl className="admin-settings-status">
-        <div><dt>Certificate template</dt><dd>Installed · vriksha-2026-v1</dd></div>
+        <div><dt>Certificate template</dt><dd>Installed · vriksha-bandhan-2026-v2</dd></div>
         <div><dt>Email sending</dt><dd>{process.env.EMAIL_SENDING_ENABLED === "true" ? "Enabled" : "Disabled (safe default)"}</dd></div>
         <div><dt>Staging recipient guard</dt><dd>{process.env.EMAIL_TEST_RECIPIENT ? "Configured" : "Not configured"}</dd></div>
       </dl>

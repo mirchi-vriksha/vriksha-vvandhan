@@ -61,7 +61,7 @@ export async function publishSubmission(client: unknown, session: StaffSession, 
       p_published_version: variants.version, p_card_path: cardPath,
       p_card_width: variants.card.width, p_card_height: variants.card.height, p_card_bytes: variants.card.bytes,
       p_full_path: fullPath, p_full_width: variants.full.width, p_full_height: variants.full.height, p_full_bytes: variants.full.bytes,
-      p_alt_text: `A Vriksha Vvandhan promise by ${record.display_name ?? "a Vriksha Guardian"}`,
+      p_alt_text: `A Vriksha Bandhan promise by ${record.display_name ?? "a Vriksha Guardian"}`,
     });
     if (error || !data) throw new Error("publication_failed");
   } catch (error) {

@@ -49,8 +49,8 @@ async function expectNoPageOverflow(page: Page, path: string) {
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      await page.goto(path, { waitUntil: "domcontentloaded" });
-      await page.waitForTimeout(100);
+      await page.goto(path, { waitUntil: "domcontentloaded", timeout: 8_000 });
+      if (attempt < 2) await page.waitForTimeout(100);
       layout = await page.evaluate(() => ({
         viewport: document.documentElement.clientWidth,
         content: document.documentElement.scrollWidth,

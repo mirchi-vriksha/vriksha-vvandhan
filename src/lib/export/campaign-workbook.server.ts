@@ -75,11 +75,11 @@ function setupSheet(worksheet: Worksheet, columns: Column[], rows: Record<string
 
 export async function buildCampaignWorkbook(data: CampaignExportData, context: CampaignExportContext): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Vriksha Vvandhan Campaign Desk";
+  workbook.creator = "Vriksha Bandhan Campaign Desk";
   workbook.lastModifiedBy = neutralizeSpreadsheetText(context.exportedBy);
   workbook.created = context.exportedAt;
   workbook.modified = context.exportedAt;
-  workbook.title = "Vriksha Vvandhan Campaign Export";
+  workbook.title = "Vriksha Bandhan Campaign Export";
   workbook.subject = "Sensitive Admin-only campaign operations export";
   workbook.company = "Mirchi";
 
@@ -88,6 +88,7 @@ export async function buildCampaignWorkbook(data: CampaignExportData, context: C
   const activeSubmissions = data.submissions.filter((row) => !row.trashed_at);
   const statusCount = (status: string) => activeSubmissions.filter((row) => row.status === status).length;
   const overviewRows = [
+    ["Campaign", "Vriksha Bandhan"],
     ["Exported At", context.exportedAt],
     ["Exported By", neutralizeSpreadsheetText(context.exportedBy)],
     ["Total Submissions", data.submissions.length],
@@ -107,7 +108,7 @@ export async function buildCampaignWorkbook(data: CampaignExportData, context: C
   const overview = workbook.addWorksheet("Overview", { views: [{ showGridLines: false }] });
   setupSheet(overview, [{ header: "Metric", key: "metric", width: 32 }, { header: "Value", key: "value", width: 30 }], overviewRows);
   overview.getColumn("value").alignment = { horizontal: "right" };
-  overview.getCell("B2").numFmt = "dd mmmm yyyy hh:mm";
+  overview.getCell("B3").numFmt = "dd mmmm yyyy hh:mm";
 
   const submissions = workbook.addWorksheet("Submissions", { views: [{ showGridLines: false }] });
   setupSheet(submissions, [

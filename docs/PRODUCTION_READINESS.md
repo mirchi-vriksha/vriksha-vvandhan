@@ -1,6 +1,6 @@
 # Production readiness scorecard
 
-Status date: 10 August 2026. This scorecard separates engineering evidence from permission to launch. **The campaign is not publicly deployed and is not launch-ready while Gate B, company ownership, and legal approvals remain open.**
+Status date: 11 August 2026. This scorecard separates engineering evidence from permission to launch. **The campaign is not launch-ready while Gate B, company ownership, legal approvals and final visual sign-off remain open.**
 
 | Area | Status | Evidence / condition |
 |---|---|---|
@@ -16,6 +16,7 @@ Status date: 10 August 2026. This scorecard separates engineering evidence from 
 | Legal | BLOCKED | Terms, privacy, consent text, retention, campaign dates and participant support contact require company/legal approval. |
 | Email | BLOCKED | Gate B real Resend domain, sender and explicit-recipient delivery verification has not passed. Email remains fail-closed. |
 | Deployment | BLOCKED | No production project or public deployment was created. Gate B, ownership/legal signoff, production provisioning and preview smoke are required first. |
+| Public brand/content | LOCAL PASS | Official public name is Vriksha Bandhan; concise Home/Join/Movement content, metadata, certificates, email, export and staff branding are implemented. Hosted and company visual sign-off remain required. |
 
 ## Decision
 

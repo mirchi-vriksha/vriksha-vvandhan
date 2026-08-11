@@ -8,14 +8,14 @@ The first viewport now uses this hierarchy:
 
 1. Centered standalone Mirchi logo.
 2. Small ruled `PRESENTS` label.
-3. Two-line `Vriksha Vvandhan` page title.
-4. `Ek Tasveer. Ek Vaada. Ek Hara Kal.` campaign tagline.
+3. Two-line `Vriksha Bandhan` page title.
+4. `It’s time to protect the protector.` campaign tagline.
 5. Existing tree-with-Rakhi campaign photograph.
 6. Live rakhi-inspired promise counter.
-7. Join and How It Works actions.
+7. `Tie a Rakhi to a Tree` and `How It Works` actions.
 8. The existing Promises Already Taking Root reel attached to the hero canvas.
 
-The former sticky homepage header, desktop navigation, mobile menu, top Join button, `This Raksha Bandhan` eyebrow, `Protect the protector.` headline, supporting paragraph, arch image and generic dashboard-like counter are absent from the hero. Their routes and downstream sections remain intact. Other application routes keep their existing navigation architecture.
+The global header is restored as a compact three-destination navigation for Home, Join and Movement Wall, with the primary `Tie a Rakhi to a Tree` action. The unsupported eyebrow, duplicate headline, supporting filler and generic dashboard-like counter remain absent.
 
 ## Desktop composition
 
@@ -54,7 +54,11 @@ Only the hero image is preloaded. The standalone Mirchi logo loads eagerly but i
 
 ## Accessibility
 
-The page keeps one H1, a logical mobile-first DOM order, meaningful image alternatives, an ignored decorative Rakhi image, text-based counter status, 44px-or-larger actions, visible focus indicators and the existing reduced-motion behaviour. The homepage has no hidden or floating navigation control. Join links to `/join`; How It Works links to `#how-it-works`; Movement Wall and other campaign routes remain reachable through existing downstream content and the footer.
+The page keeps one H1, a logical mobile-first DOM order, meaningful image alternatives, an ignored decorative Rakhi image, text-based counter status, 44px-or-larger actions, visible focus indicators and the existing reduced-motion behaviour. Join links to `/join`; How It Works links to `/join#how-to-participate`; Movement Wall and legal routes remain reachable through the header and minimal footer.
+
+## Public content simplification
+
+The development-era campaign story, oversized pillars, duplicate participation block, first-moment feature, channel explainer, second movement gallery, Ped Ka Paigaam preview and repeated final CTA were removed from Home. The approved campaign promise is now one compact block below the existing Promise Reel. About and participation instructions live on `/join`, where they directly support submission.
 
 ## Visual review targets
 

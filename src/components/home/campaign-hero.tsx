@@ -35,7 +35,7 @@ export function CampaignHero({ metric = promiseMetric }: { metric?: CampaignMetr
             <h1 id="campaign-title">
               <span>Vriksha</span>
               {" "}
-              <span>Vvandhan</span>
+              <span>Bandhan</span>
             </h1>
             <p className="campaign-hero__tagline">{heroContent.tagline}</p>
           </div>

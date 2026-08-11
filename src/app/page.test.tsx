@@ -4,16 +4,15 @@ import { describe, expect, it } from "vitest";
 import Home from "@/app/page";
 
 describe("campaign homepage", () => {
-  it("renders the main campaign sections and headings", async () => {
+  it("renders the concise campaign experience", async () => {
     render(await Home());
 
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Vriksha Vvandhan");
-    expect(screen.queryByRole("navigation", { name: "Primary navigation" })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Four steps. One bond that continues." })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "The First Rakhi Moment" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Every promise carries a story." })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Ped Ka Paigaam" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Vriksha Bandhan");
+    expect(screen.getByRole("navigation", { name: "Primary navigation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "983 Trees. 983 Promises. One Greener Mumbai." })).toBeInTheDocument();
+    expect(screen.queryByText(/Ped Ka Paigaam/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/First Rakhi Moment/i)).not.toBeInTheDocument();
   });
 
   it("uses valid in-page destinations for every hash CTA", async () => {

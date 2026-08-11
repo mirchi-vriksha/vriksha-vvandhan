@@ -16,5 +16,5 @@ export function AdminNav({ session }: { session: StaffSession }) {
       { href: "/admin/settings", label: "Settings", icon: Settings },
     ] : []),
   ];
-  return <nav className="admin-nav" aria-label="Campaign Desk"><ul>{items.map(({ href, label, icon: Icon }) => <li key={href}><Link href={href}><Icon size={18} aria-hidden="true" />{label}</Link></li>)}</ul></nav>;
+  return <nav className="admin-nav" aria-label="Vriksha Bandhan Campaign Desk"><ul>{items.map(({ href, label, icon: Icon }) => <li key={href}><Link href={href}><Icon size={18} aria-hidden="true" />{label}</Link></li>)}</ul></nav>;
 }

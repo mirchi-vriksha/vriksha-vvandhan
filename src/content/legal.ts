@@ -3,7 +3,7 @@ export const legalContent = {
     eyebrow: "Campaign terms",
     title: "A clear promise, shared responsibly.",
     intro:
-      "These staging terms describe how the Vriksha Vvandhan submission experience currently works. Final campaign terms remain subject to Mirchi and Times legal approval before launch.",
+      "These staging terms describe how the Vriksha Bandhan submission experience currently works. Final campaign terms remain subject to Mirchi and Times legal approval before launch.",
     sections: [
       {
         title: "What you may submit",
@@ -15,7 +15,7 @@ export const legalContent = {
       },
       {
         title: "If approved",
-        body: "The campaign may publish the approved photograph and display name as part of Vriksha Vvandhan. The original email address and consent evidence are not public.",
+        body: "The campaign may publish the approved photograph and display name as part of Vriksha Bandhan. The original email address and consent evidence are not public.",
       },
       {
         title: "Removal and retention",
@@ -48,4 +48,3 @@ export const legalContent = {
     ],
   },
 } as const;
-

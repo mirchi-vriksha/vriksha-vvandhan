@@ -28,7 +28,7 @@ describe("certificate formatting", () => {
 
   it("builds a private versioned path without PII", () => {
     const path = buildCertificateStoragePath("3f000000-0000-4000-8000-000000000001", 427);
-    expect(path).toBe("3f000000-0000-4000-8000-000000000001/vriksha-guardian-427-v1.pdf");
+    expect(path).toBe("3f000000-0000-4000-8000-000000000001/vriksha-guardian-427-v2.pdf");
     expect(path).not.toContain("Jay");
     expect(buildCertificateFilename(427)).toBe("Vriksha-Guardian-0427.pdf");
   });
@@ -47,6 +47,9 @@ describe("generateCertificate", () => {
     expect(first.sha256).toBe(second.sha256);
     expect(page.getWidth()).toBeCloseTo(841.8898, 2);
     expect(page.getHeight()).toBeCloseTo(595.2756, 2);
+    expect(pdf.getAuthor()).toBe("Vriksha Bandhan by Mirchi");
+    expect(pdf.getCreator()).toContain("vriksha-bandhan-2026-v2");
+    expect(pdf.getSubject()).toContain("vriksha-bandhan-2026-v2");
   });
 
   it("supports Unicode and a long two-line name without truncation", async () => {

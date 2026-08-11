@@ -15,6 +15,7 @@
 - The future count is derived only from active Published, non-test records that count toward the goal.
 - Public participant fields are limited to display name, approved card/full image, Guardian number and published date.
 - Six or more approved entries replace the curated homepage preview; fewer retain clearly labelled campaign inspiration.
+- Official public campaign name: **Vriksha Bandhan**. The historical technical slug remains unchanged.
 
 ## Still unresolved
 
@@ -25,7 +26,7 @@
 5. Campaign geography: India-wide, Mumbai-only or city-by-city.
 6. Approved campaign dates and year.
 7. Celebrity, campaign photography, video and deck-derived media rights for public web use.
-8. Approved standalone Vriksha Vvandhan wordmark, icon and lockup rules.
+8. Approved standalone Vriksha Bandhan wordmark, icon and lockup rules. The current UI uses live HTML text beside the authentic Mirchi logo.
 9. Behaviour after the `983` target is reached, including whether submissions continue and how progress is shown.
 10. Minor-participant policy and final image/media-rights approval.
 11. Production project, production rate limiting, and Turnstile policy.

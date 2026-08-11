@@ -11,12 +11,16 @@ describe("transactional email templates", () => {
     expect(email.text).toContain("before anything appears publicly");
     expect(email.text).not.toContain("has been approved");
     expect(email.html).toContain("review");
+    expect(email.subject).toContain("Vriksha Bandhan");
+    expect(`${email.html}${email.text}`).not.toMatch(/Vvandhan/i);
   });
 
   it("includes the padded Guardian number and certificate wording", () => {
     const email = approvalCertificateEmail("Ravi", 27);
     expect(email.text).toContain("Vriksha Guardian No. 0027");
     expect(email.text).toContain("attached");
+    expect(`${email.html}${email.text}`).toContain("Vriksha Bandhan");
+    expect(`${email.html}${email.text}`).not.toMatch(/Vvandhan/i);
   });
 
   it("keeps rejection participant-facing and escapes HTML", () => {
@@ -25,5 +29,7 @@ describe("transactional email templates", () => {
     expect(email.html).toContain("&lt;without&gt;");
     expect(email.html).not.toContain("rejection_pending_admin");
     expect(email.text).toContain("Please retry");
+    expect(email.subject).toContain("Vriksha Bandhan");
+    expect(`${email.html}${email.text}`).not.toMatch(/Vvandhan/i);
   });
 });

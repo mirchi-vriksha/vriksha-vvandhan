@@ -50,7 +50,7 @@ describe("processEmailDelivery", () => {
     });
     expect(result).toEqual({ outcome: "sent", providerMessageId: "provider-message-1" });
     expect(send.mock.calls[0][2]).toBe(claim.idempotency_key);
-    expect(complete).toHaveBeenCalledWith(claim, "submission-received-v1", "provider-message-1");
+    expect(complete).toHaveBeenCalledWith(claim, "submission-received-v2", "provider-message-1");
   });
 
   it("treats an unclaimable sent delivery as permanently ineligible", async () => {

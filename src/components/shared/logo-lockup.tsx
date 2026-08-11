@@ -28,7 +28,7 @@ export function LogoLockup({
         inverse && "logo-lockup--inverse",
       )}
       role="img"
-      aria-label="Mirchi presents Vriksha Vvandhan"
+      aria-label="Mirchi presents Vriksha Bandhan"
     >
       <Image
         src="/brand/mirchi-logo.png"
@@ -36,6 +36,7 @@ export function LogoLockup({
         width={324}
         height={137}
         sizes={imageSizes[variant]}
+        loading="eager"
         className="logo-lockup__mirchi"
       />
       {layout === "inline" ? (
@@ -47,7 +48,7 @@ export function LogoLockup({
       )}
       <span className="logo-lockup__campaign" data-temporary-campaign-wordmark="true">
         <span>Vriksha</span>
-        <span>Vvandhan</span>
+        <span>Bandhan</span>
       </span>
     </div>
   );

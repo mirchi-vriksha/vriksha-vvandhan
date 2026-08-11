@@ -1,6 +1,8 @@
-# Vriksha Vvandhan
+# Vriksha Bandhan
 
-Vriksha Vvandhan is Mirchi's Raksha Bandhan campaign inviting people to protect a tree. The repository contains the premium campaign site, secure Supabase foundation, private submission flow, invite-only Campaign Desk, and approved public Movement Wall.
+Vriksha Bandhan is Mirchi's Raksha Bandhan campaign inviting people to make a promise of protection to a tree. The repository contains the concise public campaign site, secure Supabase foundation, private submission flow, invite-only Campaign Desk, personalized certificates, and approved public Movement Wall.
+
+The official public campaign name is **Vriksha Bandhan**. The GitHub repository, package name, hosted URL, Supabase project, and other deployed identifiers retain the historical `vriksha-vvandhan` slug to avoid infrastructure churn.
 
 ## Six-section roadmap
 
@@ -9,7 +11,7 @@ Vriksha Vvandhan is Mirchi's Raksha Bandhan campaign inviting people to protect 
 3. **Public submission flow** — display name, email, one privately uploaded photograph, publication consent, terms acceptance, server verification and Pending Review confirmation. Complete and hosted-staging verified; the credentialed smoke evidence is recorded in `docs/SECTION_3_REPORT.md`.
 4. **Internal operations and publication** — staff portal, moderation workflow, Guardian assignment, public Movement Wall and live derived count. Complete and staging-verified.
 5. **Certificates, delivery operations and export** — personalized private PDFs, transactional email, Admin retries/downloads, and sensitive audited XLSX export. Implemented; final staging/CI gates are tracked in `docs/SECTION_5_REPORT.md`.
-6. **Hardening and launch preparation** — Turnstile, abuse controls, scheduled recovery, signed delivery webhooks, responsive/load verification, backups and release runbooks. Engineering in progress; public launch remains blocked by Gate B and company sign-offs.
+6. **Hardening and launch preparation** — Turnstile, abuse controls, scheduled recovery, signed delivery webhooks, responsive/load verification, backups and release runbooks. Engineering complete; public launch remains blocked by Gate B and company sign-offs.
 
 The homepage still builds without Supabase credentials and shows an honest unavailable count rather than fabricated campaign data. Email remains disabled by default even when the rest of the application is configured.
 
@@ -92,7 +94,7 @@ Guarded staging scripts additionally require `SUPABASE_TARGET_ENVIRONMENT=stagin
 
 - Docker is required to apply and execute the local migrations, bucket seed and pgTAP suites.
 - Staff Auth users are provisioned manually; public participants never receive accounts.
-- Legal consent text, retention, approved production sender domain/DNS, geography, campaign dates, media rights, final wordmark and post-983 behaviour remain unresolved.
+- Legal consent text, retention, approved production sender domain/DNS, geography, campaign dates, media rights, final standalone wordmark and post-983 behaviour remain unresolved.
 - Gate B real Resend verification, company ownership, production environment creation, real-device/browser QA and legal/content approvals remain explicit launch blockers.
 
 The hosted staging project has been linked and its Section 2 migrations, RLS,

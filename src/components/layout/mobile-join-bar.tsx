@@ -1,8 +1,8 @@
 export function MobileJoinBar() {
   return (
-    <aside className="mobile-join-bar" aria-label="Join the movement">
-      <span>Protect the protector.</span>
-      <a href="/join">Join now</a>
+    <aside className="mobile-join-bar" aria-label="Tie a Rakhi to a tree">
+      <span>Make a promise of protection.</span>
+      <a href="/join">Tie a Rakhi</a>
     </aside>
   );
 }

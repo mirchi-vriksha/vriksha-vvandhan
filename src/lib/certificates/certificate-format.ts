@@ -1,4 +1,4 @@
-export const CERTIFICATE_TEMPLATE_VERSION = "vriksha-2026-v1";
+export const CERTIFICATE_TEMPLATE_VERSION = "vriksha-bandhan-2026-v2";
 
 const INDIA_TIME_ZONE = "Asia/Kolkata";
 

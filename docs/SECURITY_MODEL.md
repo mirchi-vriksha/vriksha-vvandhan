@@ -8,6 +8,7 @@
 - Row Level Security provides the database read boundary; no broad direct mutation policy is granted even to Admin.
 - The server-only Data Access Layer verifies claims again, loads the active profile and returns only a minimal `StaffSession` DTO.
 - Next.js Proxy only refreshes `/admin` and `/auth` sessions and performs an optimistic verified-identity check. It never queries roles and is not the final authorization boundary.
+- Staff recovery uses a one-time token hash verified server-side, Supabase SSR cookies, and a 15-minute HttpOnly same-site recovery marker. Set-password re-verifies the authenticated user, requires 8 characters, and signs out only the local recovery session after success. Reset requests and errors use generic copy, and the confirmation destination is an exact internal allowlist.
 
 ## Secrets and private data
 
@@ -32,6 +33,8 @@ Section 5 claim/complete/fail RPCs are executable only by `service_role` and re-
 The last pre-Section-6 staging Advisor run had zero Security errors; the exact warning baseline and the new operational migration must be rerun and recorded before completion. Every effective SECURITY DEFINER function is inventoried in `SECURITY_DEFINER_AUDIT.md`. Advisor warnings are never waived solely because they are warnings: the fixed search path, grants, actor source, parameters and output are reviewed individually. Production Advisor results are a launch gate. See the [Supabase Database Linter guidance](https://supabase.com/docs/guides/database/database-linter).
 
 Global response headers add CSP, clickjacking denial, no-sniff, strict referrer policy, constrained browser capabilities and production HSTS. CSP permits only the configured Supabase origin and Cloudflare Turnstile resources required by the application.
+
+An implicit recovery URL containing access and refresh tokens was exposed during staging debugging before the token-hash flow existed. It is treated as compromised: it must not be reused, copied, logged, or committed, and the affected staging session must be revoked before a fresh recovery smoke. See `STAFF_PASSWORD_RECOVERY.md`.
 
 ## Permanent deletion order
 

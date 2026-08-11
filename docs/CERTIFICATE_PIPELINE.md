@@ -2,7 +2,7 @@
 
 ## Approved master and rendering
 
-The renderer uses the company-supplied blank PNG at `src/assets/certificate/vriksha-vvandhan-certificate-master.png` as an immutable full-page background. Its SHA-256 is `7a3bff4074ccd3565e03433edb6c58d6f33e3a83a5e190b817bd7555e2080c6e`. The 1492×1054 asset has the correct A4-landscape ratio but is lower than a 300-DPI print master, so a higher-resolution approved replacement must use a new template version.
+The renderer uses the corrected PNG at `src/assets/certificate/vriksha-bandhan-certificate-master.png` as an immutable full-page background. Its SHA-256 is `c054f51258b0fc806e2a58f6f22c78bcfa89ab17cf0747dff4e9c606af3f7fdf`. The 1492×1054 master cleanly displays **Vriksha Bandhan** in the title, recognition line and footer, and uses the official public tagline. Its dimensions and campaign artwork are unchanged; final company design sign-off remains a launch gate.
 
 `generate-certificate.server.ts` creates a 297×210 mm PDF with `pdf-lib`, embeds the approved artwork, and draws only:
 
@@ -14,11 +14,13 @@ Marcellus is embedded from the project-owned Google Fonts/OFL asset to match the
 
 ## Version and private Storage
 
-The current version is `vriksha-2026-v1`. Private objects use:
+The current version is `vriksha-bandhan-2026-v2`. Private objects use:
 
-`<submission-id>/vriksha-guardian-<guardian-number>-v1.pdf`
+`<submission-id>/vriksha-guardian-<guardian-number>-v2.pdf`
 
 Paths never contain names, emails, tokens, or staff identity. Uploads use `application/pdf`, `upsert: false`, and the private `certificates` bucket. The server downloads the uploaded object and verifies byte size and SHA-256 before completing database state. Admin download creates a new two-minute signed URL; URLs are neither persisted nor logged.
+
+Previously issued v1 PDFs remain immutable in private Storage. A normal generation claim does not regenerate an already generated certificate; Admin regeneration remains an explicit, confirmed operation. New certificates use v2.
 
 ## Claim, retry, and failure isolation
 

@@ -19,10 +19,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: "PLAYWRIGHT_STAFF_ADAPTER=1 npm run dev -- --hostname 127.0.0.1 --port 3000",
-    url: "http://127.0.0.1:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: process.env.PLAYWRIGHT_USE_EXISTING_SERVER === "1"
+    ? undefined
+    : {
+        command: "PLAYWRIGHT_STAFF_ADAPTER=1 npm run dev -- --hostname 127.0.0.1 --port 3000",
+        url: "http://127.0.0.1:3000",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
 });

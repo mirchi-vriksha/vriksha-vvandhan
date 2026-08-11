@@ -33,7 +33,7 @@ describe("Admin campaign export route", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     expect(response.headers.get("cache-control")).toBe("private, no-store, max-age=0");
-    expect(response.headers.get("content-disposition")).toMatch(/^attachment; filename="Vriksha-Vvandhan-Campaign-Export-/);
+    expect(response.headers.get("content-disposition")).toMatch(/^attachment; filename="Vriksha-Bandhan-Campaign-Export-/);
     expect(mocks.requireRole).toHaveBeenCalledWith("admin");
     expect(mocks.rpc).toHaveBeenCalledWith(expect.anything(), "record_campaign_data_export", { p_row_count: 1 });
   });
