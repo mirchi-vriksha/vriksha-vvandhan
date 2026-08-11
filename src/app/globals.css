@@ -224,7 +224,6 @@ svg {
   background: var(--surface);
   color: var(--ink);
   box-shadow: 0 5px 20px rgba(27, 29, 25, 0.04);
-  backdrop-filter: blur(14px);
 }
 
 .site-header__inner {
@@ -344,18 +343,21 @@ svg {
   inset: 0;
   z-index: 100;
   display: flex;
+  min-height: 100dvh;
   justify-content: flex-end;
   background: rgba(27, 29, 25, 0.42);
+  overscroll-behavior: contain;
 }
 
 .mobile-navigation__panel {
-  width: min(92vw, 430px);
-  height: 100%;
+  width: min(88vw, 390px);
+  height: 100dvh;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
   background: var(--surface);
   color: var(--ink);
-  padding: 1.25rem 1.25rem 2rem;
+  padding: max(1.25rem, env(safe-area-inset-top)) 1.25rem max(2rem, env(safe-area-inset-bottom));
   box-shadow: -24px 0 80px rgba(0, 0, 0, 0.24);
   animation: menu-in 220ms ease-out both;
 }

@@ -63,6 +63,34 @@ test("homepage provides concise navigation and keeps both hero journeys", async 
   await expect(page).toHaveURL(/\/join$/);
 });
 
+test("mobile navigation opens as an opaque full-height drawer", async ({ page }) => {
+  await page.setViewportSize({ width: 430, height: 932 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open navigation menu" }).click();
+
+  const drawer = page.getByRole("dialog", { name: "Site navigation" });
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole("link", { name: "Home" })).toBeVisible();
+  await expect(drawer.getByRole("link", { name: "Tie a Rakhi to a Tree" })).toBeVisible();
+
+  const geometry = await drawer.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    return {
+      top: Math.round(bounds.top),
+      bottom: Math.round(bounds.bottom),
+      viewportHeight: document.documentElement.clientHeight,
+      backgroundColor: style.backgroundColor,
+      bodyOverflow: document.body.style.overflow,
+    };
+  });
+
+  expect(geometry.top).toBe(0);
+  expect(geometry.bottom).toBeGreaterThanOrEqual(geometry.viewportHeight);
+  expect(geometry.backgroundColor).toBe("rgb(255, 255, 255)");
+  expect(geometry.bodyOverflow).toBe("hidden");
+});
+
 test("desktop identity is centered in its campaign column and the reel joins the first viewport", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
