@@ -2,7 +2,7 @@
 
 ## Intent
 
-The “Promises already taking root” strip is a slow editorial film reel that carries several campaign photographs from right to left. It extends the existing light hero without changing the masthead, message, tracker, hero image, actions or downstream sections.
+The “Mumbai’s growing wall of gratitude” strip is a slow editorial film reel that carries several campaign photographs from right to left. It extends the existing light hero without changing the masthead, tracker, hero image, actions or downstream sections.
 
 ## Architecture
 

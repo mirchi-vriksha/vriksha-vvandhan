@@ -1966,8 +1966,9 @@ svg {
 }
 
 .join-intro h1 {
-  max-width: none;
+  max-width: 18ch;
   font-size: clamp(2.65rem, 6vw, 5rem);
+  text-wrap: balance;
 }
 
 .join-intro > p:last-child {
@@ -2021,6 +2022,41 @@ svg {
   font-family: var(--font-editorial), Georgia, serif;
   font-size: 1.25rem;
   font-weight: 650;
+}
+
+.join-about__movement {
+  display: grid;
+  gap: 0.28rem;
+  margin-top: 1.25rem;
+  border-left: 2px solid rgba(140, 155, 75, 0.45);
+  padding-left: 0.9rem;
+}
+
+.join-about__movement h3,
+.join-about__movement p {
+  margin: 0;
+}
+
+.join-about__movement h3 {
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.join-about__movement > p:last-child {
+  max-width: 58ch;
+  color: var(--muted-ink);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.join-about__tracker {
+  color: var(--forest-accent);
+  font-family: var(--font-editorial), Georgia, serif;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .join-concepts {
@@ -2099,6 +2135,17 @@ svg {
   line-height: 1.25;
 }
 
+.join-how__copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.join-how__copy small {
+  color: var(--muted-ink);
+  font-size: clamp(0.52rem, 1.25vw, 0.66rem);
+  line-height: 1.3;
+}
+
 .join-submission > .join-section-label {
   margin-bottom: 0.8rem;
 }
@@ -2161,6 +2208,19 @@ svg {
   max-width: 25ch;
   font-size: clamp(2.25rem, 5.5vw, 4.6rem);
   line-height: 1;
+}
+
+.movement-page__intro {
+  display: grid;
+  gap: 0.18rem;
+  max-width: 650px;
+  color: var(--muted-ink);
+  font-size: 0.9rem;
+}
+
+.movement-page__intro span:last-child {
+  color: var(--forest-accent);
+  font-weight: 800;
 }
 
 .movement-page__count {

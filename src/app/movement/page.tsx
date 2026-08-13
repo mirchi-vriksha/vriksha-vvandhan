@@ -7,17 +7,17 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { getPublicCampaignSummary, getPublicMovementEntries } from "@/lib/public-campaign/data";
 
 export const metadata: Metadata = {
-  title: "Vriksha Bandhan Movement Wall",
-  description: "Meet the approved Vriksha Guardians whose promises are taking root.",
+  title: "A Wall of Gratitude | Vriksha Bandhan",
+  description: "Every Rakhi tells a story on Mumbai’s growing Wall of Gratitude.",
   alternates: { canonical: "/movement" },
   openGraph: {
-    title: "Vriksha Bandhan Movement Wall",
-    description: "Promises of protection, taking root across Mumbai.",
+    title: "A Wall of Gratitude | Vriksha Bandhan",
+    description: "Every picture celebrates a bond on Mumbai’s growing Wall of Gratitude.",
     url: "/movement",
   },
   twitter: {
-    title: "Vriksha Bandhan Movement Wall",
-    description: "Promises of protection, taking root across Mumbai.",
+    title: "A Wall of Gratitude | Vriksha Bandhan",
+    description: "Every picture celebrates a bond on Mumbai’s growing Wall of Gratitude.",
   },
 };
 
@@ -33,14 +33,19 @@ export default async function MovementPage() {
       <SiteHeader movementWallEnabled />
       <main className="movement-page" id="movement-wall">
         <header className="shell movement-page__header">
-          <p>Promises of protection, taking root across Mumbai.</p>
-          <h1>Vriksha Bandhan Movement Wall</h1>
-          <div className="movement-page__count" aria-label={summary ? `${summary.current_count} of ${summary.target_count} ${summary.metric_label}` : "Campaign tracker updating"}>
+          <p>Movement Wall</p>
+          <h1>A Wall of Gratitude</h1>
+          <div className="movement-page__intro">
+            <span>Every Rakhi tells a story.</span>
+            <span>Every picture celebrates a bond.</span>
+            <span>Together, they create Mumbai’s growing wall of gratitude.</span>
+          </div>
+          <div className="movement-page__count" aria-label={summary ? `${summary.current_count} of ${summary.target_count} trees celebrated` : "Campaign tracker updating"}>
             <strong>{summary?.current_count ?? "—"}</strong><span>/ {summary?.target_count ?? 983}</span>
-            <small>{summary?.metric_label ?? "Tracker updating"}</small>
+            <small>{summary ? "trees celebrated" : "Tracker updating"}</small>
           </div>
         </header>
-        <section className="shell" aria-label="Approved Vriksha Guardian promises">
+        <section className="shell" aria-label="Approved Vriksha Bandhan moments">
           <MovementWall initialEntries={entries} />
         </section>
       </main>

@@ -14,9 +14,11 @@ import {
   formatGuardianNumber,
 } from "@/lib/certificates/certificate-format";
 
-const A4_LANDSCAPE = { width: 841.8898, height: 595.2756 } as const;
-const NAME_CENTER_X = 390;
-const NAME_MAX_WIDTH = 435;
+// The supplied 1536 × 1024 master is 3:2. Keep the PDF page at the same ratio
+// so the certificate artwork is never stretched.
+const CERTIFICATE_PAGE = { width: 864, height: 576 } as const;
+const NAME_CENTER_X = 432;
+const NAME_MAX_WIDTH = 480;
 const NAME_MAX_SIZE = 42;
 const NAME_MIN_SIZE = 18;
 
@@ -82,7 +84,7 @@ export function layoutCertificateName(font: PDFFont, rawName: string): NameLine[
   const single = fitSize(font, name, NAME_MAX_WIDTH, NAME_MAX_SIZE);
   if (single) {
     const width = trackedWidth(font, name, single.size, single.tracking);
-    return [{ text: name, ...single, x: NAME_CENTER_X - width / 2, y: 284 }];
+    return [{ text: name, ...single, x: NAME_CENTER_X - width / 2, y: 285 }];
   }
 
   for (const [first, second] of splitCandidates(name)) {
@@ -92,8 +94,8 @@ export function layoutCertificateName(font: PDFFont, rawName: string): NameLine[
     const size = Math.min(firstFit.size, secondFit.size);
     const tracking = trackingForSize(size);
     return [
-      { text: first, size, tracking, x: NAME_CENTER_X - trackedWidth(font, first, size, tracking) / 2, y: 303 },
-      { text: second, size, tracking, x: NAME_CENTER_X - trackedWidth(font, second, size, tracking) / 2, y: 279 },
+      { text: first, size, tracking, x: NAME_CENTER_X - trackedWidth(font, first, size, tracking) / 2, y: 304 },
+      { text: second, size, tracking, x: NAME_CENTER_X - trackedWidth(font, second, size, tracking) / 2, y: 280 },
     ];
   }
 
@@ -136,21 +138,20 @@ export async function generateCertificate(input: CertificateInput): Promise<Cert
   document.setCreationDate(approvedAt);
   document.setModificationDate(approvedAt);
 
-  const page = document.addPage([A4_LANDSCAPE.width, A4_LANDSCAPE.height]);
+  const page = document.addPage([CERTIFICATE_PAGE.width, CERTIFICATE_PAGE.height]);
   const [master, font] = await Promise.all([
     document.embedPng(Uint8Array.from(masterBytes)),
     document.embedFont(Uint8Array.from(fontBytes), { subset: true }),
   ]);
-  page.drawImage(master, { x: 0, y: 0, width: A4_LANDSCAPE.width, height: A4_LANDSCAPE.height });
+  page.drawImage(master, { x: 0, y: 0, width: CERTIFICATE_PAGE.width, height: CERTIFICATE_PAGE.height });
 
   for (const line of layoutCertificateName(font, input.displayName)) {
     drawTrackedText(page, font, line);
   }
 
   const guardianNumber = formatGuardianNumber(input.guardianNumber);
-  drawCentered(page, font, guardianNumber, 385.5, 143.5, 31.5);
-  drawCentered(page, font, formatCertificateDate(approvedAt), 132.5, 72.5, 12.5);
-  drawCentered(page, font, guardianNumber, 379.5, 30.2, 9.5);
+  drawCentered(page, font, guardianNumber, 414, 160, 31.5);
+  drawCentered(page, font, formatCertificateDate(approvedAt), 709, 76, 12.5);
 
   const bytes = await document.save({
     addDefaultPage: false,

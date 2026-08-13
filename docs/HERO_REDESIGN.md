@@ -9,7 +9,7 @@ The first viewport now uses this hierarchy:
 1. Centered standalone Mirchi logo.
 2. Small ruled `PRESENTS` label.
 3. Two-line `Vriksha Bandhan` page title.
-4. `It’s time to protect the protector.` campaign tagline.
+4. `It’s time to celebrate the ones who’ve always been there for us.` campaign tagline.
 5. Existing tree-with-Rakhi campaign photograph.
 6. Live rakhi-inspired promise counter.
 7. `Tie a Rakhi to a Tree` and `How It Works` actions.
@@ -27,7 +27,7 @@ At 1440×900 the reel begins inside the first viewport and the complete hero sta
 
 `RakhiPromiseCounter` receives the existing typed `CampaignMetric`. It never owns or fabricates campaign data. The supplied premium Rakhi artwork is used only as an empty decorative frame with `alt=""`; the current count, target and metric label remain accessible HTML centered above it. The former CSS/SVG ring, thread, bead and tassel construction has been removed.
 
-The component exposes a concise screen-reader label such as `27 of 983 Vriksha promises completed.` When the public summary is unavailable it shows an em dash and explicitly announces that the count is unavailable while retaining the real configured target.
+The component exposes a concise screen-reader label such as `27 of 983 trees celebrated.` When the public summary is unavailable it shows an em dash and explicitly announces that the count is unavailable while retaining the real configured target.
 
 ## Responsive behaviour
 

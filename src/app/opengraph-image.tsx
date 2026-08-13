@@ -3,7 +3,7 @@ import path from "node:path";
 
 import { ImageResponse } from "next/og";
 
-export const alt = "Vriksha Bandhan by Mirchi — It’s time to protect the protector.";
+export const alt = "Vriksha Bandhan by Mirchi — 983 Trees. One Frequency. Infinite Gratitude.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -30,7 +30,7 @@ export default async function OpenGraphImage() {
               Vriksha Bandhan
             </div>
             <div style={{ marginTop: "26px", fontSize: 34, color: "#58753c" }}>
-              It’s time to protect the protector.
+              It’s time to celebrate the ones who’ve always been there for us.
             </div>
           </div>
           <div
@@ -51,7 +51,7 @@ export default async function OpenGraphImage() {
           </div>
         </div>
         <div style={{ display: "flex", fontSize: 22, letterSpacing: "3px", textTransform: "uppercase" }}>
-          983 Trees · 983 Promises · One Greener Mumbai
+          983 Trees · One Frequency · Infinite Gratitude
         </div>
       </div>
     </div>,

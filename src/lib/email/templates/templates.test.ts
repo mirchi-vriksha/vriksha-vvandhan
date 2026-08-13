@@ -15,9 +15,9 @@ describe("transactional email templates", () => {
     expect(`${email.html}${email.text}`).not.toMatch(/Vvandhan/i);
   });
 
-  it("includes the padded Guardian number and certificate wording", () => {
+  it("includes the unpadded Guardian number and certificate wording", () => {
     const email = approvalCertificateEmail("Ravi", 27);
-    expect(email.text).toContain("Vriksha Guardian No. 0027");
+    expect(email.text).toContain("Vriksha Guardian No. 27");
     expect(email.text).toContain("attached");
     expect(`${email.html}${email.text}`).toContain("Vriksha Bandhan");
     expect(`${email.html}${email.text}`).not.toMatch(/Vvandhan/i);

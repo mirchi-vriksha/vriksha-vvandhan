@@ -10,7 +10,7 @@ describe("campaign homepage", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Vriksha Bandhan");
     expect(screen.getByRole("navigation", { name: "Primary navigation" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "983 Trees. 983 Promises. One Greener Mumbai." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "983 Trees. One Frequency. Infinite Gratitude." })).toBeInTheDocument();
     expect(screen.queryByText(/Ped Ka Paigaam/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/First Rakhi Moment/i)).not.toBeInTheDocument();
   });

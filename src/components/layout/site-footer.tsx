@@ -9,7 +9,7 @@ export async function SiteFooter({ movementWallEnabled }: { movementWallEnabled?
         <LogoLockup />
         <div className="site-footer__campaign">
           <p>Vriksha Bandhan by Mirchi</p>
-          <p>It’s time to protect the protector.</p>
+          <p>983 Trees. One Frequency. Infinite Gratitude.</p>
           <nav aria-label="Vriksha Bandhan links">
             <a href="/join">Tie a Rakhi to a Tree</a>
             {enabled && <a href="/movement">Movement Wall</a>}

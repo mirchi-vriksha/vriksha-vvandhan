@@ -5,16 +5,18 @@ The official public campaign name is **Vriksha Bandhan**. This map records how t
 | Source copy | Page | Implemented copy | Reason for adaptation |
 |---|---|---|---|
 | Vriksha Bandhan | Home, Join, Movement, legal, staff, email, certificate and export | Vriksha Bandhan | Locked official public name. |
-| Protect the protector | Home hero | “It’s time to protect the protector.” | Exact approved hero line; duplicate protection headlines were removed. |
+| Celebrate the ones who have always been there | Home hero | “It’s time to celebrate the ones who’ve always been there for us.” | Exact revised hero line; duplicate campaign headlines remain removed. |
 | Tie a Rakhi to a Tree | Home and global navigation | “Tie a Rakhi to a Tree” → `/join` | Gives the campaign one clear primary action. |
-| 983 Tree Tracker | Home and Movement | Live `[current] of [target] VRIKSHA PROMISES` | Values stay derived from campaign settings and published eligible records; no hard-coded current count. |
-| 983 Trees. 983 Promises. One Greener Mumbai. | Home and Join | Same campaign promise | Approved campaign statement, shown once per decision context. |
-| This Raksha Bandhan, protect those who protect us | Join About | “Trees protect us every day. This Raksha Bandhan, Mirchi is inviting Mumbai to return that promise of protection — by tying a Rakhi to a tree and making that promise visible.” | Shortened and avoids unsupported environmental metrics. |
-| A Rakhi. A promise of protection. | Join About | Same concept | Supported by the campaign action. |
-| An Identity. Every tree gets a name and a story. | Join About | “An Identity. Every tree becomes part of the movement.” | The MVP does not collect a tree name or story. |
-| A Protector. Every tree gets a guardian. | Join About | “A Guardian. Every approved promise receives a Vriksha Guardian identity.” | Matches moderation, Guardian allocation and certificate behavior. |
+| 983 Tree Tracker | Home and Movement | Live `[current] of [target] TREES CELEBRATED` | Values stay derived from campaign settings and published eligible records; no hard-coded current count. |
+| 983 Trees. One Frequency. Infinite Gratitude. | Home and Join | Same campaign promise | Revised campaign statement, shown once per decision context. |
+| A Rakhi. A Gesture of Gratitude. | Join About | Revised movement introduction | Frames participation as celebration and gratitude. |
+| 98.3 Mirchi begins the movement | Join About | The Mirchi Movement block | Keeps the on-ground 983-tree commitment explicit. |
+| Turn Gratitude Into a Green Bond. | Join | Guardian page headline | Connects the public submission action to the Guardian identity. |
+| A Rakhi. A gesture of appreciation. | Join About | Same concept | Supported by the campaign action. |
+| An Identity. A tree worth celebrating. | Join About | Same concept | Avoids claiming that the MVP collects a tree name or story. |
+| A Guardian. Someone who chooses to honour the bond. | Join About | Same concept | Matches moderation, Guardian allocation and certificate behavior. |
 | Join; Find a tree; Tie a Rakhi; Click a picture; Upload & inspire others | Join | Five compact numbered steps | Moves the only participation explanation beside the form. |
-| Adopt a tree | Join | “Find a tree” and “make a promise of protection” | Avoids legal ownership or formal adoption implications. |
+| Choose a tree to celebrate | Join | “Find a tree” and “choose a tree to celebrate” | Avoids legal ownership or formal adoption implications. |
 | Campaign gallery | Home and Movement | Existing Promise Reel on Home; approved entries on Movement Wall | Avoids a duplicate homepage gallery and keeps public entries authoritative. |
 | Ped Ka Paigaam | Removed from public site | Not implemented | Not supported by the approved current content source. |
 

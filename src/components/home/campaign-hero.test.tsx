@@ -12,7 +12,7 @@ describe("CampaignHero", () => {
     expect(screen.getByText("Presents")).toBeInTheDocument();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("heading", { level: 1, name: "Vriksha Bandhan" })).toBeInTheDocument();
-    expect(screen.getByText("It’s time to protect the protector.")).toBeInTheDocument();
+    expect(screen.getByText("It’s time to celebrate the ones who’ve always been there for us.")).toBeInTheDocument();
     expect(screen.queryByText("This Raksha Bandhan")).not.toBeInTheDocument();
   });
 
@@ -21,7 +21,7 @@ describe("CampaignHero", () => {
 
     expect(screen.getByText("—")).toBeInTheDocument();
     expect(screen.getByRole("img", {
-      name: "Campaign promise count is currently unavailable. Target: 983 Vriksha promises.",
+      name: "Campaign promise count is currently unavailable. Target: 983 trees celebrated.",
     })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Tie a Rakhi to a Tree" })).toHaveAttribute(
       "href",
@@ -34,18 +34,18 @@ describe("CampaignHero", () => {
   });
 
   it("renders live count and target values in the rakhi counter", () => {
-    render(<CampaignHero metric={{ current: 27, target: 983, label: "Vriksha promises" }} />);
+    render(<CampaignHero metric={{ current: 27, target: 983, label: "trees celebrated" }} />);
 
     expect(screen.getByText("27")).toBeInTheDocument();
     expect(screen.getByRole("img", {
-      name: "27 of 983 Vriksha promises completed.",
+      name: "27 of 983 trees celebrated.",
     })).toBeInTheDocument();
   });
 
   it("renders the typed Promise Ribbon without the retired Promise Halo", () => {
     const { container } = render(<CampaignHero />);
 
-    const ribbon = screen.getByRole("region", { name: "Promises already taking root" });
+    const ribbon = screen.getByRole("region", { name: "Mumbai’s growing wall of gratitude" });
     expect(ribbon.querySelectorAll(".promise-reel__sequence:not([aria-hidden]) figure")).toHaveLength(
       heroPromiseImages.length,
     );

@@ -16,13 +16,14 @@ describe("Vriksha Bandhan join page", () => {
   it("keeps the approved explanation compact and the instructions before the unchanged form", async () => {
     const { container } = render(await JoinPage());
 
-    expect(screen.getByRole("heading", { level: 1, name: "Tie a Rakhi to a Tree" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 2, name: "About Vriksha Bandhan" })).toBeInTheDocument();
-    expect(screen.getByText("983 Trees. 983 Promises. One Greener Mumbai.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Turn Gratitude Into a Green Bond." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "A Rakhi. A Gesture of Gratitude." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "The Mirchi Movement" })).toBeInTheDocument();
+    expect(screen.getByText("983 Trees. One Frequency. Infinite Gratitude.")).toBeInTheDocument();
     expect(container.querySelectorAll("#how-to-participate li")).toHaveLength(5);
-    expect(screen.getByText("Upload & inspire others")).toBeInTheDocument();
+    expect(screen.getByText("Upload it & inspire others.")).toBeInTheDocument();
 
-    const instructions = screen.getByText(/Upload a clear photograph of your Rakhi tied to a tree/);
+    const instructions = screen.getByText(/Upload a clear photograph of your Vriksha Bandhan moment/);
     const form = container.querySelector("form.public-submission-form");
     expect(form).not.toBeNull();
     expect(instructions.compareDocumentPosition(form!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);

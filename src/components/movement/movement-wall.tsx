@@ -54,8 +54,8 @@ export function MovementWall({ initialEntries }: { initialEntries: PublicMovemen
     return (
       <div className="movement-empty">
         <ImageIcon aria-hidden="true" />
-        <h2>No approved promises are public yet.</h2>
-        <p>The movement is just beginning.</p>
+        <h2>No moments of gratitude are public yet.</h2>
+        <p>The wall is just beginning.</p>
       </div>
     );
   }
@@ -81,7 +81,7 @@ export function MovementWall({ initialEntries }: { initialEntries: PublicMovemen
       {!ended && (
         <div className="movement-load-more">
           <button className="button button--light" type="button" disabled={loading} onClick={loadMore}>
-            {loading ? "Loading promises…" : error ? "Retry loading" : "Load more promises"}
+            {loading ? "Loading moments…" : error ? "Retry loading" : "Load more moments"}
           </button>
           {error && <p role="alert">The next promises could not be loaded. Please try again.</p>}
         </div>

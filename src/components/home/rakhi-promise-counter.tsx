@@ -13,7 +13,7 @@ export function RakhiPromiseCounter({ metric }: RakhiPromiseCounterProps) {
     : 0;
   const percentage = Math.round(progress * 100);
   const accessibleLabel = available
-    ? `${metric.current} of ${metric.target} ${metric.label} completed.`
+    ? `${metric.current} of ${metric.target} ${metric.label}.`
     : `Campaign promise count is currently unavailable. Target: ${metric.target} ${metric.label}.`;
 
   return (

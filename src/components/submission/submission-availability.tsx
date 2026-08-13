@@ -6,7 +6,7 @@ export function SubmissionAvailability({ state }: { state: "closed" | "unavailab
   return (
     <section className="submission-availability" aria-labelledby="submission-availability-title">
       {unavailable ? <CloudOff aria-hidden="true" size={42} /> : <Clock3 aria-hidden="true" size={42} />}
-      <p>{unavailable ? "Please try again soon" : "The next promise begins shortly"}</p>
+      <p>{unavailable ? "Please try again soon" : "The next moment begins shortly"}</p>
       <h2 id="submission-availability-title">
         {unavailable ? "Submissions are temporarily unavailable." : "Submissions opening soon."}
       </h2>
