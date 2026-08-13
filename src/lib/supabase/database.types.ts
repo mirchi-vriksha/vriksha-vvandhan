@@ -524,6 +524,7 @@ export type Database = {
           is_test: boolean
           public_request_token_hash: string | null
           published_at: string | null
+          show_on_movement_wall: boolean
           rejected_at: string | null
           rejection_comment: string | null
           rejection_confirmed_at: string | null
@@ -550,6 +551,7 @@ export type Database = {
           is_test?: boolean
           public_request_token_hash?: string | null
           published_at?: string | null
+          show_on_movement_wall?: boolean
           rejected_at?: string | null
           rejection_comment?: string | null
           rejection_confirmed_at?: string | null
@@ -576,6 +578,7 @@ export type Database = {
           is_test?: boolean
           public_request_token_hash?: string | null
           published_at?: string | null
+          show_on_movement_wall?: boolean
           rejected_at?: string | null
           rejection_comment?: string | null
           rejection_confirmed_at?: string | null
@@ -889,6 +892,10 @@ export type Database = {
           p_published_version: string
           p_submission_id: string
         }
+        Returns: undefined
+      }
+      set_movement_wall_visibility: {
+        Args: { p_submission_id: string; p_visible: boolean }
         Returns: undefined
       }
       trash_submission: {

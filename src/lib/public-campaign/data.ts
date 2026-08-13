@@ -14,7 +14,7 @@ const summaryRowSchema = z.object({
 const movementRowSchema = z.object({
   guardian_number: z.coerce.number().int().positive(),
   display_name: z.string().min(1).max(100),
-  published_at: z.iso.datetime(),
+  published_at: z.iso.datetime({ offset: true }),
   card_path: z.string().min(1),
   card_width: z.coerce.number().int().positive(),
   card_height: z.coerce.number().int().positive(),

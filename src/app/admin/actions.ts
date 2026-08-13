@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 
@@ -8,7 +8,7 @@ import { requireRole, requireStaff } from "@/lib/auth/dal";
 import { processApprovalDelivery, processSubmissionDelivery } from "@/lib/email/delivery-orchestration.server";
 import { publishSubmission } from "@/lib/moderation/publication.server";
 import { generatePublicVariants } from "@/lib/moderation/publication-image.server";
-import { deletionSchema, rejectionSchema, reviewFieldsSchema, submissionIdSchema } from "@/lib/moderation/schemas";
+import { deletionSchema, movementWallVisibilitySchema, rejectionSchema, reviewFieldsSchema, submissionIdSchema } from "@/lib/moderation/schemas";
 import { CAMPAIGN_PUBLIC_TAG } from "@/lib/public-campaign/data";
 import { PUBLISHED_IMAGES_BUCKET, SUBMISSION_ORIGINALS_BUCKET, CERTIFICATES_BUCKET } from "@/lib/storage/buckets";
 import { buildPublishedCardPath, buildPublishedFullPath, parseStoredOriginalPath, parseStoredReviewThumbnailPath } from "@/lib/storage/paths";
@@ -49,6 +49,7 @@ export async function recommendRejectionAction(formData: FormData) {
   const { error } = await callUntypedRpc(client, "recommend_submission_rejection", { p_submission_id: input.submissionId, p_comment: input.comment });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/submissions/${input.submissionId}`);
+  redirect(`/admin/submissions/${input.submissionId}?success=rejection-recommended`);
 }
 
 export async function confirmRejectionAction(formData: FormData) {
@@ -64,6 +65,28 @@ export async function confirmRejectionAction(formData: FormData) {
     });
   });
   revalidatePath(`/admin/submissions/${input.submissionId}`);
+  redirect(`/admin/submissions/${input.submissionId}?success=rejected`);
+}
+
+export async function setMovementWallVisibilityAction(formData: FormData) {
+  await requireStaff();
+  const input = movementWallVisibilitySchema.parse({
+    submissionId: formData.get("submissionId"),
+    visible: formData.get("visible"),
+  });
+  const state = input.visible ? "visible" : "hidden";
+  if (isStaffE2EAdapterEnabled()) redirect(`/admin/submissions/${input.submissionId}?success=movement-${state}`);
+  const client = await createServerSupabaseClient();
+  const { error } = await callUntypedRpc(client, "set_movement_wall_visibility", {
+    p_submission_id: input.submissionId,
+    p_visible: input.visible,
+  });
+  if (error) throw new Error(error.message);
+  updateTag(CAMPAIGN_PUBLIC_TAG);
+  revalidatePath("/");
+  revalidatePath("/movement");
+  revalidatePath(`/admin/submissions/${input.submissionId}`);
+  redirect(`/admin/submissions/${input.submissionId}?success=movement-${state}`);
 }
 
 export async function trashSubmissionAction(formData: FormData) {

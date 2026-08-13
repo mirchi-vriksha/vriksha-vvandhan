@@ -134,7 +134,7 @@ describe("public submission form", () => {
     resolvePrepare(new Response(JSON.stringify({
       submissionId: "00000000-0000-4000-8000-000000000001",
       status: "draft",
-      draftExpiresAt: "2026-08-07T00:00:00.000Z",
+      draftExpiresAt: "2026-08-12T09:45:18.17656+00:00",
       uploadRequired: true,
       upload: {
         bucket: "submission-originals",

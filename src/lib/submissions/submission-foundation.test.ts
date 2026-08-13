@@ -17,6 +17,7 @@ import {
   consentSchema,
   displayNameSchema,
   emailSchema,
+  prepareSubmissionResponseSchema,
   prepareSubmissionRequestSchema,
   storageDescriptorSchema,
 } from "@/lib/submissions/schemas";
@@ -83,6 +84,20 @@ describe("public submission validation", () => {
     }).success).toBe(false);
     expect(toPublicApiError("temporarily_unavailable")).not.toHaveProperty("details");
     expect(mapDatabaseError({ message: "password=secret database exploded" })).toBe("temporarily_unavailable");
+  });
+
+  it("accepts the timezone-offset expiry returned by hosted Postgres", () => {
+    expect(prepareSubmissionResponseSchema.safeParse({
+      submissionId: "00000000-0000-4000-8000-000000000001",
+      status: "draft",
+      draftExpiresAt: "2026-08-12T09:45:18.17656+00:00",
+      uploadRequired: true,
+      upload: {
+        bucket: "submission-originals",
+        path: "00000000-0000-4000-8000-000000000001/original.webp",
+        token: "signed-token",
+      },
+    }).success).toBe(true);
   });
 });
 

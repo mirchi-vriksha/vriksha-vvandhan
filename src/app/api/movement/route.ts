@@ -4,7 +4,7 @@ import { z } from "zod";
 import { getPublicMovementEntries } from "@/lib/public-campaign/data";
 
 const querySchema = z.object({
-  beforePublishedAt: z.iso.datetime(),
+  beforePublishedAt: z.iso.datetime({ offset: true }),
   beforeGuardianNumber: z.coerce.number().int().positive(),
 });
 

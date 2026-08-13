@@ -61,7 +61,7 @@ export const prepareSubmissionResponseSchema = z
   .object({
     submissionId: z.uuid(),
     status: z.enum(["draft", "pending_review"]),
-    draftExpiresAt: z.iso.datetime(),
+    draftExpiresAt: z.iso.datetime({ offset: true }),
     uploadRequired: z.boolean(),
     upload: storageDescriptorSchema.optional(),
   })

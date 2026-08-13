@@ -214,7 +214,7 @@ export async function getSubmissionDetail(id: string) {
     const fixture = e2eQueueFixtures().find((item) => item.id === id);
     if (!fixture) return null;
     const record = {
-      id:fixture.id,status:fixture.status,display_name:fixture.display_name,submitted_at:fixture.submitted_at,guardian_number:fixture.guardian_number,
+      id:fixture.id,status:fixture.status,display_name:fixture.display_name,submitted_at:fixture.submitted_at,guardian_number:fixture.guardian_number,show_on_movement_wall:true,
       rejection_comment:fixture.status === "rejection_pending_admin" ? "Please review this generated test image." : null,
       rejection_recommended_at:fixture.status === "rejection_pending_admin" ? "2026-08-06T11:00:00.000Z" : null,rejected_at:null,trashed_at:fixture.trashed_at,
       submission_consents:{publication_consent:true,terms_accepted:true,accepted_at:E2E_SUBMITTED_AT},
@@ -224,7 +224,7 @@ export async function getSubmissionDetail(id: string) {
     return { record, reviewThumbnail:{bucket:"submission-originals",path:`${fixture.id}/review-thumb.webp`,signedUrl:"/campaign/guardian-preview.webp",expiresIn:600}, reviewImage:{bucket:"submission-originals",path:`${fixture.id}/original.webp`,signedUrl:"/campaign/guardian-preview.webp",expiresIn:600}, email:session.role === "admin" ? "participant@example.test" : null, audit:session.role === "admin" ? [{id:1,action:"submission.test_fixture",created_at:E2E_SUBMITTED_AT}] : [], session };
   }
   const client = await createServerSupabaseClient();
-  const { data, error } = await client.from("submissions").select("id,status,display_name,submitted_at,guardian_number,rejection_comment,rejection_recommended_at,rejected_at,trashed_at,submission_consents(publication_consent,terms_accepted,accepted_at),submission_media(status,original_path,original_mime_type,original_bytes,original_width,original_height,review_thumbnail_path,review_thumbnail_width,review_thumbnail_height,review_thumbnail_bytes,focal_x,focal_y,published_card_path,published_full_path),certificates(id,status,template_version,generated_at,last_error_code),email_deliveries(id,kind,status,sent_at,last_error_code)").eq("id", id).maybeSingle();
+  const { data, error } = await client.from("submissions").select("id,status,display_name,submitted_at,guardian_number,show_on_movement_wall,rejection_comment,rejection_recommended_at,rejected_at,trashed_at,submission_consents(publication_consent,terms_accepted,accepted_at),submission_media(status,original_path,original_mime_type,original_bytes,original_width,original_height,review_thumbnail_path,review_thumbnail_width,review_thumbnail_height,review_thumbnail_bytes,focal_x,focal_y,published_card_path,published_full_path),certificates(id,status,template_version,generated_at,last_error_code),email_deliveries(id,kind,status,sent_at,last_error_code)").eq("id", id).maybeSingle();
   if (error || !data) return null;
   const record = data as unknown as Record<string, unknown> & {
     submission_media:

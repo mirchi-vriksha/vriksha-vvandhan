@@ -1,6 +1,6 @@
 import "server-only";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
 import type { StaffSession } from "@/lib/auth/types";
 import { generatePublicVariants } from "@/lib/moderation/publication-image.server";
@@ -68,7 +68,9 @@ export async function publishSubmission(client: unknown, session: StaffSession, 
     if (uploaded.length) await service.storage.from(PUBLISHED_IMAGES_BUCKET).remove(uploaded);
     throw error;
   }
-  revalidateTag(CAMPAIGN_PUBLIC_TAG, "max");
+  updateTag(CAMPAIGN_PUBLIC_TAG);
+  revalidatePath("/");
+  revalidatePath("/movement");
   revalidatePath("/admin");
   revalidatePath(`/admin/submissions/${submissionId}`);
   return guardianNumber;

@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 export const submissionIdSchema = z.uuid();
+export const movementWallVisibilitySchema = z.object({
+  submissionId: submissionIdSchema,
+  visible: z.enum(["true", "false"]).transform((value) => value === "true"),
+});
 export const reviewFieldsSchema = z.object({
   submissionId: submissionIdSchema,
   displayName: z.string().trim().min(1).max(100),
