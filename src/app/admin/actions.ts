@@ -8,7 +8,7 @@ import { requireRole, requireStaff } from "@/lib/auth/dal";
 import { processApprovalDelivery, processSubmissionDelivery } from "@/lib/email/delivery-orchestration.server";
 import { publishSubmission } from "@/lib/moderation/publication.server";
 import { generatePublicVariants } from "@/lib/moderation/publication-image.server";
-import { deletionSchema, movementWallVisibilitySchema, rejectionSchema, reviewFieldsSchema, submissionIdSchema } from "@/lib/moderation/schemas";
+import { deletionSchema, rejectionSchema, reviewFieldsSchema, submissionIdSchema } from "@/lib/moderation/schemas";
 import { CAMPAIGN_PUBLIC_TAG } from "@/lib/public-campaign/data";
 import { PUBLISHED_IMAGES_BUCKET, SUBMISSION_ORIGINALS_BUCKET, CERTIFICATES_BUCKET } from "@/lib/storage/buckets";
 import { buildPublishedCardPath, buildPublishedFullPath, parseStoredOriginalPath, parseStoredReviewThumbnailPath } from "@/lib/storage/paths";
@@ -66,27 +66,6 @@ export async function confirmRejectionAction(formData: FormData) {
   });
   revalidatePath(`/admin/submissions/${input.submissionId}`);
   redirect(`/admin/submissions/${input.submissionId}?success=rejected`);
-}
-
-export async function setMovementWallVisibilityAction(formData: FormData) {
-  await requireStaff();
-  const input = movementWallVisibilitySchema.parse({
-    submissionId: formData.get("submissionId"),
-    visible: formData.get("visible"),
-  });
-  const state = input.visible ? "visible" : "hidden";
-  if (isStaffE2EAdapterEnabled()) redirect(`/admin/submissions/${input.submissionId}?success=movement-${state}`);
-  const client = await createServerSupabaseClient();
-  const { error } = await callUntypedRpc(client, "set_movement_wall_visibility", {
-    p_submission_id: input.submissionId,
-    p_visible: input.visible,
-  });
-  if (error) throw new Error(error.message);
-  updateTag(CAMPAIGN_PUBLIC_TAG);
-  revalidatePath("/");
-  revalidatePath("/movement");
-  revalidatePath(`/admin/submissions/${input.submissionId}`);
-  redirect(`/admin/submissions/${input.submissionId}?success=movement-${state}`);
 }
 
 export async function trashSubmissionAction(formData: FormData) {
@@ -200,9 +179,17 @@ export async function updateCampaignSettingsAction(formData: FormData) {
   if (!Number.isInteger(targetCount) || targetCount <= 0 || !metricLabel || metricLabel.length > 80) throw new Error("invalid_campaign_settings");
   if (isStaffE2EAdapterEnabled()) redirect("/admin/settings?saved=true");
   const client = await createServerSupabaseClient();
-  const { error } = await callUntypedRpc(client, "update_campaign_settings", { p_target_count:targetCount,p_metric_label:metricLabel,p_submissions_open:formData.get("submissionsOpen")==="on" });
+  const { error } = await callUntypedRpc(client, "update_campaign_settings", {
+    p_target_count: targetCount,
+    p_metric_label: metricLabel,
+    p_submissions_open: formData.get("submissionsOpen") === "on",
+    p_movement_wall_enabled: formData.get("movementWallEnabled") === "on",
+  });
   if (error) throw new Error(error.message);
-  revalidateTag(CAMPAIGN_PUBLIC_TAG,"max");
+  updateTag(CAMPAIGN_PUBLIC_TAG);
+  revalidatePath("/");
+  revalidatePath("/join");
+  revalidatePath("/movement");
   revalidatePath("/admin/settings");
   redirect("/admin/settings?saved=true");
 }

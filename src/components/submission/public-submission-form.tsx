@@ -41,6 +41,15 @@ async function readApiResponse(response: Response): Promise<unknown> {
   try { return await response.json(); } catch { return null; }
 }
 
+async function fetchSubmissionApi(path: string, body: unknown): Promise<Response> {
+  return fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(20_000),
+  });
+}
+
 export function PublicSubmissionForm({
   instructionsId,
   turnstile = { enabled: false, siteKey: null, action: "public_submission_prepare" },
@@ -157,11 +166,7 @@ export function PublicSubmissionForm({
 
     try {
       setStage("Reserving private submission");
-      const prepareResponse = await fetch("/api/submissions/prepare", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
-      });
+      const prepareResponse = await fetchSubmissionApi("/api/submissions/prepare", parsed.data);
       const prepareBody = await readApiResponse(prepareResponse);
       if (!prepareResponse.ok) throw publicApiErrorSchema.parse(prepareBody);
       const reservation = prepareSubmissionResponseSchema.parse(prepareBody);
@@ -189,10 +194,9 @@ export function PublicSubmissionForm({
       }
 
       setStage("Verifying photograph");
-      const finalizeResponse = await fetch("/api/submissions/finalize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ submissionId: reservation.submissionId, requestToken }),
+      const finalizeResponse = await fetchSubmissionApi("/api/submissions/finalize", {
+        submissionId: reservation.submissionId,
+        requestToken,
       });
       const finalizeBody = await readApiResponse(finalizeResponse);
       if (!finalizeResponse.ok) throw publicApiErrorSchema.parse(finalizeBody);

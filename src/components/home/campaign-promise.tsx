@@ -1,7 +1,7 @@
 import { ArrowRight, Leaf } from "lucide-react";
 import Link from "next/link";
 
-export function CampaignPromise() {
+export function CampaignPromise({ movementWallEnabled = false }: { movementWallEnabled?: boolean }) {
   return (
     <section className="campaign-promise" aria-labelledby="campaign-promise-title">
       <div className="shell campaign-promise__inner">
@@ -12,9 +12,11 @@ export function CampaignPromise() {
             This Raksha Bandhan, make a promise of protection to a tree and become a Vriksha Guardian.
           </p>
         </div>
-        <Link className="button button--light" href="/movement">
-          See all Vriksha Guardians <ArrowRight aria-hidden="true" size={18} />
-        </Link>
+        {movementWallEnabled ? (
+          <Link className="button button--light" href="/movement">
+            See all Vriksha Guardians <ArrowRight aria-hidden="true" size={18} />
+          </Link>
+        ) : null}
       </div>
     </section>
   );

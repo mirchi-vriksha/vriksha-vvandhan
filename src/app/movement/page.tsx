@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { MovementWall } from "@/components/movement/movement-wall";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -25,10 +26,11 @@ export default async function MovementPage() {
     getPublicCampaignSummary(),
     getPublicMovementEntries({ limit: 24 }).catch(() => []),
   ]);
+  if (!summary?.movement_wall_enabled) notFound();
   return (
     <>
       <a className="skip-link" href="#movement-wall">Skip to movement wall</a>
-      <SiteHeader />
+      <SiteHeader movementWallEnabled />
       <main className="movement-page" id="movement-wall">
         <header className="shell movement-page__header">
           <p>Promises of protection, taking root across Mumbai.</p>
@@ -42,7 +44,7 @@ export default async function MovementPage() {
           <MovementWall initialEntries={entries} />
         </section>
       </main>
-      <SiteFooter />
+      <SiteFooter movementWallEnabled />
     </>
   );
 }

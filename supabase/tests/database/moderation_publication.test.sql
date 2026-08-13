@@ -16,7 +16,6 @@ insert into public.staff_profiles(id,display_name,role,active) values
 select has_column('public','submission_media','published_version','public media version is recorded');
 select has_column('public','submission_media','published_card_bytes','card byte size is recorded');
 select has_column('public','submission_media','published_full_bytes','full byte size is recorded');
-select has_column('public','submissions','show_on_movement_wall','Movement Wall visibility is stored as a boolean');
 select has_function('public','publish_submission',array['uuid','bigint','text','text','integer','integer','bigint','text','integer','integer','bigint','text'],'atomic publication function exists');
 select has_function('public','get_public_campaign_summary',array[]::text[],'safe public summary function exists');
 select has_function('public','list_public_movement_entries',array['integer','timestamp with time zone','bigint'],'safe public movement function exists');
@@ -24,7 +23,6 @@ select ok(has_function_privilege('anon','public.get_public_campaign_summary()','
 select ok(not has_function_privilege('anon','public.publish_submission(uuid,bigint,text,text,integer,integer,bigint,text,integer,integer,bigint,text)','execute'),'anonymous cannot publish');
 select ok(not has_function_privilege('authenticated','public.reserve_guardian_number_for_publication(uuid,uuid)','execute'),'authenticated staff cannot reserve outside the service orchestrator');
 select ok(has_function_privilege('service_role','public.reserve_guardian_number_for_publication(uuid,uuid)','execute'),'service orchestrator can reserve a Guardian number');
-select has_function('public','set_movement_wall_visibility',array['uuid','boolean'],'staff Movement Wall visibility function exists');
 
 create function pg_temp.make_pending(p_id uuid,p_name text) returns void language plpgsql as $$
 begin
@@ -56,7 +54,7 @@ select throws_ok($$select public.confirm_submission_rejection('51000000-0000-400
 select throws_ok($$select * from public.trash_submission('51000000-0000-4000-8000-000000000010')$$,'P0001','unauthorized_role','Reviewer cannot trash');
 select throws_ok($$select public.delete_trashed_submission('51000000-0000-4000-8000-000000000010','Reviewer cannot delete this record.')$$,'P0001','unauthorized_role','Reviewer cannot permanently delete');
 select throws_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000001','Reviewer','reviewer',true)$$,'P0001','unauthorized_role','Reviewer cannot manage staff');
-select throws_ok($$select public.update_campaign_settings(983,'Vriksha promises',true)$$,'P0001','unauthorized_role','Reviewer cannot change campaign settings');
+select throws_ok($$select public.update_campaign_settings(983,'Vriksha promises',true,true)$$,'P0001','unauthorized_role','Reviewer cannot change campaign settings');
 select throws_ok($$select * from public.publish_submission('51000000-0000-4000-8000-000000000010',9001,'v1','card/9001-v1.webp',640,800,1000,'full/9001-v1.webp',1200,1200,2000,'Tree')$$,'P0001','approval_conflict','Reviewer cannot publish a rejection recommendation');
 
 select lives_ok($$select * from public.publish_submission('51000000-0000-4000-8000-000000000012',9002,'v1','card/9002-v1.webp',640,800,1000,'full/9002-v1.webp',1200,1200,2000,'A tree protected by a Vriksha Guardian')$$,'Reviewer publishes Pending Review');
@@ -73,16 +71,6 @@ select is(
 );
 reset role;
 select is((select count(*) from public.audit_logs where entity_id='51000000-0000-4000-8000-000000000012' and action='submission.approved'),1::bigint,'competing publication attempts create one approval audit event');
-
-set local role authenticated;
-select set_config('request.jwt.claim.sub','51000000-0000-4000-8000-000000000001',true);
-select lives_ok($$select public.set_movement_wall_visibility('51000000-0000-4000-8000-000000000012',false)$$,'Reviewer hides a published card');
-select is((select current_count from public.get_public_campaign_summary()),1::bigint,'hiding a card does not change the campaign count');
-select is((select count(*) from public.list_public_movement_entries(24,null,null)),0::bigint,'hidden card is absent from Movement Wall');
-select lives_ok($$select public.set_movement_wall_visibility('51000000-0000-4000-8000-000000000012',true)$$,'Reviewer restores a published card');
-select is((select count(*) from public.list_public_movement_entries(24,null,null)),1::bigint,'restored card returns to Movement Wall');
-reset role;
-select is((select count(*) from public.audit_logs where entity_id='51000000-0000-4000-8000-000000000012' and action='submission.movement_wall_visibility_changed'),2::bigint,'visibility changes are audited');
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub','51000000-0000-4000-8000-000000000002',true);
@@ -109,8 +97,9 @@ select is((select current_count from public.get_public_campaign_summary()),2::bi
 select throws_ok($$select public.delete_trashed_submission('51000000-0000-4000-8000-000000000012','Cannot delete active publication.')$$,'P0001','delete_requires_trash','permanent deletion requires Trash');
 
 select lives_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000001','Campaign Reviewer','reviewer',true)$$,'Admin edits existing staff profile');
-select lives_ok($$select public.update_campaign_settings(1000,'Tree promises',true)$$,'Admin may change campaign settings');
+select lives_ok($$select public.update_campaign_settings(1000,'Tree promises',true,true)$$,'Admin may change campaign settings');
 select is((select target_count from public.campaign_settings where id=1),1000,'Admin setting change is stored');
+select is((select movement_wall_enabled from public.campaign_settings where id=1),true,'Admin may display the public Movement Wall');
 select throws_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000002','Section 4 Admin','admin',false)$$,'P0001','self_deactivation_forbidden','Admin cannot deactivate their own profile');
 select lives_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000003','Second Admin','reviewer',true)$$,'Admin may demote another Admin while one remains');
 select throws_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000002','Section 4 Admin','reviewer',true)$$,'P0001','final_admin_required','final active Admin cannot be demoted');

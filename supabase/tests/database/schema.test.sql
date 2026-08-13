@@ -33,6 +33,7 @@ select has_column('public', 'submissions', 'rejection_recommended_by', 'rejectio
 select has_column('public', 'submissions', 'rejection_confirmed_by', 'rejection_confirmed_by column exists');
 select has_column('public', 'submissions', 'trashed_at', 'trashed_at column exists');
 select hasnt_column('public', 'campaign_settings', 'current_count', 'settings does not store current_count');
+select has_column('public', 'campaign_settings', 'movement_wall_enabled', 'global Movement Wall switch exists');
 select is((select target_count from public.campaign_settings where id = 1), 983, 'singleton target is 983');
 
 select has_index('public', 'submissions', 'submissions_guardian_number_unique'::name, 'Guardian number unique index exists');

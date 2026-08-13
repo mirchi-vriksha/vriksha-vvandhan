@@ -7,6 +7,19 @@ import type { Database } from "@/lib/supabase/database.types";
 
 let serviceClient: SupabaseClient<Database> | undefined;
 
+const SUPABASE_REQUEST_TIMEOUT_MS = 12_000;
+
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> {
+  const timeoutSignal = AbortSignal.timeout(SUPABASE_REQUEST_TIMEOUT_MS);
+  const signal = init?.signal
+    ? AbortSignal.any([init.signal, timeoutSignal])
+    : timeoutSignal;
+  return fetch(input, { ...init, signal });
+}
+
 /**
  * Trusted server client. The secret key bypasses RLS, so this module must never
  * be imported by a Client Component or used for caller-authorized operations
@@ -27,6 +40,7 @@ export function getServiceSupabaseClient(): SupabaseClient<Database> {
         autoRefreshToken: false,
         detectSessionInUrl: false,
       },
+      global: { fetch: fetchWithTimeout },
     },
   );
 

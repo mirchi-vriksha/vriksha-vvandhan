@@ -15,12 +15,12 @@ export default async function Home() {
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
-      <SiteHeader />
+      <SiteHeader movementWallEnabled={summary?.movement_wall_enabled ?? false} />
       <main id="main-content">
         <CampaignHero metric={metric} />
-        <CampaignPromise />
+        <CampaignPromise movementWallEnabled={summary?.movement_wall_enabled ?? false} />
       </main>
-      <SiteFooter />
+      <SiteFooter movementWallEnabled={summary?.movement_wall_enabled ?? false} />
     </>
   );
 }

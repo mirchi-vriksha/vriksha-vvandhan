@@ -8,6 +8,13 @@ const ORIGINALS_BUCKET = "submission-originals";
 const PUBLISHED_BUCKET = "published-images";
 const CERTIFICATES_BUCKET = "certificates";
 const DISPLAY_NAME = "STAGING TEST — PUBLIC SUBMISSION";
+const REQUEST_TIMEOUT_MS = 20_000;
+
+async function fetchWithTimeout(input, init = {}) {
+  const timeoutSignal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+  const signal = init.signal ? AbortSignal.any([init.signal, timeoutSignal]) : timeoutSignal;
+  return fetch(input, { ...init, signal });
+}
 
 function requireEnvironment(name) {
   const value = process.env[name]?.trim();
@@ -36,8 +43,8 @@ const secretKey = requireEnvironment("SUPABASE_SECRET_KEY");
 if (!supabaseUrl.hostname.endsWith(".supabase.co")) {
   throw new Error("The staging smoke test requires a hosted Supabase project URL.");
 }
-if (!["localhost", "127.0.0.1"].includes(siteUrl.hostname)) {
-  throw new Error("The staging smoke test requires the local application origin.");
+if (!["localhost", "127.0.0.1", "vriksha-vvandhan.vercel.app"].includes(siteUrl.hostname)) {
+  throw new Error("The staging smoke test requires the local or canonical Vercel application origin.");
 }
 
 const linkedProjectPath = "supabase/.temp/project-ref";
@@ -52,9 +59,11 @@ if (!linkedProjectRef || linkedProjectRef !== environmentProjectRef) {
 
 const service = createClient(supabaseUrl.toString(), secretKey, {
   auth: { persistSession: false, autoRefreshToken: false },
+  global: { fetch: fetchWithTimeout },
 });
 const publicClient = createClient(supabaseUrl.toString(), publishableKey, {
   auth: { persistSession: false, autoRefreshToken: false },
+  global: { fetch: fetchWithTimeout },
 });
 
 const requestToken = randomBytes(32).toString("hex");
@@ -90,7 +99,8 @@ let baselineMovement = null;
 let cleanupComplete = false;
 
 async function post(path, body) {
-  const response = await fetch(new URL(path, siteUrl), {
+  const startedAt = performance.now();
+  const response = await fetchWithTimeout(new URL(path, siteUrl), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -102,6 +112,7 @@ async function post(path, body) {
   if (!response.ok) {
     throw new Error(`${path} failed with HTTP ${response.status}.`);
   }
+  console.log(JSON.stringify({ stage: path, durationMs: Math.round(performance.now() - startedAt), status: response.status }));
   return result;
 }
 
@@ -198,6 +209,7 @@ try {
       cacheControl: "3600",
     });
   if (uploadError) throw new Error("The signed staging upload failed.");
+  console.log(JSON.stringify({ stage: "signed-upload", status: "passed" }));
 
   const finalized = await post("/api/submissions/finalize", {
     submissionId,

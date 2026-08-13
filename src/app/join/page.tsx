@@ -11,6 +11,7 @@ import {
   TURNSTILE_WIDGET_ACTION,
 } from "@/lib/security/turnstile.server";
 import { getPublicSubmissionAvailability } from "@/lib/submissions/service.server";
+import { getPublicCampaignSummary } from "@/lib/public-campaign/data";
 
 export const metadata: Metadata = {
   title: "Tie a Rakhi to a Tree | Vriksha Bandhan",
@@ -30,6 +31,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function JoinPage() {
+  const summary = await getPublicCampaignSummary();
   let availability = hasServerSupabaseEnvironment()
     ? await getPublicSubmissionAvailability()
     : "unavailable";
@@ -43,7 +45,7 @@ export default async function JoinPage() {
   return (
     <>
       <a className="skip-link" href="#main-content">Skip to main content</a>
-      <SiteHeader />
+      <SiteHeader movementWallEnabled={summary?.movement_wall_enabled ?? false} />
       <main className="join-page" id="main-content">
         <section className="join-intro shell" aria-labelledby="join-title">
           <p className="join-intro__eyebrow">Join the movement</p>
@@ -57,8 +59,8 @@ export default async function JoinPage() {
             {availability === "open" ? (
               <>
                 <p className="join-submission__instructions" id="submission-instructions">
-                  Upload a clear photograph of your Rakhi tied to a tree. If approved, your photo may
-                  appear on the Movement Wall and you’ll receive a Vriksha Guardian number and certificate.
+                  Upload a clear photograph of your Rakhi tied to a tree. If approved, you’ll receive
+                  a Vriksha Guardian number and personalised certificate.
                 </p>
                 <PublicSubmissionForm
                   instructionsId="submission-instructions"
@@ -69,7 +71,7 @@ export default async function JoinPage() {
           </section>
         </div>
       </main>
-      <SiteFooter />
+      <SiteFooter movementWallEnabled={summary?.movement_wall_enabled ?? false} />
     </>
   );
 }

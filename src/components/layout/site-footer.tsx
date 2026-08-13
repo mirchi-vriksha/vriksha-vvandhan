@@ -1,6 +1,8 @@
 import { LogoLockup } from "@/components/shared/logo-lockup";
+import { getPublicCampaignSummary } from "@/lib/public-campaign/data";
 
-export function SiteFooter() {
+export async function SiteFooter({ movementWallEnabled }: { movementWallEnabled?: boolean }) {
+  const enabled = movementWallEnabled ?? (await getPublicCampaignSummary())?.movement_wall_enabled ?? false;
   return (
     <footer className="site-footer">
       <div className="shell site-footer__inner">
@@ -10,7 +12,7 @@ export function SiteFooter() {
           <p>It’s time to protect the protector.</p>
           <nav aria-label="Vriksha Bandhan links">
             <a href="/join">Tie a Rakhi to a Tree</a>
-            <a href="/movement">Movement Wall</a>
+            {enabled && <a href="/movement">Movement Wall</a>}
             <a href="/campaign-terms">Campaign terms</a>
             <a href="/privacy">Privacy</a>
           </nav>

@@ -9,6 +9,7 @@ const summaryRowSchema = z.object({
   target_count: z.coerce.number().int().positive(),
   metric_label: z.string().min(1).max(80),
   submissions_open: z.boolean(),
+  movement_wall_enabled: z.boolean(),
 });
 
 const movementRowSchema = z.object({

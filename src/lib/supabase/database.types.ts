@@ -99,6 +99,7 @@ export type Database = {
           id: number
           max_submissions_per_email_24h: number
           metric_label: string
+          movement_wall_enabled: boolean
           submissions_open: boolean
           target_count: number
           updated_at: string
@@ -109,6 +110,7 @@ export type Database = {
           id?: number
           max_submissions_per_email_24h?: number
           metric_label?: string
+          movement_wall_enabled?: boolean
           submissions_open?: boolean
           target_count?: number
           updated_at?: string
@@ -119,6 +121,7 @@ export type Database = {
           id?: number
           max_submissions_per_email_24h?: number
           metric_label?: string
+          movement_wall_enabled?: boolean
           submissions_open?: boolean
           target_count?: number
           updated_at?: string
@@ -524,7 +527,6 @@ export type Database = {
           is_test: boolean
           public_request_token_hash: string | null
           published_at: string | null
-          show_on_movement_wall: boolean
           rejected_at: string | null
           rejection_comment: string | null
           rejection_confirmed_at: string | null
@@ -551,7 +553,6 @@ export type Database = {
           is_test?: boolean
           public_request_token_hash?: string | null
           published_at?: string | null
-          show_on_movement_wall?: boolean
           rejected_at?: string | null
           rejection_comment?: string | null
           rejection_confirmed_at?: string | null
@@ -578,7 +579,6 @@ export type Database = {
           is_test?: boolean
           public_request_token_hash?: string | null
           published_at?: string | null
-          show_on_movement_wall?: boolean
           rejected_at?: string | null
           rejection_comment?: string | null
           rejection_confirmed_at?: string | null
@@ -760,6 +760,7 @@ export type Database = {
         Returns: {
           current_count: number
           metric_label: string
+          movement_wall_enabled: boolean
           submissions_open: boolean
           target_count: number
         }[]
@@ -894,10 +895,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      set_movement_wall_visibility: {
-        Args: { p_submission_id: string; p_visible: boolean }
-        Returns: undefined
-      }
       trash_submission: {
         Args: { p_submission_id: string }
         Returns: {
@@ -910,6 +907,7 @@ export type Database = {
       update_campaign_settings: {
         Args: {
           p_metric_label: string
+          p_movement_wall_enabled: boolean
           p_submissions_open: boolean
           p_target_count: number
         }
