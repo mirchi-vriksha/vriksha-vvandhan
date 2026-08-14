@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { approveSubmissionAction, confirmRejectionAction, deleteTrashedAction, recommendRejectionAction, restoreNonpublishedAction, restorePublishedAction, trashSubmissionAction } from "@/app/admin/actions";
-import { FocalPointEditor } from "@/components/admin/focal-point-editor";
+import { ReviewFieldsEditor } from "@/components/admin/review-fields-editor";
 import { getSubmissionDetail } from "@/lib/moderation/data.server";
 
 type DetailRecord = {
@@ -45,13 +45,13 @@ export default async function SubmissionDetailPage({ params, searchParams }: { p
 
   return <>
     <Link className="admin-back-link" href={`/admin/submissions?status=${queueStatus}`}>← Back to Review Queue</Link>
-    <header className="admin-page-header admin-submission-header"><div><p>Submission detail</p><h1>{record.display_name ?? "Participant submission"}</h1><span>Review the photo, adjust the public card, then make a decision.</span></div><span className={`status-badge status-badge--${record.status}`}>{record.status.replaceAll("_", " ")}</span></header>
+    <header className="admin-page-header admin-submission-header"><div><p>Submission detail</p><h1>{record.display_name ?? "Participant submission"}</h1><span>Confirm the public display name, then make a decision.</span></div><span className={`status-badge status-badge--${record.status}`}>{record.status.replaceAll("_", " ")}</span></header>
     {successMessage && <div className="admin-success" role="status">{successMessage}</div>}
     {query.testAction && <div className="admin-success" role="status">Test moderation action completed: {query.testAction.replaceAll("-", " ")}.</div>}
     {query.cleanup === "required" && <div className="admin-notice" role="alert">The record is safely hidden, but its public image cleanup needs an Admin retry before permanent deletion.</div>}
 
     <div className={`admin-review-workspace${reviewable ? "" : " admin-review-workspace--single"}`}>
-      {reviewable && result.reviewImage ? <section className="admin-panel admin-public-card-editor"><div><p>Public presentation</p><h2>Adjust public card</h2><span>Confirm the name and choose the strongest crop before deciding.</span></div><FocalPointEditor submissionId={record.id} displayName={record.display_name ?? ""} imageUrl={result.reviewImage.signedUrl} previewUrl={result.reviewThumbnail?.signedUrl} initialX={media?.focal_x ?? .5} initialY={media?.focal_y ?? .5} /></section>
+      {reviewable ? <section className="admin-panel admin-public-card-editor"><div><p>Public presentation</p><h2>Display name</h2><span>Confirm how the participant&apos;s name should appear publicly.</span></div><ReviewFieldsEditor submissionId={record.id} displayName={record.display_name ?? ""} focalX={media?.focal_x ?? .5} focalY={media?.focal_y ?? .5} /></section>
         : <section className="admin-panel admin-review-image"><div><p>Private photograph</p><h2>Submission preview</h2></div>{result.reviewThumbnail ? <><img src={result.reviewThumbnail.signedUrl} alt="Private submitted photograph preview" width="240" height="300" loading="eager" decoding="async" /><small>Private preview · signed for 10 minutes</small></> : <p>Private preview is temporarily unavailable.</p>}</section>}
       {decisionPanel}
     </div>

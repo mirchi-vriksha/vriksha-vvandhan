@@ -1755,8 +1755,8 @@ svg {
 .auth-card h1 { margin: .45rem 0; font-family: var(--font-editorial), Georgia, serif; font-size: 3rem; line-height: 1; }
 .auth-card > p:not(.auth-card__eyebrow) { color: var(--muted-ink); }
 .auth-card form { display: grid; gap: 1rem; margin-top: 1.5rem; }
-.auth-card label, .focal-editor label, .admin-actions label, .admin-danger label, .team-card label { display: grid; gap: .4rem; font-size: .82rem; font-weight: 800; }
-.auth-card input, .focal-editor input, .admin-search input, .admin-actions textarea, .admin-danger textarea, .team-card input, .team-card select { width: 100%; min-height: 48px; border: 1px solid var(--line-strong); border-radius: .45rem; background: var(--surface); padding: .7rem .8rem; }
+.auth-card label, .review-fields-editor label, .admin-actions label, .admin-danger label, .team-card label { display: grid; gap: .4rem; font-size: .82rem; font-weight: 800; }
+.auth-card input, .review-fields-editor input, .admin-search input, .admin-actions textarea, .admin-danger textarea, .team-card input, .team-card select { width: 100%; min-height: 48px; border: 1px solid var(--line-strong); border-radius: .45rem; background: var(--surface); padding: .7rem .8rem; }
 .auth-card small { display: block; margin-top: 1.2rem; color: var(--muted-ink); }
 .auth-error { border: 1px solid #e5a5a8; border-radius: .5rem; background: var(--action-red-soft); color: #7b171c; margin-top: 1rem; padding: .8rem; font-weight: 750; }
 .auth-success { border: 1px solid #9fc4ae; border-radius: .5rem; background: #edf7f0; color: #174f2c; margin-top: 1rem; padding: .8rem; font-weight: 750; }
@@ -1813,25 +1813,13 @@ svg {
 .admin-detail-grid .admin-panel { margin-top: 0; }
 .admin-review-image img { width: 100%; max-height: 620px; border-radius: .45rem; object-fit: contain; background: var(--surface-soft); margin-top: 1rem; }
 .admin-review-image small { display: block; margin-top: .5rem; color: var(--muted-ink); }
-.focal-editor__image img { transition: opacity .18s ease; }
-.focal-editor__image img.is-loading { opacity: 0; }
-.focal-editor__image img.is-loaded { opacity: 1; }
-.focal-editor__image img.is-hidden { opacity: 0; }
-.focal-editor__loading { position: absolute; left: 50%; bottom: 1rem; transform: translateX(-50%); z-index: 2; border-radius: 999px; background: rgba(255,255,255,.9); color: var(--ink); padding: .35rem .65rem; font-size: .72rem; white-space: nowrap; }
 .admin-facts { margin: 1rem 0 0; }
 .admin-facts div { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: .8rem; border-top: 1px solid var(--line); padding: .65rem 0; }
 .admin-facts dt { color: var(--muted-ink); font-size: .75rem; }
 .admin-facts dd { margin: 0; overflow-wrap: anywhere; font-size: .8rem; font-weight: 750; }
 .admin-deliveries { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 1rem; }
 .admin-deliveries h3, .admin-deliveries p { margin: .35rem 0; font-size: .8rem; }
-.focal-editor { display: grid; gap: 1rem; margin-top: 1rem; }
-.focal-editor fieldset { margin: 0; border: 0; padding: 0; }
-.focal-editor legend { margin-bottom: .5rem; font-size: .82rem; font-weight: 800; }
-.focal-editor__image { position: relative; width: min(420px, 100%); aspect-ratio: 4 / 5; display: block; overflow: hidden; border: 1px solid var(--line-strong); border-radius: .45rem; background: var(--surface-soft); cursor: crosshair; padding: 0; }
-.focal-editor__image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.focal-editor__image > span:not(.focal-editor__loading) { position: absolute; width: 22px; height: 22px; border: 3px solid white; border-radius: 50%; background: var(--action-red); box-shadow: 0 0 0 2px var(--action-red); transform: translate(-50%, -50%); }
-.focal-editor__controls { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; }
-.focal-editor__controls button { min-height: 40px; display: inline-flex; align-items: center; gap: .25rem; border: 1px solid var(--line); border-radius: .35rem; background: var(--surface); cursor: pointer; padding: .45rem .65rem; }
+.review-fields-editor { display: grid; gap: 1rem; margin-top: 1rem; }
 .admin-actions { display: grid; gap: 1rem; }
 .admin-actions form, .admin-danger form { display: grid; gap: .65rem; border-top: 1px solid var(--line); padding-top: 1rem; }
 .admin-actions textarea, .admin-danger textarea { min-height: 110px; resize: vertical; }
@@ -1969,10 +1957,9 @@ svg {
 .admin-review-workspace { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(320px, .75fr); align-items: start; gap: 1rem; }
 .admin-review-workspace > .admin-panel { width: 100%; margin-top: 0; }
 .admin-review-workspace--single { grid-template-columns: minmax(0, 760px); }
-.admin-public-card-editor .focal-editor { margin-top: 1.25rem; }
-.admin-public-card-editor .focal-editor__image { width: min(100%, 620px); }
-.admin-public-card-editor .focal-editor > label { display: grid; gap: .4rem; font-size: .78rem; font-weight: 850; }
-.admin-public-card-editor .focal-editor > label input { min-height: 46px; border: 1px solid var(--line-strong); border-radius: .5rem; padding: .65rem .8rem; }
+.admin-public-card-editor .review-fields-editor { margin-top: 1.25rem; }
+.admin-public-card-editor .review-fields-editor > label { display: grid; gap: .4rem; font-size: .78rem; font-weight: 850; }
+.admin-public-card-editor .review-fields-editor > label input { min-height: 46px; border: 1px solid var(--line-strong); border-radius: .5rem; padding: .65rem .8rem; }
 .admin-decision-panel { position: sticky; top: 1rem; }
 .admin-decision-panel .button { width: 100%; }
 .admin-actions form:first-of-type { margin-top: .8rem; }

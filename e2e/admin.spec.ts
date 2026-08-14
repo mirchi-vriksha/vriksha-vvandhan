@@ -22,6 +22,9 @@ test("Reviewer can use the queue, approve, and recommend without Admin access", 
   await expect(page.getByAltText("Private submission preview")).toBeVisible();
 
   await page.goto(`/admin/submissions/${pendingId}`);
+  await expect(page.getByLabel("Public display name")).toBeVisible();
+  await expect(page.getByRole("group", { name: "Public card focal point" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Choose image focal point" })).toHaveCount(0);
   await page.keyboard.press("Tab");
   await expect(page.locator(":focus")).toBeVisible();
   await page.getByRole("button", { name:"Approve and publish" }).click();
