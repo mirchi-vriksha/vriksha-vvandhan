@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { getPublicCampaignSummary } from "@/lib/public-campaign/data";
 
 type LegalPageProps = {
   content: {
@@ -13,11 +14,13 @@ type LegalPageProps = {
   };
 };
 
-export function LegalPage({ content }: LegalPageProps) {
+export async function LegalPage({ content }: LegalPageProps) {
+  const movementWallEnabled = (await getPublicCampaignSummary())?.movement_wall_enabled ?? false;
+
   return (
     <>
       <a className="skip-link" href="#main-content">Skip to main content</a>
-      <SiteHeader />
+      <SiteHeader movementWallEnabled={movementWallEnabled} />
       <main className="legal-page" id="main-content">
         <article className="shell legal-page__article">
           <Link className="legal-page__back" href="/join"><ArrowLeft aria-hidden="true" size={17} /> Return to submission</Link>
@@ -29,7 +32,7 @@ export function LegalPage({ content }: LegalPageProps) {
           </div>
         </article>
       </main>
-      <SiteFooter />
+      <SiteFooter movementWallEnabled={movementWallEnabled} />
     </>
   );
 }

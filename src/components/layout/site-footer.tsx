@@ -1,8 +1,6 @@
 import { LogoLockup } from "@/components/shared/logo-lockup";
-import { getPublicCampaignSummary } from "@/lib/public-campaign/data";
 
-export async function SiteFooter({ movementWallEnabled }: { movementWallEnabled?: boolean }) {
-  const enabled = movementWallEnabled ?? (await getPublicCampaignSummary())?.movement_wall_enabled ?? false;
+export function SiteFooter({ movementWallEnabled = false }: { movementWallEnabled?: boolean }) {
   return (
     <footer className="site-footer">
       <div className="shell site-footer__inner">
@@ -12,7 +10,7 @@ export async function SiteFooter({ movementWallEnabled }: { movementWallEnabled?
           <p>983 Trees. One Frequency. Infinite Gratitude.</p>
           <nav aria-label="Vriksha Bandhan links">
             <a href="/join">Tie a Rakhi to a Tree</a>
-            {enabled && <a href="/movement">Movement Wall</a>}
+            {movementWallEnabled && <a href="/movement">Movement Wall</a>}
             <a href="/campaign-terms">Campaign terms</a>
             <a href="/privacy">Privacy</a>
           </nav>
