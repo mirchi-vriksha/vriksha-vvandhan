@@ -104,20 +104,14 @@ export function SubmissionQueueTable({
     setUrls((current) => ({ ...current, [id]: null }));
   }
 
-  return (
-    <table className="admin-table">
-      <thead><tr><th>Photo</th><th>Name</th><th>Status</th><th>Submitted / age</th><th>Guardian</th><th>Source</th><th><span className="sr-only">Action</span></th></tr></thead>
-      <tbody>{submissions.map((item) => (
-        <tr key={item.id}>
-          <td><QueueThumbnail submission={item} signedUrl={urls[item.id]} loaded={loadedIds.has(item.id)} onLoad={() => markLoaded(item.id)} onError={() => markUnavailable(item.id)} /></td>
-          <td><strong>{item.display_name ?? "Draft"}</strong></td>
-          <td><span className={`status-badge status-badge--${item.status}`}>{labels[item.status] ?? item.status}</span></td>
-          <td>{item.submittedLabel ? <>{item.submittedLabel}<small>{item.reviewAgeHours}h in queue</small></> : "—"}</td>
-          <td>{item.guardian_number ? `#${item.guardian_number}` : "—"}</td>
-          <td>{item.source}{item.is_test && <em> Test</em>}</td>
-          <td><a href={`/admin/submissions/${item.id}`}>Open</a></td>
-        </tr>
-      ))}</tbody>
-    </table>
-  );
+  return <div className="admin-queue">
+    <div className="admin-queue__header" aria-hidden="true"><span>Photo</span><span>Participant</span><span>Status and age</span><span>Guardian</span><span>Action</span></div>
+    <ul>{submissions.map((item) => <li className="admin-queue__item" key={item.id}>
+      <QueueThumbnail submission={item} signedUrl={urls[item.id]} loaded={loadedIds.has(item.id)} onLoad={() => markLoaded(item.id)} onError={() => markUnavailable(item.id)} />
+      <div className="admin-queue__participant"><strong>{item.display_name ?? "Draft"}</strong><small>{item.source.replaceAll("_", " ")}{item.is_test && <em> · Test record</em>}</small></div>
+      <div className="admin-queue__status"><span className={`status-badge status-badge--${item.status}`}>{labels[item.status] ?? item.status}</span><small>{item.submittedLabel ? `${item.submittedLabel} · ${item.reviewAgeHours ?? 0}h in queue` : "Awaiting timestamp"}</small></div>
+      <div className="admin-queue__guardian"><span>Guardian</span><strong>{item.guardian_number ? `#${item.guardian_number}` : "Not assigned"}</strong></div>
+      <a className="admin-queue__action" href={`/admin/submissions/${item.id}`}>Open submission</a>
+    </li>)}</ul>
+  </div>;
 }
