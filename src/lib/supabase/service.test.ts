@@ -28,6 +28,9 @@ describe("service Supabase client", () => {
           autoRefreshToken: false,
           detectSessionInUrl: false,
         },
+        global: {
+          fetch: expect.any(Function),
+        },
       },
     );
   });

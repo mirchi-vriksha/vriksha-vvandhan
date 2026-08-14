@@ -16,6 +16,7 @@ describe("Vriksha Bandhan join page", () => {
   it("keeps the approved explanation compact and the instructions before the unchanged form", async () => {
     const { container } = render(await JoinPage());
 
+    await screen.findByRole("main");
     expect(screen.getByRole("heading", { level: 1, name: "Turn Gratitude Into a Green Bond." })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "A Rakhi. A Gesture of Gratitude." })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 3, name: "The Mirchi Movement" })).toBeInTheDocument();
