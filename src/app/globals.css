@@ -2253,7 +2253,16 @@ svg {
   }
 
   .join-how ol {
-    gap: 0.25rem;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .join-how li {
+    grid-template-columns: 38px 2rem minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+    gap: 0.65rem;
+    text-align: left;
   }
 
   .join-how__icon {
@@ -2262,6 +2271,12 @@ svg {
   }
 
   .join-how strong {
+    overflow-wrap: anywhere;
+  }
+
+  .join-how__copy,
+  .join-how__copy small {
+    min-width: 0;
     overflow-wrap: anywhere;
   }
 

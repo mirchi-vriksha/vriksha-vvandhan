@@ -81,6 +81,11 @@ select throws_ok($$select * from public.publish_submission('51000000-0000-4000-8
 select lives_ok($$select * from public.publish_submission('51000000-0000-4000-8000-000000000010',9003,'v2','card/9003-v2.webp',640,800,1100,'full/9003-v2.webp',1200,1200,2100,'Asha Rao tree promise')$$,'Admin approves instead of confirming recommendation');
 
 select is((select current_count from public.get_public_campaign_summary()),2::bigint,'public count uses published media rule');
+select is((select movement_wall_enabled from public.campaign_settings where id=1),false,'Movement Wall defaults to hidden');
+select is((select count(*) from public.list_public_movement_entries(24,null,null)),0::bigint,'hidden Movement Wall exposes no publications');
+select lives_ok($$select public.update_campaign_settings(1000,'Tree promises',true,true)$$,'Admin may display the public Movement Wall');
+select is((select target_count from public.campaign_settings where id=1),1000,'Admin setting change is stored');
+select is((select movement_wall_enabled from public.campaign_settings where id=1),true,'Admin Movement Wall setting is stored');
 select is((select count(*) from public.list_public_movement_entries(24,null,null)),2::bigint,'movement exposes two active publications');
 select ok(not ((select to_jsonb(entry) from public.list_public_movement_entries(1,null,null) entry) ? 'submission_id'),'movement rows omit submission IDs');
 select ok(not ((select to_jsonb(entry) from public.list_public_movement_entries(1,null,null) entry) ? 'email'),'movement rows omit email');
@@ -97,9 +102,6 @@ select is((select current_count from public.get_public_campaign_summary()),2::bi
 select throws_ok($$select public.delete_trashed_submission('51000000-0000-4000-8000-000000000012','Cannot delete active publication.')$$,'P0001','delete_requires_trash','permanent deletion requires Trash');
 
 select lives_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000001','Campaign Reviewer','reviewer',true)$$,'Admin edits existing staff profile');
-select lives_ok($$select public.update_campaign_settings(1000,'Tree promises',true,true)$$,'Admin may change campaign settings');
-select is((select target_count from public.campaign_settings where id=1),1000,'Admin setting change is stored');
-select is((select movement_wall_enabled from public.campaign_settings where id=1),true,'Admin may display the public Movement Wall');
 select throws_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000002','Section 4 Admin','admin',false)$$,'P0001','self_deactivation_forbidden','Admin cannot deactivate their own profile');
 select lives_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000003','Second Admin','reviewer',true)$$,'Admin may demote another Admin while one remains');
 select throws_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000002','Section 4 Admin','reviewer',true)$$,'P0001','final_admin_required','final active Admin cannot be demoted');
