@@ -20,7 +20,9 @@ describe("Vriksha Bandhan join page", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Turn Gratitude Into a Green Bond." })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "A Rakhi. A Gesture of Gratitude." })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 3, name: "The Mirchi Movement" })).toBeInTheDocument();
-    expect(screen.getByText("983 Trees. One Frequency. Infinite Gratitude.")).toBeInTheDocument();
+    expect(container.querySelector(".join-about__tracker")).toHaveTextContent(
+      "983 Trees. One Frequency. Infinite Gratitude.",
+    );
     expect(container.querySelectorAll("#how-to-participate li")).toHaveLength(5);
     expect(screen.getByText("Upload it & inspire others.")).toBeInTheDocument();
 
