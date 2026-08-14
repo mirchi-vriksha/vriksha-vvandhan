@@ -68,12 +68,18 @@ function submissionOf(value: unknown): Record<string, unknown> {
 export async function getDeliveryCenter(filters: DeliveryFilters) {
   await requireRole("admin");
   if (isStaffE2EAdapterEnabled()) {
+    const rows = [
+      { id: "c1000000-0000-4000-8000-000000000001", submissionId: "e1000000-0000-4000-8000-000000000001", deliveryType: "certificate", kind: "certificate", status: "generated", guardianNumber: 42, displayName: "Asha Test", submittedAt: "2026-08-06T10:00:00.000Z", deliveredAt: "2026-08-06T11:00:00.000Z", providerEventAt: null, providerEvent: null, attemptCount: 1, lastErrorCode: null, objectPath: "e1000000-0000-4000-8000-000000000001/vriksha-guardian-42-v1.pdf" },
+      { id: "d1000000-0000-4000-8000-000000000001", submissionId: "e1000000-0000-4000-8000-000000000001", deliveryType: "email", kind: "approval_certificate", status: "failed", guardianNumber: 42, displayName: "Asha Test", submittedAt: "2026-08-06T10:00:00.000Z", deliveredAt: null, providerEventAt: null, providerEvent: null, attemptCount: 1, lastErrorCode: "resend_provider_error", objectPath: null },
+    ] as DeliveryRow[];
+    const filteredRows = rows.filter((row) => {
+      if (filters.status && filters.status !== "all" && row.status !== filters.status) return false;
+      if (filters.kind && filters.kind !== "all" && row.kind !== filters.kind) return false;
+      return true;
+    });
     return {
       summary: { certificate: { not_started: 1, queued: 0, generated: 1, failed: 1 }, email: { not_started: 1, queued: 0, sent: 1, failed: 1 } },
-      rows: [
-        { id: "c1000000-0000-4000-8000-000000000001", submissionId: "e1000000-0000-4000-8000-000000000001", deliveryType: "certificate", kind: "certificate", status: "generated", guardianNumber: 42, displayName: "Asha Test", submittedAt: "2026-08-06T10:00:00.000Z", deliveredAt: "2026-08-06T11:00:00.000Z", providerEventAt: null, providerEvent: null, attemptCount: 1, lastErrorCode: null, objectPath: "e1000000-0000-4000-8000-000000000001/vriksha-guardian-42-v1.pdf" },
-        { id: "d1000000-0000-4000-8000-000000000001", submissionId: "e1000000-0000-4000-8000-000000000001", deliveryType: "email", kind: "approval_certificate", status: "failed", guardianNumber: 42, displayName: "Asha Test", submittedAt: "2026-08-06T10:00:00.000Z", deliveredAt: null, providerEventAt: null, providerEvent: null, attemptCount: 1, lastErrorCode: "resend_provider_error", objectPath: null },
-      ] as DeliveryRow[],
+      rows: filteredRows,
     };
   }
 

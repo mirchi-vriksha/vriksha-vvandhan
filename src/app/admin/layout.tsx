@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { logoutAction } from "@/app/auth/actions";
+import { AdminMobileNavigation } from "@/components/admin/admin-mobile-navigation";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { LogoLockup } from "@/components/shared/logo-lockup";
 import { getOptionalStaffSession } from "@/lib/auth/dal";
@@ -20,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <AdminNav session={session} />
       <footer><strong>{session.displayName}</strong><span>{session.role === "admin" ? "Admin" : "Reviewer"}</span><form action={logoutAction}><button type="submit">Sign out</button></form></footer>
     </aside>
-    <div className="admin-mobile-header"><span>Vriksha Bandhan Campaign Desk</span><AdminNav session={session} /></div>
+    <AdminMobileNavigation session={session} />
     <main className="admin-main" id="admin-main">{children}</main>
   </div>;
 }

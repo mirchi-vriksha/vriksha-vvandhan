@@ -28,6 +28,8 @@ describe("moderation queue thumbnails", () => {
     const { container } = render(<SubmissionQueueTable submissions={[row]} labels={{ pending_review: "Pending Review" }} />);
 
     expect(screen.getByText("Queue text first")).toBeVisible();
+    expect(screen.getByRole("list")).toBeVisible();
+    expect(container.querySelector("table")).not.toBeInTheDocument();
     expect(container.querySelector(".admin-thumbnail--skeleton")).toBeInTheDocument();
     expect(screen.queryByAltText("Private submission preview")).not.toBeInTheDocument();
 
@@ -67,5 +69,6 @@ describe("moderation queue thumbnails", () => {
     expect(JSON.stringify(body)).not.toContain("original");
     expect(JSON.stringify(body)).not.toContain("review-thumb");
     expect(screen.getByText("Synthetic row 25")).toBeVisible();
+    expect(screen.getAllByRole("listitem")).toHaveLength(25);
   });
 });

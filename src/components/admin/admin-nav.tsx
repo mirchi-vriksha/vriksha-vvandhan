@@ -1,20 +1,46 @@
+"use client";
+
 import Link from "next/link";
-import { Archive, ClipboardList, Home, Send, Settings, ShieldCheck, Trash2, Users } from "lucide-react";
+import { ClipboardList, Gauge, Send, Settings, Users } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import type { StaffSession } from "@/lib/auth/types";
 
-export function AdminNav({ session }: { session: StaffSession }) {
-  const items = [
-    { href: "/admin", label: "Overview", icon: Home },
-    { href: "/admin/submissions?status=pending_review", label: "Submissions", icon: ClipboardList },
-    ...(session.role === "admin" ? [{ href: "/admin/submissions?status=rejection_pending_admin", label: "Rejection Review", icon: ShieldCheck }] : []),
-    { href: "/admin/submissions?status=published", label: "Published", icon: Archive },
-    ...(session.role === "admin" ? [
-      { href: "/admin/deliveries", label: "Deliveries", icon: Send },
-      { href: "/admin/trash", label: "Trash", icon: Trash2 },
-      { href: "/admin/team", label: "Team", icon: Users },
-      { href: "/admin/settings", label: "Settings", icon: Settings },
+export type AdminNavItem = {
+  href: string;
+  label: string;
+  icon: typeof Gauge;
+  section: "workflow" | "admin";
+};
+
+export function getAdminNavItems(role: StaffSession["role"]): readonly AdminNavItem[] {
+  return [
+    { href: "/admin", label: "Dashboard", icon: Gauge, section: "workflow" },
+    { href: "/admin/submissions?status=pending_review", label: "Review Queue", icon: ClipboardList, section: "workflow" },
+    ...(role === "admin" ? [
+      { href: "/admin/deliveries?status=failed", label: "Deliveries", icon: Send, section: "admin" as const },
+      { href: "/admin/team", label: "Team", icon: Users, section: "admin" as const },
+      { href: "/admin/settings", label: "Campaign Settings", icon: Settings, section: "admin" as const },
     ] : []),
   ];
-  return <nav className="admin-nav" aria-label="Vriksha Bandhan Campaign Desk"><ul>{items.map(({ href, label, icon: Icon }) => <li key={href}><Link href={href}><Icon size={18} aria-hidden="true" />{label}</Link></li>)}</ul></nav>;
+}
+
+function isCurrent(pathname: string, href: string) {
+  const itemPath = href.split("?")[0];
+  return itemPath === "/admin" ? pathname === itemPath : pathname.startsWith(itemPath);
+}
+
+export function AdminNav({ session, onNavigate }: { session: StaffSession; onNavigate?: () => void }) {
+  const pathname = usePathname();
+  const items = getAdminNavItems(session.role);
+  return <nav className="admin-nav" aria-label="Vriksha Bandhan Campaign Desk">
+    <ul>
+      {items.map(({ href, label, icon: Icon, section }, index) => <li key={href}>
+        {section === "admin" && items[index - 1]?.section !== "admin" && <span className="admin-nav__section">Admin tools</span>}
+        <Link href={href} aria-current={isCurrent(pathname, href) ? "page" : undefined} onClick={onNavigate}>
+          <Icon size={18} aria-hidden="true" />{label}
+        </Link>
+      </li>)}
+    </ul>
+  </nav>;
 }
