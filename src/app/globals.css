@@ -1968,6 +1968,7 @@ svg {
 .join-intro h1 {
   max-width: 18ch;
   font-size: clamp(2.65rem, 6vw, 5rem);
+  overflow-wrap: anywhere;
   text-wrap: balance;
 }
 
