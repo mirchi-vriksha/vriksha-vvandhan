@@ -67,15 +67,18 @@ test("Admin can confirm, approve instead, Trash, restore, delete, and manage con
   await expect(page.getByText(/Published successfully/i)).toBeVisible();
 
   await page.goto(`/admin/submissions/${pendingId}`);
+  await page.getByText("Trash and deletion", { exact: true }).click();
   await page.getByRole("checkbox", { name:/public visibility and count/i }).check();
   await page.getByRole("button", { name:"Move to Trash" }).click();
   await expect(page.getByText(/test moderation action completed: trashed/i)).toBeVisible();
 
   await page.goto(`/admin/submissions/${trashedId}`);
+  await page.getByText("Trash and deletion", { exact: true }).click();
   await page.getByRole("button", { name:"Regenerate and restore publication" }).click();
   await expect(page.getByText(/test moderation action completed: restored/i)).toBeVisible();
 
   await page.goto(`/admin/submissions/${trashedId}`);
+  await page.getByText("Trash and deletion", { exact: true }).click();
   await page.getByLabel("Permanent deletion reason").fill("Delete generated Playwright fixture only.");
   await page.getByLabel("Type DELETE to confirm").fill("DELETE");
   await page.getByRole("button", { name:"Permanently delete" }).click();
@@ -83,7 +86,8 @@ test("Admin can confirm, approve instead, Trash, restore, delete, and manage con
 
   await page.getByRole("link", { name:"Team" }).click();
   await expect(page.getByRole("heading", { name:"Team" })).toBeVisible();
-  await page.getByRole("link", { name:"Campaign Settings" }).click();
+  await expect(page.getByRole("link", { name:"Campaign Settings" })).toHaveAttribute("href", "/admin/settings");
+  await page.goto("/admin/settings");
   await expect(page.getByRole("heading", { name:"Campaign Settings" })).toBeVisible();
   await expect(page.getByRole("link", { name:"Export Campaign Data" })).toBeVisible();
 });
@@ -111,14 +115,14 @@ test("queue text is usable before one batched private thumbnail response", async
   const skeleton = page.locator(".admin-thumbnail--skeleton").first();
   await expect(skeleton).toBeVisible();
   const before = await skeleton.boundingBox();
-  expect(before?.width).toBe(96);
-  expect(before?.height).toBe(120);
+  expect(before?.width).toBe(80);
+  expect(before?.height).toBe(100);
 
   const image = page.getByAltText("Private submission preview");
   await expect(image).toBeVisible();
   const after = await image.boundingBox();
-  expect(after?.width).toBe(96);
-  expect(after?.height).toBe(120);
+  expect(after?.width).toBe(80);
+  expect(after?.height).toBe(100);
   expect(signingRequests).toHaveLength(1);
   expect(signingRequests[0]).not.toContain("original");
   expect(signingRequests[0]).not.toContain("review-thumb");

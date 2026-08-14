@@ -31,7 +31,7 @@ test("staff completes the controlled password recovery and signs in again", asyn
   await page.getByLabel("Password").fill(testPassword);
   await page.getByRole("button", { name: "Sign in securely" }).click();
   await expect(page).toHaveURL(/\/admin$/);
-  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Needs attention" })).toBeVisible();
 });
 
 test("expired recovery links fail safely", async ({ page }) => {

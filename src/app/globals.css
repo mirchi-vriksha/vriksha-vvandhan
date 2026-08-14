@@ -1912,7 +1912,7 @@ svg {
 .admin-nav a { min-height: 46px; border: 1px solid transparent; border-radius: .6rem; color: #5f645c; padding: .7rem .75rem; }
 .admin-nav a:hover { background: #f1efe8; }
 .admin-nav a[aria-current="page"] { border-color: #cfdbd1; background: #eaf1ea; color: var(--forest-accent); }
-.admin-nav__section { margin: 1.1rem .75rem .35rem; color: #92968e; font-size: .62rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.admin-nav__section { margin: 1.1rem .75rem .35rem; color: #5f645c; font-size: .62rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
 .admin-sidebar footer { margin-inline: .2rem; }
 .admin-page-header { align-items: flex-start; margin-bottom: 1.35rem; }
 .admin-page-header > div > p, .admin-panel__heading p, .admin-panel > div:first-child > p, .admin-campaign-health > div > p, .admin-public-card-editor > div > p, .admin-review-image > div > p { margin: 0; color: var(--action-red); font-size: .68rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
