@@ -12,7 +12,7 @@ test("homepage loads without browser console errors", async ({ page }) => {
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Vriksha Bandhan");
   await expect(page.locator(".campaign-hero__tagline")).toHaveText(
-    "It’s time to protect the protector.",
+    "It’s time to celebrate the ones who’ve always been there for us.",
   );
   await expect(page.getByText(/Vriksha Vvandhan/i)).toHaveCount(0);
   await expect(page.getByText("This Raksha Bandhan", { exact: true })).toHaveCount(0);

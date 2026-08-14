@@ -8,7 +8,7 @@ import { getPublicCampaignSummary } from "@/lib/public-campaign/data";
 export default async function Home() {
   const summary = await getPublicCampaignSummary();
   const metric = summary
-    ? { current: summary.current_count, target: summary.target_count, label: summary.metric_label }
+    ? { current: summary.current_count, target: summary.target_count, label: promiseMetric.label }
     : promiseMetric;
   return (
     <>

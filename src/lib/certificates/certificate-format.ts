@@ -1,4 +1,4 @@
-export const CERTIFICATE_TEMPLATE_VERSION = "vriksha-bandhan-2026-v2";
+export const CERTIFICATE_TEMPLATE_VERSION = "vriksha-bandhan-2026-v3";
 
 const INDIA_TIME_ZONE = "Asia/Kolkata";
 
@@ -6,7 +6,7 @@ export function formatGuardianNumber(guardianNumber: number): string {
   if (!Number.isSafeInteger(guardianNumber) || guardianNumber <= 0) {
     throw new Error("invalid_guardian_number");
   }
-  return String(guardianNumber).padStart(4, "0");
+  return String(guardianNumber);
 }
 
 export function formatCertificateDate(approvedAt: string | Date): string {

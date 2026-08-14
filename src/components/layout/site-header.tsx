@@ -3,12 +3,10 @@ import Link from "next/link";
 import { navigationItems } from "@/content/campaign";
 import { LogoLockup } from "@/components/shared/logo-lockup";
 import { MobileNavigation } from "@/components/layout/mobile-navigation";
-import { getPublicCampaignSummary } from "@/lib/public-campaign/data";
 
-export async function SiteHeader({ movementWallEnabled }: { movementWallEnabled?: boolean }) {
-  const enabled = movementWallEnabled ?? (await getPublicCampaignSummary())?.movement_wall_enabled ?? false;
+export function SiteHeader({ movementWallEnabled = false }: { movementWallEnabled?: boolean }) {
   const visibleNavigationItems = navigationItems.filter(
-    (item) => enabled || item.href !== "/movement",
+    (item) => movementWallEnabled || item.href !== "/movement",
   );
   return (
     <header className="site-header">

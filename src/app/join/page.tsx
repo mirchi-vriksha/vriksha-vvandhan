@@ -14,17 +14,17 @@ import { getPublicSubmissionAvailability } from "@/lib/submissions/service.serve
 import { getPublicCampaignSummary } from "@/lib/public-campaign/data";
 
 export const metadata: Metadata = {
-  title: "Tie a Rakhi to a Tree | Vriksha Bandhan",
-  description: "Make a promise of protection to a tree and submit your Vriksha Bandhan photograph for private review.",
+  title: "Become a Vriksha Guardian | Vriksha Bandhan",
+  description: "Celebrate a tree with a Rakhi and share your Vriksha Bandhan moment for private review.",
   alternates: { canonical: "/join" },
   openGraph: {
-    title: "Tie a Rakhi to a Tree | Vriksha Bandhan",
-    description: "Make a promise of protection to a tree and submit your Vriksha Bandhan photograph for private review.",
+    title: "Become a Vriksha Guardian | Vriksha Bandhan",
+    description: "Celebrate a tree with a Rakhi and share your Vriksha Bandhan moment for private review.",
     url: "/join",
   },
   twitter: {
-    title: "Tie a Rakhi to a Tree | Vriksha Bandhan",
-    description: "Make a promise of protection to a tree and submit your Vriksha Bandhan photograph for private review.",
+    title: "Become a Vriksha Guardian | Vriksha Bandhan",
+    description: "Celebrate a tree with a Rakhi and share your Vriksha Bandhan moment for private review.",
   },
 };
 
@@ -48,9 +48,12 @@ export default async function JoinPage() {
       <SiteHeader movementWallEnabled={summary?.movement_wall_enabled ?? false} />
       <main className="join-page" id="main-content">
         <section className="join-intro shell" aria-labelledby="join-title">
-          <p className="join-intro__eyebrow">Join the movement</p>
-          <h1 id="join-title">Tie a Rakhi to a Tree</h1>
-          <p>Make a promise of protection. Become a Vriksha Guardian.</p>
+          <p className="join-intro__eyebrow">Become a Vriksha Guardian</p>
+          <h1 id="join-title">Turn Gratitude Into a Green Bond.</h1>
+          <p>
+            Tie a Rakhi to a tree, share your moment and become a Vriksha Guardian—someone who
+            chose to celebrate the bond between us and nature.
+          </p>
         </section>
         <div className="join-content shell">
           <JoinCampaignOverview />
@@ -59,8 +62,8 @@ export default async function JoinPage() {
             {availability === "open" ? (
               <>
                 <p className="join-submission__instructions" id="submission-instructions">
-                  Upload a clear photograph of your Rakhi tied to a tree. If approved, you’ll receive
-                  a Vriksha Guardian number and personalised certificate.
+                  Upload a clear photograph of your Vriksha Bandhan moment. If approved, you’ll
+                  receive a Vriksha Guardian number and personalised certificate.
                 </p>
                 <PublicSubmissionForm
                   instructionsId="submission-instructions"

@@ -11,7 +11,7 @@ export function SubmissionSuccess() {
   return (
     <section className="submission-success" aria-labelledby="submission-success-title">
       <CheckCircle2 className="submission-success__icon" aria-hidden="true" size={58} />
-      <p className="submission-success__eyebrow">Promise received</p>
+      <p className="submission-success__eyebrow">Moment received</p>
       <h2 id="submission-success-title" ref={headingRef} tabIndex={-1}>
         Your submission has been received.
       </h2>

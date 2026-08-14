@@ -9,9 +9,10 @@ test("join page reflects the connected campaign availability and has no console 
 
   const response = await page.goto("/join");
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1, name: "Tie a Rakhi to a Tree" })).toBeVisible();
-  await expect(page.getByText("About Vriksha Bandhan")).toBeVisible();
-  await expect(page.locator("#how-to-participate")).toContainText("Upload & inspire others");
+  await expect(page.getByRole("heading", { level: 1, name: "Turn Gratitude Into a Green Bond." })).toBeVisible();
+  await expect(page.getByText("A Rakhi. A Gesture of Gratitude.")).toBeVisible();
+  await expect(page.getByText("The Mirchi Movement")).toBeVisible();
+  await expect(page.locator("#how-to-participate")).toContainText("Upload it & inspire others.");
   const form = page.locator("form.public-submission-form");
   if (await form.count()) {
     await expect(form).toBeVisible();

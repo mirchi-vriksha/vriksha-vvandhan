@@ -1,13 +1,11 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-test("Movement Wall renders an honest count and safe empty state", async ({ page }) => {
+test("Movement Wall remains unavailable while the global switch is disabled", async ({ page }) => {
   const response = await page.goto("/movement");
-  expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1, name: "Vriksha Bandhan Movement Wall" })).toBeVisible();
-  await expect(page.getByText("Promises of protection, taking root across Mumbai.")).toBeVisible();
-  await expect(page.getByText("No approved promises are public yet.")).toBeVisible();
-  await expect(page.locator(".movement-page__count strong")).toHaveText(/^(—|\d+)$/);
+  expect(response?.status()).toBe(404);
+
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Movement Wall" })).toHaveCount(0);
 });
 
 for (const width of [360, 390]) {
@@ -18,9 +16,3 @@ for (const width of [360, 390]) {
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
   });
 }
-
-test("Movement Wall has no serious or critical axe violations", async ({ page }) => {
-  await page.goto("/movement");
-  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
-  expect(results.violations.filter((violation) => ["serious", "critical"].includes(violation.impact ?? ""))).toEqual([]);
-});

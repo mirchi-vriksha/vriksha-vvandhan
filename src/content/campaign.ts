@@ -15,15 +15,15 @@ export const navigationItems = [
 export const promiseMetric: CampaignMetric = {
   current: null,
   target: 983,
-  label: "Vriksha promises",
+  label: "trees celebrated",
 };
 
 export const heroContent = {
   title: "Vriksha Bandhan",
-  tagline: "It’s time to protect the protector.",
+  tagline: "It’s time to celebrate the ones who’ve always been there for us.",
   primaryCta: { label: "Tie a Rakhi to a Tree", href: "/join" },
   secondaryCta: { label: "How It Works", href: "/join#how-to-participate" },
-  ribbonLabel: "Promises already taking root",
+  ribbonLabel: "Mumbai’s growing wall of gratitude",
 } as const satisfies HeroContent;
 
 export const heroImage: CampaignImage = {

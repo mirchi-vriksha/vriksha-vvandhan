@@ -10,7 +10,7 @@ Transactional delivery uses the Resend Node SDK and the existing `email_deliveri
 
 Templates are lightweight responsive HTML with text fallbacks. Participant values are HTML-escaped. No participant photograph, tracking image, workflow jargon, staff identity, or internal moderation payload is included.
 
-All three templates now use the visible **Vriksha Bandhan** name and `It’s time to protect the protector.` footer. Content versions are `submission-received-v2`, `approval-certificate-v2` and `rejection-v2`; eligibility, idempotency and delivery state transitions are unchanged.
+All three templates use the visible **Vriksha Bandhan** name and the revised gratitude-led campaign language. Content versions are `submission-received-v2`, `approval-certificate-v2` and `rejection-v2`; eligibility, idempotency and delivery state transitions are unchanged.
 
 ## Immediate processing and durability
 

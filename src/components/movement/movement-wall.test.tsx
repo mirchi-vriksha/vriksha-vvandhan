@@ -6,8 +6,8 @@ import { MovementWall } from "@/components/movement/movement-wall";
 describe("Movement Wall", () => {
   it("shows the honest beginning state", () => {
     render(<MovementWall initialEntries={[]} />);
-    expect(screen.getByRole("heading", { name: "No approved promises are public yet." })).toBeInTheDocument();
-    expect(screen.getByText("The movement is just beginning.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "No moments of gratitude are public yet." })).toBeInTheDocument();
+    expect(screen.getByText("The wall is just beginning.")).toBeInTheDocument();
   });
 
   it("renders only safe public Guardian details", () => {

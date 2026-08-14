@@ -15,9 +15,9 @@ const manrope = Manrope({
   display: "swap",
 });
 
-const campaignTitle = "Vriksha Bandhan by Mirchi | Protect the Protector";
+const campaignTitle = "Vriksha Bandhan by Mirchi | A Bond of Gratitude";
 const campaignDescription =
-  "Join Mirchi’s Vriksha Bandhan movement and make a promise of protection to a tree this Raksha Bandhan.";
+  "Celebrate the trees that have always been there for us with Mirchi’s Vriksha Bandhan movement.";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
