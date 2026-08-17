@@ -35,7 +35,18 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run db:start
-      - run: npm run db:reset
+      - name: Reset local database
+        shell: bash
+        run: |
+          set +e
+          output="$(npm run db:reset 2>&1)"
+          exit_code=$?
+          printf '%s\n' "$output"
+          if [ "$exit_code" -ne 0 ]; then
+            annotation="$(printf '%s\n' "$output" | tail -n 80 | tr '\n' ' ' | sed 's/%/%25/g; s/\r/%0D/g')"
+            printf '::error title=Database reset failed::%s\n' "$annotation"
+            exit "$exit_code"
+          fi
       - run: npm run db:buckets:seed
       - run: npm run db:lint
       - run: npm run db:test
