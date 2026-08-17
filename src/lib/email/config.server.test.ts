@@ -5,7 +5,7 @@ import { getEmailConfiguration } from "@/lib/email/config.server";
 describe("email delivery configuration", () => {
   it("is safely disabled without requiring provider secrets", () => {
     expect(getEmailConfiguration({ EMAIL_SENDING_ENABLED: "false", SUPABASE_TARGET_ENVIRONMENT: "staging" })).toEqual({
-      enabled: false, apiKey: null, from: null, replyTo: null, targetEnvironment: "staging", testRecipient: null,
+      enabled: false, apiKey: null, from: null, replyTo: null, targetEnvironment: "staging", testRecipients: [],
     });
   });
 
@@ -20,13 +20,33 @@ describe("email delivery configuration", () => {
     expect(getEmailConfiguration({
       EMAIL_SENDING_ENABLED: "true", SUPABASE_TARGET_ENVIRONMENT: "staging", RESEND_API_KEY: "test-key",
       EMAIL_FROM: "Vriksha Test <test@example.test>", EMAIL_REPLY_TO: "reply@example.test", EMAIL_TEST_RECIPIENT: "approved@example.test",
-    }).testRecipient).toBe("approved@example.test");
+    }).testRecipients).toEqual(["approved@example.test"]);
+  });
+
+  it("accepts at most five normalized staging recipients", () => {
+    expect(getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "true", SUPABASE_TARGET_ENVIRONMENT: "staging", RESEND_API_KEY: "test-key",
+      EMAIL_FROM: "Vriksha Test <test@example.test>", EMAIL_REPLY_TO: "reply@example.test",
+      EMAIL_TEST_RECIPIENTS: "ONE@example.test, two@example.test, ONE@example.test",
+    }).testRecipients).toEqual(["one@example.test", "two@example.test"]);
+    expect(() => getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "true", SUPABASE_TARGET_ENVIRONMENT: "staging", RESEND_API_KEY: "test-key",
+      EMAIL_FROM: "Vriksha Test <test@example.test>", EMAIL_REPLY_TO: "reply@example.test",
+      EMAIL_TEST_RECIPIENTS: "a@e.test,b@e.test,c@e.test,d@e.test,e@e.test,f@e.test",
+    })).toThrow("staging_test_recipient_limit");
   });
 
   it("forbids a staging recipient override in production", () => {
     expect(() => getEmailConfiguration({
       EMAIL_SENDING_ENABLED: "true", SUPABASE_TARGET_ENVIRONMENT: "production", RESEND_API_KEY: "test-key",
       EMAIL_FROM: "Vriksha Test <test@example.test>", EMAIL_REPLY_TO: "reply@example.test", EMAIL_TEST_RECIPIENT: "qa@example.test",
+    })).toThrow("production_test_recipient_forbidden");
+  });
+
+  it("forbids the plural allowlist in production", () => {
+    expect(() => getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "true", SUPABASE_TARGET_ENVIRONMENT: "production", RESEND_API_KEY: "test-key",
+      EMAIL_FROM: "Vriksha Test <test@example.test>", EMAIL_REPLY_TO: "reply@example.test", EMAIL_TEST_RECIPIENTS: "qa@example.test",
     })).toThrow("production_test_recipient_forbidden");
   });
 });

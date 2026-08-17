@@ -1,11 +1,11 @@
 import "server-only";
 
-import { Resend } from "resend";
+import { Resend, type ErrorResponse } from "resend";
 
 import { buildCertificateFilename } from "@/lib/certificates/certificate-format";
 import { getEmailConfiguration, type EmailConfiguration } from "@/lib/email/config.server";
 import { approvalCertificateEmail } from "@/lib/email/templates/approval-certificate";
-import { rejectionEmail } from "@/lib/email/templates/rejection";
+import { rejectionEmail, type RejectionReasonCode } from "@/lib/email/templates/rejection";
 import { submissionReceivedEmail } from "@/lib/email/templates/submission-received";
 import type { TransactionalEmail } from "@/lib/email/templates/shared";
 import { CERTIFICATES_BUCKET } from "@/lib/storage/buckets";
@@ -24,9 +24,18 @@ export type EmailClaim = {
   display_name: string;
   guardian_number: number | null;
   rejection_comment: string | null;
+  rejection_reason_code: string | null;
+  rejection_participant_note: string | null;
   certificate_bucket: string | null;
   certificate_path: string | null;
 };
+
+export class ResendProviderError extends Error {
+  constructor(readonly providerError: ErrorResponse) {
+    super("resend_provider_error");
+    this.name = "ResendProviderError";
+  }
+}
 
 type SendInput = {
   from: string;
@@ -54,13 +63,25 @@ function templateFor(claim: EmailClaim): TransactionalEmail {
     if (!claim.guardian_number) throw new Error("attachment_missing");
     return approvalCertificateEmail(claim.display_name, claim.guardian_number);
   }
-  if (!claim.rejection_comment) throw new Error("rejection_comment_missing");
-  return rejectionEmail(claim.display_name, claim.rejection_comment);
+  const reasonCode = claim.rejection_reason_code as RejectionReasonCode | null;
+  if (!reasonCode) throw new Error("rejection_reason_missing");
+  return rejectionEmail(claim.display_name, reasonCode, claim.rejection_participant_note);
 }
 
 export function safeEmailErrorCode(error: unknown): string {
+  if (error instanceof ResendProviderError) {
+    const { name, statusCode } = error.providerError;
+    if (name === "rate_limit_exceeded" || statusCode === 429) return "resend_rate_limited";
+    if (name === "internal_server_error" || statusCode === 500 || statusCode === 502 || statusCode === 503 || statusCode === 504) return "resend_internal_server_error";
+    if (name === "concurrent_idempotent_requests") return "resend_concurrent_idempotency";
+    if (name === "invalid_from_address") return "resend_invalid_sender";
+    if (name === "invalid_parameter" || name === "validation_error") return "resend_validation_error";
+    if (["invalid_idempotency_key", "invalid_idempotent_request", "invalid_attachment", "missing_api_key", "restricted_api_key", "invalid_api_key", "monthly_quota_exceeded", "daily_quota_exceeded", "security_error"].includes(name)) {
+      return `resend_${name}`.slice(0, 80);
+    }
+  }
   if (error instanceof Error) {
-    if (["attachment_missing", "rejection_comment_missing", "email_completion_failed"].includes(error.message)) return error.message;
+    if (["attachment_missing", "rejection_reason_missing", "email_completion_failed", "provider_message_id_missing"].includes(error.message)) return error.message;
     const message = error.message.toLowerCase();
     if (message.includes("timeout") || message.includes("timed out")) return "resend_timeout";
     if (message.includes("rate") || message.includes("429")) return "resend_rate_limited";
@@ -89,7 +110,7 @@ const defaults: ProcessorDependencies = {
   async send(configuration, input, idempotencyKey) {
     const resend = new Resend(configuration.apiKey!);
     const result = await resend.emails.send(input, { idempotencyKey });
-    if (result.error) throw new Error(`${result.error.name}: ${result.error.message}`);
+    if (result.error) throw new ResendProviderError(result.error);
     if (!result.data?.id) throw new Error("provider_message_id_missing");
     return result.data.id;
   },
@@ -137,7 +158,7 @@ export async function processEmailDelivery(
   try {
     const template = templateFor(claim);
     const recipient = configuration.targetEnvironment === "staging"
-      ? configuration.testRecipient!
+      ? configuration.testRecipients.find((value) => value === claim.recipient_email.trim().toLowerCase()) ?? configuration.testRecipients[0]!
       : claim.recipient_email;
     if (configuration.targetEnvironment === "staging") processor.log("staging recipient override active");
 

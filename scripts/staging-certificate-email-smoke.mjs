@@ -30,7 +30,9 @@ async function main() {
   const certificateOnly = process.argv.includes("--certificate-only");
   const recipient = option("--recipient");
   if (process.env.SUPABASE_TARGET_ENVIRONMENT !== "staging") throw new Error("staging_guard_required");
-  if (!certificateOnly && (!recipient || recipient !== process.env.EMAIL_TEST_RECIPIENT)) {
+  const allowedRecipients = (process.env.EMAIL_TEST_RECIPIENTS || process.env.EMAIL_TEST_RECIPIENT || "")
+    .split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
+  if (!certificateOnly && (!recipient || !allowedRecipients.includes(recipient.toLowerCase()))) {
     throw new Error("explicit_test_recipient_required");
   }
   if (!execute) {

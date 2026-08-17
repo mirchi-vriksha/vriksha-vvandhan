@@ -28,10 +28,10 @@ insert into public.email_deliveries(
 
 set local role service_role;
 select ok(public.record_resend_webhook_event(
-  'event-section6','provider-section6','email.delivered',now()
+  'event-section6','provider-section6','email.delivered',now(),null
 ),'first signed event ID is recorded');
 select ok(not public.record_resend_webhook_event(
-  'event-section6','provider-section6','email.delivered',now()
+  'event-section6','provider-section6','email.delivered',now(),null
 ),'duplicate webhook event ID is ignored');
 reset role;
 select isnt((select delivered_at from public.email_deliveries where id='61000000-0000-4000-8000-000000000002'),null,'delivery webhook records delivered time');
