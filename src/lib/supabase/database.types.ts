@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.15"
+  }
   private: {
     Tables: {
       application_rate_limits: {
@@ -601,11 +606,11 @@ export type Database = {
           published_at: string | null
           rejected_at: string | null
           rejection_comment: string | null
+          rejection_confirmed_at: string | null
+          rejection_confirmed_by: string | null
           rejection_internal_note: string | null
           rejection_participant_note: string | null
           rejection_reason_code: string | null
-          rejection_confirmed_at: string | null
-          rejection_confirmed_by: string | null
           rejection_recommended_at: string | null
           rejection_recommended_by: string | null
           source: Database["public"]["Enums"]["submission_source"]
@@ -630,11 +635,11 @@ export type Database = {
           published_at?: string | null
           rejected_at?: string | null
           rejection_comment?: string | null
+          rejection_confirmed_at?: string | null
+          rejection_confirmed_by?: string | null
           rejection_internal_note?: string | null
           rejection_participant_note?: string | null
           rejection_reason_code?: string | null
-          rejection_confirmed_at?: string | null
-          rejection_confirmed_by?: string | null
           rejection_recommended_at?: string | null
           rejection_recommended_by?: string | null
           source?: Database["public"]["Enums"]["submission_source"]
@@ -659,11 +664,11 @@ export type Database = {
           published_at?: string | null
           rejected_at?: string | null
           rejection_comment?: string | null
+          rejection_confirmed_at?: string | null
+          rejection_confirmed_by?: string | null
           rejection_internal_note?: string | null
           rejection_participant_note?: string | null
           rejection_reason_code?: string | null
-          rejection_confirmed_at?: string | null
-          rejection_confirmed_by?: string | null
           rejection_recommended_at?: string | null
           rejection_recommended_by?: string | null
           source?: Database["public"]["Enums"]["submission_source"]
@@ -716,6 +721,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      begin_email_worker_run: { Args: never; Returns: string }
       claim_certificate_generation: {
         Args: {
           p_allow_exhausted: boolean
@@ -770,15 +776,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      confirm_submission_rejection: {
-        Args: {
-          p_internal_note: string
-          p_participant_note: string
-          p_reason_code: string
-          p_submission_id: string
-        }
-        Returns: undefined
-      }
       complete_email_worker_run: {
         Args: {
           p_error_code?: string
@@ -790,7 +787,15 @@ export type Database = {
         }
         Returns: boolean
       }
-      begin_email_worker_run: { Args: never; Returns: string }
+      confirm_submission_rejection: {
+        Args: {
+          p_internal_note: string
+          p_participant_note: string
+          p_reason_code: string
+          p_submission_id: string
+        }
+        Returns: undefined
+      }
       consume_application_rate_limit: {
         Args: {
           p_key_hash: string
@@ -907,6 +912,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      prepare_email_admin_retry: {
+        Args: { p_delivery_id: string }
+        Returns: boolean
+      }
       prepare_public_submission: {
         Args: {
           p_consent_version: string
@@ -947,15 +956,11 @@ export type Database = {
           guardian_number: number
         }[]
       }
-      purge_expired_rate_limits: { Args: { p_limit?: number }; Returns: number }
       purge_email_webhook_events: {
         Args: { p_limit?: number; p_retention_days?: number }
         Returns: number
       }
-      prepare_email_admin_retry: {
-        Args: { p_delivery_id: string }
-        Returns: boolean
-      }
+      purge_expired_rate_limits: { Args: { p_limit?: number }; Returns: number }
       recommend_submission_rejection: {
         Args: {
           p_internal_note: string
@@ -969,6 +974,10 @@ export type Database = {
         Args: { p_row_count: number }
         Returns: undefined
       }
+      record_delivery_admin_action: {
+        Args: { p_action: string; p_delivery_id: string }
+        Returns: undefined
+      }
       record_resend_webhook_event: {
         Args: {
           p_event_created_at: string
@@ -978,10 +987,6 @@ export type Database = {
           p_provider_message_id: string
         }
         Returns: boolean
-      }
-      record_delivery_admin_action: {
-        Args: { p_action: string; p_delivery_id: string }
-        Returns: undefined
       }
       recover_stale_delivery_claims: {
         Args: { p_stale_minutes?: number }
