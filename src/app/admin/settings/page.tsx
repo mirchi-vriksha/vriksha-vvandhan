@@ -14,19 +14,20 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
   const data = result.data;
   const saved = (await searchParams).saved === "true";
   return <>
-    <header className="admin-page-header"><div><p>Campaign control</p><h1>Settings</h1></div></header>
+    <header className="admin-page-header"><div><p>Admin tools</p><h1>Campaign Settings</h1><span>Control public participation, campaign visibility, and operational exports.</span></div></header>
     {saved && <div className="admin-success" role="status">Campaign settings saved.</div>}
     <form className="admin-panel admin-settings" action={updateCampaignSettingsAction}>
+      <div><p>Public experience</p><h2>Campaign controls</h2></div>
       <label>Target count<input name="targetCount" type="number" min={1} defaultValue={data.target_count} required /></label>
       <label>Metric label<input name="metricLabel" maxLength={80} defaultValue={data.metric_label} required /></label>
       <label className="team-card__active"><input name="submissionsOpen" type="checkbox" defaultChecked={data.submissions_open} /> Public submissions are open</label>
       <label className="team-card__active"><input name="movementWallEnabled" type="checkbox" defaultChecked={data.movement_wall_enabled} /> Display the public Movement Wall</label>
       <small>When disabled, the Movement Wall link and page are removed publicly. Published records, images, Guardian numbers, and the campaign count remain unchanged.</small>
       <small>Last changed {new Date(data.updated_at).toLocaleString("en-IN")}. Changes are audited and invalidate public campaign data.</small>
-      <button className="button button--primary" type="submit">Save campaign settings</button>
+      <button className="button button--primary" type="submit">Save campaign controls</button>
     </form>
     <section className="admin-panel admin-settings" aria-labelledby="delivery-configuration-title">
-      <div><p>Section 5 operations</p><h2 id="delivery-configuration-title">Delivery configuration</h2></div>
+      <div><p>Operational health</p><h2 id="delivery-configuration-title">Delivery configuration</h2></div>
       <dl className="admin-settings-status">
         <div><dt>Certificate template</dt><dd>Installed · vriksha-bandhan-2026-v2</dd></div>
         <div><dt>Email sending</dt><dd>{process.env.EMAIL_SENDING_ENABLED === "true" ? "Enabled" : "Disabled (safe default)"}</dd></div>
@@ -35,7 +36,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
       <small>No API keys or participant addresses are displayed here.</small>
     </section>
     <section className="admin-panel admin-settings" aria-labelledby="data-export-title">
-      <div><p>Sensitive Admin operation</p><h2 id="data-export-title">Data Export</h2></div>
+      <div><p>Sensitive Admin operation</p><h2 id="data-export-title">Campaign data export</h2></div>
       <p>Download the operational campaign workbook. It contains participant contact details and must be handled as sensitive data.</p>
       <a className="button button--primary" href="/api/admin/export/campaign.xlsx">Export Campaign Data</a>
       <small>Every successful export is recorded in the audit log. Secrets, signed URLs, request tokens, and binary files are excluded.</small>

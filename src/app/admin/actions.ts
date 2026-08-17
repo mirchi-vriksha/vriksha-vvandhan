@@ -43,10 +43,10 @@ export async function approveSubmissionAction(formData: FormData) {
 
 export async function recommendRejectionAction(formData: FormData) {
   await requireRole("reviewer");
-  const input = rejectionSchema.parse({ submissionId: formData.get("submissionId"), comment: formData.get("comment") });
+  const input = rejectionSchema.parse({ submissionId: formData.get("submissionId"), reasonCode: formData.get("reasonCode"), participantNote: formData.get("participantNote") ?? "", internalNote: formData.get("internalNote") });
   if (isStaffE2EAdapterEnabled()) redirect(`/admin/submissions/${input.submissionId}?testAction=recommended`);
   const client = await createServerSupabaseClient();
-  const { error } = await callUntypedRpc(client, "recommend_submission_rejection", { p_submission_id: input.submissionId, p_comment: input.comment });
+  const { error } = await callUntypedRpc(client, "recommend_submission_rejection", { p_submission_id: input.submissionId, p_reason_code: input.reasonCode, p_participant_note: input.participantNote, p_internal_note: input.internalNote });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/submissions/${input.submissionId}`);
   redirect(`/admin/submissions/${input.submissionId}?success=rejection-recommended`);
@@ -54,10 +54,10 @@ export async function recommendRejectionAction(formData: FormData) {
 
 export async function confirmRejectionAction(formData: FormData) {
   await requireRole("admin");
-  const input = rejectionSchema.parse({ submissionId: formData.get("submissionId"), comment: formData.get("comment") });
+  const input = rejectionSchema.parse({ submissionId: formData.get("submissionId"), reasonCode: formData.get("reasonCode"), participantNote: formData.get("participantNote") ?? "", internalNote: formData.get("internalNote") });
   if (isStaffE2EAdapterEnabled()) redirect(`/admin/submissions/${input.submissionId}?testAction=rejected`);
   const client = await createServerSupabaseClient();
-  const { error } = await callUntypedRpc(client, "confirm_submission_rejection", { p_submission_id: input.submissionId, p_comment: input.comment });
+  const { error } = await callUntypedRpc(client, "confirm_submission_rejection", { p_submission_id: input.submissionId, p_reason_code: input.reasonCode, p_participant_note: input.participantNote, p_internal_note: input.internalNote });
   if (error) throw new Error(error.message);
   after(async () => {
     await processSubmissionDelivery(input.submissionId, "rejection").catch(() => {
