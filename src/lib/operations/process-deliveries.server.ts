@@ -2,6 +2,7 @@ import "server-only";
 
 import { processCertificateGeneration } from "@/lib/certificates/process-certificate.server";
 import { processEmailDelivery } from "@/lib/email/process-email-delivery.server";
+import { getEmailConfiguration } from "@/lib/email/config.server";
 import { callUntypedRpc } from "@/lib/supabase/rpc.server";
 import { getServiceSupabaseClient } from "@/lib/supabase/service";
 
@@ -19,8 +20,9 @@ export type DeliveryCatchUpResult = {
   emailFailures: number;
 };
 
-export async function processDeliveryBacklog(batchSize = 10): Promise<DeliveryCatchUpResult> {
-  const limit = Math.min(Math.max(Math.trunc(batchSize), 1), 25);
+export async function processDeliveryBacklog(batchSize?: number): Promise<DeliveryCatchUpResult> {
+  const configuredBatchSize = getEmailConfiguration().batchSize;
+  const limit = Math.min(Math.max(Math.trunc(batchSize ?? configuredBatchSize), 1), 25);
   const service = getServiceSupabaseClient();
   const workerRun = await callUntypedRpc<string>(service, "begin_email_worker_run");
   if (workerRun.error || !workerRun.data) throw new Error("worker_run_start_failed");

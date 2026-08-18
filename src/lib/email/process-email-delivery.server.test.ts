@@ -3,13 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createTransport: vi.fn(),
   sendMail: vi.fn(),
+  close: vi.fn(),
 }));
 
 vi.mock("nodemailer", () => ({
   default: { createTransport: mocks.createTransport },
 }));
 
-import { processEmailDelivery, ResendProviderError, safeEmailErrorCode, SmtpProviderError, type EmailClaim } from "@/lib/email/process-email-delivery.server";
+import { GmailSmtpProviderError, processEmailDelivery, ResendProviderError, safeEmailErrorCode, type EmailClaim } from "@/lib/email/process-email-delivery.server";
 
 const claim: EmailClaim = {
   delivery_id: "d1000000-0000-4000-8000-000000000001",
@@ -32,11 +33,14 @@ const enabledConfiguration = {
   provider: "resend" as const,
   apiKey: "test-key",
   smtpUser: null,
-  smtpPassword: null,
+  smtpAppPassword: null,
   from: "Vriksha Test <test@example.test>",
   replyTo: "reply@example.test",
   targetEnvironment: "local" as const,
   testRecipients: [],
+  dailyLimit: 350,
+  batchSize: 5,
+  timeZone: "Asia/Kolkata",
 };
 
 describe("processEmailDelivery", () => {
@@ -44,7 +48,7 @@ describe("processEmailDelivery", () => {
     const claimDelivery = vi.fn();
     const send = vi.fn();
     const result = await processEmailDelivery(claim.delivery_id, {
-      configuration: () => ({ ...enabledConfiguration, enabled: false, provider: null, apiKey: null, from: null, replyTo: null }),
+      configuration: () => ({ ...enabledConfiguration, enabled: false, apiKey: null, from: null, replyTo: null }),
       claim: claimDelivery,
       send,
     });
@@ -69,7 +73,7 @@ describe("processEmailDelivery", () => {
 
   it("sends through Gmail SMTP with a deterministic message ID", async () => {
     mocks.sendMail.mockResolvedValue({ messageId: "gmail-message-1" });
-    mocks.createTransport.mockReturnValue({ sendMail: mocks.sendMail });
+    mocks.createTransport.mockReturnValue({ sendMail: mocks.sendMail, close: mocks.close });
     const complete = vi.fn().mockResolvedValue(true);
 
     const result = await processEmailDelivery(claim.delivery_id, {
@@ -78,7 +82,7 @@ describe("processEmailDelivery", () => {
         provider: "gmail_smtp",
         apiKey: null,
         smtpUser: "sender@example.test",
-        smtpPassword: "app-password",
+        smtpAppPassword: "app-password",
       }),
       claim: vi.fn().mockResolvedValue(claim),
       complete,
@@ -86,7 +90,9 @@ describe("processEmailDelivery", () => {
 
     expect(result).toEqual({ outcome: "sent", providerMessageId: "gmail-message-1" });
     expect(mocks.createTransport).toHaveBeenCalledWith(expect.objectContaining({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: { user: "sender@example.test", pass: "app-password" },
     }));
     expect(mocks.sendMail).toHaveBeenCalledWith(expect.objectContaining({
@@ -140,8 +146,9 @@ describe("processEmailDelivery", () => {
     expect(safeEmailErrorCode(new ResendProviderError({ name: "rate_limit_exceeded", message: "slow down", statusCode: 429 }))).toBe("resend_rate_limited");
     expect(safeEmailErrorCode(new ResendProviderError({ name: "invalid_from_address", message: "bad sender", statusCode: 422 }))).toBe("resend_invalid_sender");
     expect(safeEmailErrorCode(new ResendProviderError({ name: "internal_server_error", message: "provider unavailable", statusCode: 503 }))).toBe("resend_internal_server_error");
-    expect(safeEmailErrorCode(new SmtpProviderError("ETIMEDOUT", null))).toBe("resend_timeout");
-    expect(safeEmailErrorCode(new SmtpProviderError("EAUTH", 535))).toBe("resend_invalid_api_key");
-    expect(safeEmailErrorCode(new SmtpProviderError(null, 450))).toBe("resend_temporary_error");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("EAUTH", 535))).toBe("gmail_smtp_authentication_failed");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("EENVELOPE", 550))).toBe("gmail_smtp_invalid_recipient");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("ETIMEDOUT", null))).toBe("gmail_smtp_ambiguous");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("ESMTP", 421))).toBe("gmail_smtp_temporary_error");
   });
 });

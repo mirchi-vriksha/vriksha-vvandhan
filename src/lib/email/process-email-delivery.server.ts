@@ -1,11 +1,14 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
+
 import nodemailer from "nodemailer";
+import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import { Resend, type ErrorResponse } from "resend";
 
 import { buildCertificateFilename } from "@/lib/certificates/certificate-format";
 import { getEmailConfiguration, type EmailConfiguration } from "@/lib/email/config.server";
+import { emailQuotaWindow } from "@/lib/email/quota-window.server";
 import { approvalCertificateEmail } from "@/lib/email/templates/approval-certificate";
 import { rejectionEmail, type RejectionReasonCode } from "@/lib/email/templates/rejection";
 import { submissionReceivedEmail } from "@/lib/email/templates/submission-received";
@@ -39,13 +42,19 @@ export class ResendProviderError extends Error {
   }
 }
 
-export class SmtpProviderError extends Error {
-  constructor(
-    readonly code: string | null,
-    readonly responseCode: number | null,
-  ) {
-    super("smtp_provider_error");
-    this.name = "SmtpProviderError";
+export class GmailSmtpProviderError extends Error {
+  constructor(readonly code: string | null, readonly responseCode: number | null) {
+    super("gmail_smtp_provider_error");
+    this.name = "GmailSmtpProviderError";
+  }
+
+  static from(error: unknown): GmailSmtpProviderError {
+    if (!error || typeof error !== "object") return new GmailSmtpProviderError(null, null);
+    const candidate = error as { code?: unknown; responseCode?: unknown };
+    return new GmailSmtpProviderError(
+      typeof candidate.code === "string" ? candidate.code.slice(0, 40) : null,
+      typeof candidate.responseCode === "number" ? candidate.responseCode : null,
+    );
   }
 }
 
@@ -61,7 +70,7 @@ type SendInput = {
 
 type ProcessorDependencies = {
   configuration: () => EmailConfiguration;
-  claim: (deliveryId: string) => Promise<EmailClaim | null>;
+  claim: (deliveryId: string, configuration: EmailConfiguration, allowExhausted: boolean) => Promise<EmailClaim | null>;
   downloadCertificate: (path: string) => Promise<Buffer>;
   send: (configuration: EmailConfiguration, input: SendInput, idempotencyKey: string) => Promise<string>;
   complete: (claim: EmailClaim, templateVersion: string, providerMessageId: string) => Promise<boolean>;
@@ -81,6 +90,13 @@ function templateFor(claim: EmailClaim): TransactionalEmail {
 }
 
 export function safeEmailErrorCode(error: unknown): string {
+  if (error instanceof GmailSmtpProviderError) {
+    if (error.code === "EAUTH" || error.responseCode === 535) return "gmail_smtp_authentication_failed";
+    if (error.code === "EENVELOPE" || error.responseCode === 550 || error.responseCode === 551 || error.responseCode === 553) return "gmail_smtp_invalid_recipient";
+    if (error.responseCode === 421 || error.responseCode === 450 || error.responseCode === 451 || error.responseCode === 452) return "gmail_smtp_temporary_error";
+    if (["ETIMEDOUT", "ECONNECTION", "ECONNRESET", "ESOCKET"].includes(error.code ?? "")) return "gmail_smtp_ambiguous";
+    return "gmail_smtp_provider_error";
+  }
   if (error instanceof ResendProviderError) {
     const { name, statusCode } = error.providerError;
     if (name === "rate_limit_exceeded" || statusCode === 429) return "resend_rate_limited";
@@ -91,14 +107,6 @@ export function safeEmailErrorCode(error: unknown): string {
     if (["invalid_idempotency_key", "invalid_idempotent_request", "invalid_attachment", "missing_api_key", "restricted_api_key", "invalid_api_key", "monthly_quota_exceeded", "daily_quota_exceeded", "security_error"].includes(name)) {
       return `resend_${name}`.slice(0, 80);
     }
-  }
-  if (error instanceof SmtpProviderError) {
-    if (["ETIMEDOUT", "ESOCKET", "ECONNECTION"].includes(error.code ?? "")) return "resend_timeout";
-    if (error.responseCode === 421 || error.responseCode === 450 || error.responseCode === 451 || error.responseCode === 452) return "resend_temporary_error";
-    if (error.responseCode === 429) return "resend_rate_limited";
-    if (error.responseCode === 550 || error.responseCode === 551 || error.responseCode === 553) return "resend_invalid_recipient";
-    if (error.code === "EAUTH" || error.responseCode === 535) return "resend_invalid_api_key";
-    return "resend_provider_error";
   }
   if (error instanceof Error) {
     if (["attachment_missing", "rejection_reason_missing", "email_completion_failed", "provider_message_id_missing"].includes(error.message)) return error.message;
@@ -114,10 +122,14 @@ export function safeEmailErrorCode(error: unknown): string {
 
 const defaults: ProcessorDependencies = {
   configuration: getEmailConfiguration,
-  async claim(deliveryId) {
+  async claim(deliveryId, configuration, allowExhausted) {
+    const quota = emailQuotaWindow(new Date(), configuration.timeZone);
     const result = await callUntypedRpc<EmailClaim[]>(getServiceSupabaseClient(), "claim_email_delivery", {
       p_delivery_id: deliveryId,
-      p_allow_exhausted: false,
+      p_allow_exhausted: allowExhausted,
+      p_quota_date: quota.quotaDate,
+      p_daily_limit: configuration.dailyLimit,
+      p_next_window: quota.nextWindow,
     });
     if (result.error) throw new Error("email_claim_failed");
     return result.data?.[0] ?? null;
@@ -129,20 +141,20 @@ const defaults: ProcessorDependencies = {
   },
   async send(configuration, input, idempotencyKey) {
     if (configuration.provider === "gmail_smtp") {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: configuration.smtpUser!,
-          pass: configuration.smtpPassword!,
-        },
+      const transportOptions: SMTPTransport.Options = {
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: { user: configuration.smtpUser!, pass: configuration.smtpAppPassword! },
         connectionTimeout: 10_000,
         greetingTimeout: 10_000,
         socketTimeout: 30_000,
-      });
+      };
+      const transport = nodemailer.createTransport(transportOptions);
       const messageIdHash = createHash("sha256").update(idempotencyKey).digest("hex");
       const messageDomain = configuration.smtpUser!.split("@")[1] ?? "vriksha-bandhan.invalid";
       try {
-        const result = await transporter.sendMail({
+        const result = await transport.sendMail({
           ...input,
           messageId: `<${messageIdHash}@${messageDomain}>`,
         });
@@ -150,14 +162,11 @@ const defaults: ProcessorDependencies = {
         return result.messageId;
       } catch (error) {
         if (error instanceof Error && error.message === "provider_message_id_missing") throw error;
-        const smtpError = error as { code?: unknown; responseCode?: unknown };
-        throw new SmtpProviderError(
-          typeof smtpError.code === "string" ? smtpError.code : null,
-          typeof smtpError.responseCode === "number" ? smtpError.responseCode : null,
-        );
+        throw GmailSmtpProviderError.from(error);
+      } finally {
+        transport.close();
       }
     }
-
     const resend = new Resend(configuration.apiKey!);
     const result = await resend.emails.send(input, { idempotencyKey });
     if (result.error) throw new ResendProviderError(result.error);
@@ -190,19 +199,9 @@ export async function processEmailDelivery(
   options: { allowExhaustedRetry?: boolean } = {},
 ): Promise<{ outcome: "disabled" | "not_eligible" | "sent"; providerMessageId?: string }> {
   const processor = { ...defaults, ...dependencies };
-  if (options.allowExhaustedRetry && !dependencies.claim) {
-    processor.claim = async (id) => {
-      const result = await callUntypedRpc<EmailClaim[]>(getServiceSupabaseClient(), "claim_email_delivery", {
-        p_delivery_id: id,
-        p_allow_exhausted: true,
-      });
-      if (result.error) throw new Error("email_claim_failed");
-      return result.data?.[0] ?? null;
-    };
-  }
   const configuration = processor.configuration();
   if (!configuration.enabled) return { outcome: "disabled" };
-  const claim = await processor.claim(deliveryId);
+  const claim = await processor.claim(deliveryId, configuration, options.allowExhaustedRetry === true);
   if (!claim) return { outcome: "not_eligible" };
 
   try {
