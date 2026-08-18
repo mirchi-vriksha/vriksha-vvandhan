@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { processEmailDelivery, ResendProviderError, safeEmailErrorCode, type EmailClaim } from "@/lib/email/process-email-delivery.server";
+import { GmailSmtpProviderError, processEmailDelivery, ResendProviderError, safeEmailErrorCode, type EmailClaim } from "@/lib/email/process-email-delivery.server";
 
 const claim: EmailClaim = {
   delivery_id: "d1000000-0000-4000-8000-000000000001",
@@ -20,11 +20,17 @@ const claim: EmailClaim = {
 
 const enabledConfiguration = {
   enabled: true,
+  provider: "resend" as const,
   apiKey: "test-key",
+  smtpUser: null,
+  smtpAppPassword: null,
   from: "Vriksha Test <test@example.test>",
   replyTo: "reply@example.test",
   targetEnvironment: "local" as const,
   testRecipients: [],
+  dailyLimit: 350,
+  batchSize: 5,
+  timeZone: "Asia/Kolkata",
 };
 
 describe("processEmailDelivery", () => {
@@ -99,5 +105,9 @@ describe("processEmailDelivery", () => {
     expect(safeEmailErrorCode(new ResendProviderError({ name: "rate_limit_exceeded", message: "slow down", statusCode: 429 }))).toBe("resend_rate_limited");
     expect(safeEmailErrorCode(new ResendProviderError({ name: "invalid_from_address", message: "bad sender", statusCode: 422 }))).toBe("resend_invalid_sender");
     expect(safeEmailErrorCode(new ResendProviderError({ name: "internal_server_error", message: "provider unavailable", statusCode: 503 }))).toBe("resend_internal_server_error");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("EAUTH", 535))).toBe("gmail_smtp_authentication_failed");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("EENVELOPE", 550))).toBe("gmail_smtp_invalid_recipient");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("ETIMEDOUT", null))).toBe("gmail_smtp_ambiguous");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("ESMTP", 421))).toBe("gmail_smtp_temporary_error");
   });
 });

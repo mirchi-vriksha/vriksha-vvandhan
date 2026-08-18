@@ -2,7 +2,7 @@
 
 ## Provider and kinds
 
-Transactional delivery uses the Resend Node SDK and the existing `email_deliveries` table:
+Transactional delivery uses the configured Resend or Gmail SMTP transport and the existing `email_deliveries` table:
 
 - `submission_received` after successful finalisation, with no attachment or approval claim.
 - `approval_certificate` only after Published state and a generated private certificate, with the PDF attached.
@@ -16,17 +16,17 @@ All three templates use the visible **Vriksha Bandhan** name and the revised gra
 
 Next.js `after()` schedules a best-effort attempt only after the authoritative transaction succeeds. Database rows remain the durable truth. Section 6 adds a secret-authenticated bounded catch-up endpoint that recovers stale claims and processes due work; Admin retains explicit retries.
 
-The service-only claim locks one eligible due `not_started` or `failed` row, checks the private suppression registry, assigns a claim token, increments attempts, and moves it to `queued`. Resend receives the stable database `idempotency_key`. A `sent` or `suppressed` row cannot be reclaimed automatically. Completion stores provider ID and template version, and reconciles any webhook that arrived before completion. Retryable failures schedule 1 minute, 5 minutes, 30 minutes and 2 hours; attempt five is manual. Ambiguous work approaching Resend's 24-hour idempotency window becomes `manual_review`. An Admin's explicit new attempt increments the idempotency version and is audit logged.
+The service-only claim locks one eligible due `not_started` or `failed` row, checks the private suppression registry, atomically reserves one unit from the configured calendar-day quota, assigns a claim token, increments attempts, and moves it to `queued`. When the daily capacity is full, the row remains unconsumed and is deferred until the next midnight in the configured timezone. Resend receives the stable database `idempotency_key`; Gmail receives a deterministic message ID, but SMTP itself is not idempotent. A `sent` or `suppressed` row cannot be reclaimed automatically. Completion stores provider ID and template version. Retryable failures schedule 1 minute, 5 minutes, 30 minutes and 2 hours; attempt five is manual. Ambiguous Gmail transport outcomes move directly to `manual_review` to prevent duplicate sends. An Admin's explicit new attempt increments the idempotency version and is audit logged.
 
 Email failure never changes publication, rejection, count, certificate, Guardian number, or media.
 
 ## Provider webhook state
 
-`sent` means Resend accepted the request, not inbox delivery. `POST /api/webhooks/resend` verifies the raw body with the Resend/Svix signature secret and stores only event ID, provider message ID, event type, safe bounce classification and timestamps. Duplicate and unsupported signed events return `200`; malformed/signature-invalid events return `400`; configuration or database failures return `503` so Resend retries. Permanent bounces, complaints and `email.suppressed` events add the normalized address to the private suppression registry. Transient bounces remain transport events and do not suppress future mail. Raw transport event rows are retained for 90 days.
+`sent` means the configured provider accepted the request, not inbox delivery. For Resend, `POST /api/webhooks/resend` verifies the raw body with the Resend/Svix signature secret and stores only event ID, provider message ID, event type, safe bounce classification and timestamps. Gmail SMTP does not feed that webhook, so its Delivery Center state remains provider-accepted unless another approved delivery-event integration is added. Permanent Resend bounces, complaints and `email.suppressed` events add the normalized address to the private suppression registry. Raw transport event rows are retained for 90 days.
 
 ## Environment safety
 
-Required server-only names are `RESEND_API_KEY`, `EMAIL_FROM`, and `EMAIL_REPLY_TO`. `EMAIL_SENDING_ENABLED=false` is the safe default. Enabling staging also requires `EMAIL_TEST_RECIPIENTS`, a comma-separated allowlist of at most five addresses. `EMAIL_TEST_RECIPIENT` remains a single-address fallback. Production refuses either override. The override happens only at send time and never changes the stored contact. Logs say only `staging recipient override active`.
+Set `EMAIL_PROVIDER=resend` with `RESEND_API_KEY`, or `EMAIL_PROVIDER=gmail_smtp` with `GMAIL_SMTP_USER` and `GMAIL_SMTP_APP_PASSWORD`. Both require `EMAIL_FROM` and `EMAIL_REPLY_TO`; Gmail additionally requires the From address to match the authenticated mailbox. `EMAIL_DAILY_LIMIT`, `EMAIL_BATCH_SIZE`, and `EMAIL_TIMEZONE` default to `350`, `5`, and `Asia/Kolkata`. `EMAIL_SENDING_ENABLED=false` is the safe default. Enabling staging also requires `EMAIL_TEST_RECIPIENTS`, a comma-separated allowlist of at most five addresses. `EMAIL_TEST_RECIPIENT` remains a single-address fallback. Production refuses either override. The override happens only at send time and never changes the stored contact. Logs say only `staging recipient override active`.
 
 The guarded smoke is dry-run by default:
 

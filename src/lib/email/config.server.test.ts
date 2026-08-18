@@ -5,8 +5,63 @@ import { getEmailConfiguration } from "@/lib/email/config.server";
 describe("email delivery configuration", () => {
   it("is safely disabled without requiring provider secrets", () => {
     expect(getEmailConfiguration({ EMAIL_SENDING_ENABLED: "false", SUPABASE_TARGET_ENVIRONMENT: "staging" })).toEqual({
-      enabled: false, apiKey: null, from: null, replyTo: null, targetEnvironment: "staging", testRecipients: [],
+      enabled: false,
+      provider: "resend",
+      apiKey: null,
+      smtpUser: null,
+      smtpAppPassword: null,
+      from: null,
+      replyTo: null,
+      targetEnvironment: "staging",
+      testRecipients: [],
+      dailyLimit: 350,
+      batchSize: 5,
+      timeZone: "Asia/Kolkata",
     });
+  });
+
+  it("accepts Gmail SMTP only when its app-password sender matches", () => {
+    const configuration = getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "true",
+      EMAIL_PROVIDER: "gmail_smtp",
+      SUPABASE_TARGET_ENVIRONMENT: "staging",
+      GMAIL_SMTP_USER: "vrikshabandhan@gmail.com",
+      GMAIL_SMTP_APP_PASSWORD: "abcd efgh ijkl mnop",
+      EMAIL_FROM: "Vriksha Bandhan <vrikshabandhan@gmail.com>",
+      EMAIL_REPLY_TO: "vrikshabandhan@gmail.com",
+      EMAIL_TEST_RECIPIENT: "approved@example.test",
+      EMAIL_DAILY_LIMIT: "350",
+      EMAIL_BATCH_SIZE: "5",
+      EMAIL_TIMEZONE: "Asia/Kolkata",
+    });
+    expect(configuration).toMatchObject({
+      provider: "gmail_smtp",
+      apiKey: null,
+      smtpUser: "vrikshabandhan@gmail.com",
+      smtpAppPassword: "abcdefghijklmnop",
+      dailyLimit: 350,
+      batchSize: 5,
+      timeZone: "Asia/Kolkata",
+    });
+  });
+
+  it("rejects a Gmail sender that differs from the authenticated mailbox", () => {
+    expect(() => getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "true",
+      EMAIL_PROVIDER: "gmail_smtp",
+      SUPABASE_TARGET_ENVIRONMENT: "staging",
+      GMAIL_SMTP_USER: "vrikshabandhan@gmail.com",
+      GMAIL_SMTP_APP_PASSWORD: "abcdefghijklmnop",
+      EMAIL_FROM: "Vriksha Bandhan <different@gmail.com>",
+      EMAIL_REPLY_TO: "vrikshabandhan@gmail.com",
+      EMAIL_TEST_RECIPIENT: "approved@example.test",
+    })).toThrow("gmail_sender_mismatch");
+  });
+
+  it("rejects invalid quota and timezone settings", () => {
+    expect(() => getEmailConfiguration({ EMAIL_SENDING_ENABLED: "false", EMAIL_DAILY_LIMIT: "501" })).toThrow();
+    expect(() => getEmailConfiguration({ EMAIL_SENDING_ENABLED: "false", EMAIL_BATCH_SIZE: "0" })).toThrow();
+    expect(() => getEmailConfiguration({ EMAIL_SENDING_ENABLED: "false", EMAIL_TIMEZONE: "Not/AZone" })).toThrow("email_timezone_invalid");
   });
 
   it("requires an explicit recipient override whenever staging sends are enabled", () => {
