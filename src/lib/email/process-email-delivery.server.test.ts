@@ -28,6 +28,7 @@ const enabledConfiguration = {
   replyTo: "reply@example.test",
   targetEnvironment: "local" as const,
   testRecipients: [],
+  allowStagingPublicRecipients: false,
   dailyLimit: 350,
   batchSize: 5,
   timeZone: "Asia/Kolkata",
@@ -84,6 +85,27 @@ describe("processEmailDelivery", () => {
     expect(send.mock.calls[0][1].to).toEqual(["approved-test@example.test"]);
     expect(send.mock.calls[0][1].to).not.toContain(claim.recipient_email);
     expect(log).toHaveBeenCalledWith("staging recipient override active");
+    expect(JSON.stringify(log.mock.calls)).not.toContain("@");
+  });
+
+  it("uses the submitted address when staging public-recipient delivery is explicitly enabled", async () => {
+    const send = vi.fn().mockResolvedValue("provider-message-3");
+    const log = vi.fn();
+    await processEmailDelivery(claim.delivery_id, {
+      configuration: () => ({
+        ...enabledConfiguration,
+        targetEnvironment: "staging",
+        testRecipients: ["approved-test@example.test"],
+        allowStagingPublicRecipients: true,
+      }),
+      claim: vi.fn().mockResolvedValue(claim),
+      send,
+      complete: vi.fn().mockResolvedValue(true),
+      log,
+    });
+    expect(send.mock.calls[0][1].to).toEqual([claim.recipient_email]);
+    expect(log).toHaveBeenCalledWith("staging public recipient delivery active");
+    expect(log).not.toHaveBeenCalledWith("staging recipient override active");
     expect(JSON.stringify(log.mock.calls)).not.toContain("@");
   });
 

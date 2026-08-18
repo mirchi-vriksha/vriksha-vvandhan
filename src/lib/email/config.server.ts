@@ -17,6 +17,7 @@ export type EmailConfiguration = {
   replyTo: string | null;
   targetEnvironment: "local" | "staging" | "production";
   testRecipients: readonly string[];
+  allowStagingPublicRecipients: boolean;
   dailyLimit: number;
   batchSize: number;
   timeZone: string;
@@ -53,6 +54,10 @@ export function getEmailConfiguration(environment: Record<string, string | undef
   const dailyLimit = positiveInteger.max(500).parse(environment.EMAIL_DAILY_LIMIT ?? "350");
   const batchSize = positiveInteger.max(25).parse(environment.EMAIL_BATCH_SIZE ?? "5");
   const configuredTimeZone = timeZone(environment.EMAIL_TIMEZONE);
+  const allowStagingPublicRecipients = environment.EMAIL_STAGING_PUBLIC_RECIPIENTS_ENABLED === "true";
+  if (targetEnvironment === "production" && allowStagingPublicRecipients) {
+    throw new Error("production_staging_public_recipient_forbidden");
+  }
   if (!enabled) {
     return {
       enabled: false,
@@ -64,6 +69,7 @@ export function getEmailConfiguration(environment: Record<string, string | undef
       replyTo: null,
       targetEnvironment,
       testRecipients: [],
+      allowStagingPublicRecipients,
       dailyLimit,
       batchSize,
       timeZone: configuredTimeZone,
@@ -83,7 +89,11 @@ export function getEmailConfiguration(environment: Record<string, string | undef
     throw new Error("gmail_sender_mismatch");
   }
   const testRecipients = stagingRecipients(environment);
-  if (targetEnvironment === "staging" && testRecipients.length === 0) {
+  if (
+    targetEnvironment === "staging" &&
+    testRecipients.length === 0 &&
+    !allowStagingPublicRecipients
+  ) {
     throw new Error("staging_test_recipient_required");
   }
   if (targetEnvironment === "production" && testRecipients.length > 0) {
@@ -99,6 +109,7 @@ export function getEmailConfiguration(environment: Record<string, string | undef
     replyTo,
     targetEnvironment,
     testRecipients,
+    allowStagingPublicRecipients,
     dailyLimit,
     batchSize,
     timeZone: configuredTimeZone,

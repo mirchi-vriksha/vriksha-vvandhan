@@ -204,10 +204,16 @@ export async function processEmailDelivery(
 
   try {
     const template = templateFor(claim);
-    const recipient = configuration.targetEnvironment === "staging"
+    const useStagingOverride =
+      configuration.targetEnvironment === "staging" &&
+      !configuration.allowStagingPublicRecipients;
+    const recipient = useStagingOverride
       ? configuration.testRecipients.find((value) => value === claim.recipient_email.trim().toLowerCase()) ?? configuration.testRecipients[0]!
       : claim.recipient_email;
-    if (configuration.targetEnvironment === "staging") processor.log("staging recipient override active");
+    if (useStagingOverride) processor.log("staging recipient override active");
+    if (configuration.targetEnvironment === "staging" && configuration.allowStagingPublicRecipients) {
+      processor.log("staging public recipient delivery active");
+    }
 
     let attachments: SendInput["attachments"];
     if (claim.kind === "approval_certificate") {

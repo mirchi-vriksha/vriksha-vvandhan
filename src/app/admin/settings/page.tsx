@@ -31,7 +31,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
       <dl className="admin-settings-status">
         <div><dt>Certificate template</dt><dd>Installed · vriksha-bandhan-2026-v2</dd></div>
         <div><dt>Email sending</dt><dd>{process.env.EMAIL_SENDING_ENABLED === "true" ? "Enabled" : "Disabled (safe default)"}</dd></div>
-        <div><dt>Staging recipient guard</dt><dd>{process.env.EMAIL_TEST_RECIPIENT ? "Configured" : "Not configured"}</dd></div>
+        <div><dt>Staging recipient mode</dt><dd>{process.env.EMAIL_STAGING_PUBLIC_RECIPIENTS_ENABLED === "true" ? "Submitted participant email" : "Test recipient guard"}</dd></div>
       </dl>
       <small>No API keys or participant addresses are displayed here.</small>
     </section>

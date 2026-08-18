@@ -14,6 +14,7 @@ describe("email delivery configuration", () => {
       replyTo: null,
       targetEnvironment: "staging",
       testRecipients: [],
+      allowStagingPublicRecipients: false,
       dailyLimit: 350,
       batchSize: 5,
       timeZone: "Asia/Kolkata",
@@ -78,6 +79,14 @@ describe("email delivery configuration", () => {
     }).testRecipients).toEqual(["approved@example.test"]);
   });
 
+  it("allows a deliberate staging opt-in to use the submitted recipient", () => {
+    expect(getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "true", SUPABASE_TARGET_ENVIRONMENT: "staging", RESEND_API_KEY: "test-key",
+      EMAIL_FROM: "Vriksha Test <test@example.test>", EMAIL_REPLY_TO: "reply@example.test",
+      EMAIL_STAGING_PUBLIC_RECIPIENTS_ENABLED: "true",
+    }).allowStagingPublicRecipients).toBe(true);
+  });
+
   it("accepts at most five normalized staging recipients", () => {
     expect(getEmailConfiguration({
       EMAIL_SENDING_ENABLED: "true", SUPABASE_TARGET_ENVIRONMENT: "staging", RESEND_API_KEY: "test-key",
@@ -103,5 +112,13 @@ describe("email delivery configuration", () => {
       EMAIL_SENDING_ENABLED: "true", SUPABASE_TARGET_ENVIRONMENT: "production", RESEND_API_KEY: "test-key",
       EMAIL_FROM: "Vriksha Test <test@example.test>", EMAIL_REPLY_TO: "reply@example.test", EMAIL_TEST_RECIPIENTS: "qa@example.test",
     })).toThrow("production_test_recipient_forbidden");
+  });
+
+  it("forbids the staging public-recipient opt-in in production", () => {
+    expect(() => getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "false",
+      SUPABASE_TARGET_ENVIRONMENT: "production",
+      EMAIL_STAGING_PUBLIC_RECIPIENTS_ENABLED: "true",
+    })).toThrow("production_staging_public_recipient_forbidden");
   });
 });
