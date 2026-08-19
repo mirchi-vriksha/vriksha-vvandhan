@@ -5,8 +5,32 @@ import { getEmailConfiguration } from "@/lib/email/config.server";
 describe("email delivery configuration", () => {
   it("is safely disabled without requiring provider secrets", () => {
     expect(getEmailConfiguration({ EMAIL_SENDING_ENABLED: "false", SUPABASE_TARGET_ENVIRONMENT: "staging" })).toEqual({
-      enabled: false, apiKey: null, from: null, replyTo: null, targetEnvironment: "staging", testRecipients: [],
+      enabled: false, provider: null, apiKey: null, smtpUser: null, smtpPassword: null,
+      from: null, replyTo: null, targetEnvironment: "staging", testRecipients: [],
     });
+  });
+
+  it("supports the configured Gmail SMTP provider", () => {
+    expect(getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "true", EMAIL_PROVIDER: "gmail_smtp",
+      GMAIL_SMTP_USER: "sender@example.test", GMAIL_SMTP_APP_PASSWORD: "app-password",
+      EMAIL_FROM: "Vriksha Test <sender@example.test>", EMAIL_REPLY_TO: "reply@example.test",
+      SUPABASE_TARGET_ENVIRONMENT: "production",
+    })).toMatchObject({
+      enabled: true,
+      provider: "gmail_smtp",
+      apiKey: null,
+      smtpUser: "sender@example.test",
+      smtpPassword: "app-password",
+    });
+  });
+
+  it("rejects an unsupported email provider", () => {
+    expect(() => getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "true", EMAIL_PROVIDER: "unknown",
+      EMAIL_FROM: "Vriksha Test <sender@example.test>", EMAIL_REPLY_TO: "reply@example.test",
+      SUPABASE_TARGET_ENVIRONMENT: "production",
+    })).toThrow("email_provider_invalid");
   });
 
   it("requires an explicit recipient override whenever staging sends are enabled", () => {
