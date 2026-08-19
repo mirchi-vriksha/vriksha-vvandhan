@@ -10,11 +10,13 @@ const mocks = vi.hoisted(() => {
     ServiceError,
     prepare: vi.fn(),
     finalize: vi.fn(),
-    after: vi.fn(),
+    processSubmissionDelivery: vi.fn(),
   };
 });
 
-vi.mock("next/server", () => ({ after: mocks.after }));
+vi.mock("@/lib/email/delivery-orchestration.server", () => ({
+  processSubmissionDelivery: mocks.processSubmissionDelivery,
+}));
 
 vi.mock("@/lib/submissions/service.server", () => ({
   SubmissionServiceError: mocks.ServiceError,
@@ -36,7 +38,13 @@ function jsonRequest(path: string, body: unknown, requestOrigin = origin) {
   });
 }
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.processSubmissionDelivery.mockResolvedValue({
+    outcome: "sent",
+    providerMessageId: "provider-message-1",
+  });
+});
 
 describe("prepare submission handler", () => {
   it("validates and returns a no-store private upload reservation", async () => {
@@ -122,7 +130,28 @@ describe("finalize submission handler", () => {
     }));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ success: true, status: "pending_review" });
-    expect(mocks.after).toHaveBeenCalledOnce();
+    expect(mocks.processSubmissionDelivery).toHaveBeenCalledWith(
+      "00000000-0000-4000-8000-000000000001",
+      "submission_received",
+    );
+  });
+
+  it("keeps the accepted submission successful when the immediate receipt attempt fails", async () => {
+    mocks.finalize.mockResolvedValue({ success: true, status: "pending_review" });
+    mocks.processSubmissionDelivery.mockRejectedValue(new Error("provider unavailable"));
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    const response = await finalize(jsonRequest("/api/submissions/finalize", {
+      submissionId: "00000000-0000-4000-8000-000000000001",
+      requestToken: token,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ success: true, status: "pending_review" });
+    expect(errorLog).toHaveBeenCalledWith(
+      "Submission receipt delivery attempt failed; durable retry remains queued.",
+    );
+    errorLog.mockRestore();
   });
 
   it("returns a generic retryable response for an unexpected internal failure", async () => {
@@ -135,6 +164,6 @@ describe("finalize submission handler", () => {
     expect(response.status).toBe(503);
     expect(text).not.toContain("private@example.com");
     expect(text).not.toContain("secret-token");
-    expect(mocks.after).not.toHaveBeenCalled();
+    expect(mocks.processSubmissionDelivery).not.toHaveBeenCalled();
   });
 });

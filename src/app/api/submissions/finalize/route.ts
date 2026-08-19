@@ -1,5 +1,4 @@
 import { ZodError } from "zod";
-import { after } from "next/server";
 
 import { processSubmissionDelivery } from "@/lib/email/delivery-orchestration.server";
 import { consumeRateLimit, FINALIZE_RATE_LIMITS } from "@/lib/security/rate-limit.server";
@@ -42,10 +41,8 @@ export async function POST(request: Request): Promise<Response> {
     );
     if (!allowed) return jsonApiError("rate_limited", 429);
     const result = await finalizePublicSubmission(input);
-    after(async () => {
-      await processSubmissionDelivery(input.submissionId, "submission_received").catch(() => {
-        console.error("Submission receipt delivery attempt failed.");
-      });
+    await processSubmissionDelivery(input.submissionId, "submission_received").catch(() => {
+      console.error("Submission receipt delivery attempt failed; durable retry remains queued.");
     });
     return Response.json(result, {
       status: 200,
