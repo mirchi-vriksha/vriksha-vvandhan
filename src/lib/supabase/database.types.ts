@@ -57,6 +57,39 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_auth_cleanup_queue: {
+        Row: {
+          attempt_count: number
+          display_name: string
+          last_attempt_at: string | null
+          last_error_code: string | null
+          requested_at: string
+          requested_by: string | null
+          requested_role: Database["public"]["Enums"]["staff_role"]
+          staff_id: string
+        }
+        Insert: {
+          attempt_count?: number
+          display_name: string
+          last_attempt_at?: string | null
+          last_error_code?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          requested_role: Database["public"]["Enums"]["staff_role"]
+          staff_id: string
+        }
+        Update: {
+          attempt_count?: number
+          display_name?: string
+          last_attempt_at?: string | null
+          last_error_code?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          requested_role?: Database["public"]["Enums"]["staff_role"]
+          staff_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -378,6 +411,8 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          removed_at: string | null
+          removed_by: string | null
           role: Database["public"]["Enums"]["staff_role"]
           updated_at: string
         }
@@ -386,6 +421,8 @@ export type Database = {
           created_at?: string
           display_name: string
           id: string
+          removed_at?: string | null
+          removed_by?: string | null
           role: Database["public"]["Enums"]["staff_role"]
           updated_at?: string
         }
@@ -394,6 +431,8 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
+          removed_at?: string | null
+          removed_by?: string | null
           role?: Database["public"]["Enums"]["staff_role"]
           updated_at?: string
         }
@@ -799,6 +838,27 @@ export type Database = {
           p_window_seconds: number
         }
         Returns: boolean
+      }
+      create_staff_profile: {
+        Args: {
+          p_active: boolean
+          p_display_name: string
+          p_role: Database["public"]["Enums"]["staff_role"]
+          p_staff_id: string
+        }
+        Returns: undefined
+      }
+      prepare_staff_removal: {
+        Args: { p_staff_id: string }
+        Returns: undefined
+      }
+      mark_staff_auth_cleanup_pending: {
+        Args: { p_error_code: string; p_staff_id: string }
+        Returns: undefined
+      }
+      record_staff_removal: {
+        Args: { p_staff_id: string }
+        Returns: undefined
       }
       delete_trashed_submission: {
         Args: { p_reason: string; p_submission_id: string }

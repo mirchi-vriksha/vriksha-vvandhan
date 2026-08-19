@@ -54,6 +54,9 @@ select throws_ok($$select public.confirm_submission_rejection('51000000-0000-400
 select throws_ok($$select * from public.trash_submission('51000000-0000-4000-8000-000000000010')$$,'P0001','unauthorized_role','Reviewer cannot trash');
 select throws_ok($$select public.delete_trashed_submission('51000000-0000-4000-8000-000000000010','Reviewer cannot delete this record.')$$,'P0001','unauthorized_role','Reviewer cannot permanently delete');
 select throws_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000001','Reviewer','reviewer',true)$$,'P0001','unauthorized_role','Reviewer cannot manage staff');
+select throws_ok($$select public.create_staff_profile('51000000-0000-4000-8000-000000000005','Nonstaff','reviewer',true)$$,'P0001','unauthorized_role','Reviewer cannot create staff');
+select throws_ok($$select public.prepare_staff_removal('51000000-0000-4000-8000-000000000002')$$,'P0001','unauthorized_role','Reviewer cannot remove staff');
+select throws_ok($$select public.mark_staff_auth_cleanup_pending('51000000-0000-4000-8000-000000000002','auth_error')$$,'P0001','unauthorized_role','Reviewer cannot update the private Auth cleanup queue');
 select throws_ok($$select public.update_campaign_settings(983,'Vriksha promises',true,true)$$,'P0001','unauthorized_role','Reviewer cannot change campaign settings');
 select throws_ok($$select * from public.publish_submission('51000000-0000-4000-8000-000000000010',9001,'v1','card/9001-v1.webp',640,800,1000,'full/9001-v1.webp',1200,1200,2000,'Tree')$$,'P0001','approval_conflict','Reviewer cannot publish a rejection recommendation');
 
@@ -102,6 +105,31 @@ select is((select current_count from public.get_public_campaign_summary()),2::bi
 select throws_ok($$select public.delete_trashed_submission('51000000-0000-4000-8000-000000000012','Cannot delete active publication.')$$,'P0001','delete_requires_trash','permanent deletion requires Trash');
 
 select lives_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000001','Campaign Reviewer','reviewer',true)$$,'Admin edits existing staff profile');
+select lives_ok($$select public.create_staff_profile('51000000-0000-4000-8000-000000000005','New Reviewer','reviewer',true)$$,'Admin creates a staff profile for an Auth user');
+select is((select role::text from public.staff_profiles where id='51000000-0000-4000-8000-000000000005'),'reviewer','created staff receives the selected role');
+select is((select count(*) from public.audit_logs where entity_id='51000000-0000-4000-8000-000000000005' and action='staff.created'),1::bigint,'staff creation is audited once');
+select throws_ok($$select public.create_staff_profile('51000000-0000-4000-8000-000000000005','Duplicate Reviewer','reviewer',true)$$,'P0001','staff_already_exists','existing staff cannot be created twice');
+select throws_ok($$select public.prepare_staff_removal('51000000-0000-4000-8000-000000000002')$$,'P0001','self_removal_forbidden','Admin cannot remove their own account');
+select lives_ok($$select public.prepare_staff_removal('51000000-0000-4000-8000-000000000005')$$,'Admin removes a member profile before Auth deletion');
+select is((select count(*) from public.staff_profiles where id='51000000-0000-4000-8000-000000000005' and removed_at is null),0::bigint,'removed staff disappears from Team immediately');
+select is((select count(*) from public.staff_profiles where id='51000000-0000-4000-8000-000000000005' and removed_at is not null and not active),1::bigint,'removed staff history remains inactive for moderation references');
+select is((select count(*) from public.audit_logs where entity_id='51000000-0000-4000-8000-000000000005' and action='staff.removal_requested'),1::bigint,'staff removal request is audited');
+reset role;
+select is((select count(*) from private.staff_auth_cleanup_queue where staff_id='51000000-0000-4000-8000-000000000005'),1::bigint,'Auth cleanup is retained privately until completion');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','51000000-0000-4000-8000-000000000002',true);
+select lives_ok($$select public.mark_staff_auth_cleanup_pending('51000000-0000-4000-8000-000000000005','auth_delete_failed')$$,'Admin records a retryable Auth cleanup');
+reset role;
+select is((select attempt_count from private.staff_auth_cleanup_queue where staff_id='51000000-0000-4000-8000-000000000005'),1,'Auth cleanup attempt is counted');
+update auth.users set deleted_at=now() where id='51000000-0000-4000-8000-000000000005';
+set local role authenticated;
+select set_config('request.jwt.claim.sub','51000000-0000-4000-8000-000000000002',true);
+select lives_ok($$select public.record_staff_removal('51000000-0000-4000-8000-000000000005')$$,'Admin records completed Auth soft deletion');
+select is((select count(*) from public.audit_logs where entity_id='51000000-0000-4000-8000-000000000005' and action='staff.removed'),1::bigint,'completed staff removal is audited');
+reset role;
+select is((select count(*) from private.staff_auth_cleanup_queue where staff_id='51000000-0000-4000-8000-000000000005'),0::bigint,'completed Auth cleanup leaves no queued record');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','51000000-0000-4000-8000-000000000002',true);
 select throws_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000002','Section 4 Admin','admin',false)$$,'P0001','self_deactivation_forbidden','Admin cannot deactivate their own profile');
 select lives_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000003','Second Admin','reviewer',true)$$,'Admin may demote another Admin while one remains');
 select throws_ok($$select public.manage_staff_profile('51000000-0000-4000-8000-000000000002','Section 4 Admin','reviewer',true)$$,'P0001','final_admin_required','final active Admin cannot be demoted');

@@ -2,8 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { regenerateCertificateAction, retryCertificateAction, retryEmailAction } from "@/app/admin/delivery-actions";
+import { AdminActionButton } from "@/components/admin/admin-action-button";
 import { requireStaff } from "@/lib/auth/dal";
 import { getDeliveryCenter, type DeliveryFilters, type DeliveryRow } from "@/lib/deliveries/data.server";
+
+export const maxDuration = 60;
 
 function dateLabel(value: string | null) {
   return value ? new Date(value).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "—";
@@ -12,9 +15,9 @@ function dateLabel(value: string | null) {
 function DeliveryAction({ row }: { row: DeliveryRow }) {
   return <div className="admin-delivery-actions">
     {row.deliveryType === "certificate" && row.status === "generated" && <a href={`/api/admin/certificates/${row.id}/download`}>Download</a>}
-    {row.deliveryType === "certificate" && ["not_started", "failed"].includes(row.status) && <form action={retryCertificateAction}><input type="hidden" name="submissionId" value={row.submissionId} /><button type="submit">Retry generation</button></form>}
-    {row.deliveryType === "certificate" && row.status === "generated" && <form action={regenerateCertificateAction}><input type="hidden" name="submissionId" value={row.submissionId} /><label><span className="sr-only">Type REGENERATE to confirm</span><input name="confirmation" pattern="REGENERATE" placeholder="Type REGENERATE" required /></label><button type="submit">Regenerate</button></form>}
-    {row.deliveryType === "email" && ["not_started", "failed", "manual_review"].includes(row.status) && <form action={retryEmailAction}><input type="hidden" name="deliveryId" value={row.id} /><button type="submit">Send new attempt</button></form>}
+    {row.deliveryType === "certificate" && ["not_started", "failed"].includes(row.status) && <form action={retryCertificateAction}><input type="hidden" name="submissionId" value={row.submissionId} /><AdminActionButton label="Retry generation" pendingLabel="Generating…" /></form>}
+    {row.deliveryType === "certificate" && row.status === "generated" && <form action={regenerateCertificateAction}><input type="hidden" name="submissionId" value={row.submissionId} /><label><span className="sr-only">Type REGENERATE to confirm</span><input name="confirmation" pattern="REGENERATE" placeholder="Type REGENERATE" required /></label><AdminActionButton label="Regenerate" pendingLabel="Regenerating…" /></form>}
+    {row.deliveryType === "email" && ["not_started", "failed", "manual_review"].includes(row.status) && <form action={retryEmailAction}><input type="hidden" name="deliveryId" value={row.id} /><AdminActionButton label="Send new attempt" pendingLabel="Sending…" /></form>}
   </div>;
 }
 
@@ -22,8 +25,7 @@ export default async function DeliveryCenterPage({ searchParams }: { searchParam
   const session = await requireStaff();
   if (session.role !== "admin") notFound();
   const query = await searchParams;
-  const hasFilters = [query.kind, query.status, query.guardian, query.submittedFrom, query.submittedTo, query.deliveredFrom, query.deliveredTo, query.providerEvent].some(Boolean);
-  const filters: DeliveryFilters = hasFilters ? query : { status: "failed" };
+  const filters: DeliveryFilters = query;
   const data = await getDeliveryCenter(filters);
   const cards = [
     ["Certificate failures", data.summary.certificate.failed, "failed"],
@@ -42,7 +44,7 @@ export default async function DeliveryCenterPage({ searchParams }: { searchParam
       <label>Status<select name="status" defaultValue={filters.status ?? "all"}><option value="all">All statuses</option><option value="not_started">Not started</option><option value="queued">Queued</option><option value="generated">Generated</option><option value="sent">Provider accepted</option><option value="failed">Needs attention</option><option value="manual_review">Manual review</option><option value="suppressed">Suppressed</option></select></label>
       <label>Provider state<select name="providerEvent" defaultValue={filters.providerEvent ?? "all"}><option value="all">All provider states</option><option value="delivered">Delivered</option><option value="delivery delayed">Delayed</option><option value="bounced">Bounced</option><option value="complained">Complained</option><option value="provider failed">Provider failed</option><option value="suppressed">Suppressed</option></select></label>
       <button className="button button--primary" type="submit">Apply filters</button>
-      <Link className="button button--light" href="/admin/deliveries?kind=all&status=all">View all records</Link>
+      <Link className="button button--light" href="/admin/deliveries">Clear</Link>
       <details className="admin-advanced-filters"><summary>Advanced filters</summary><div>
         <label>Guardian number<input name="guardian" type="number" min="1" defaultValue={filters.guardian} /></label>
         <label>Submitted from<input name="submittedFrom" type="date" defaultValue={filters.submittedFrom} /></label>

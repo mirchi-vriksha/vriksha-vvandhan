@@ -23,6 +23,10 @@ test("Reviewer can use the queue, approve, and recommend without Admin access", 
 
   await page.goto(`/admin/submissions/${pendingId}`);
   await expect(page.getByLabel("Public display name")).toBeVisible();
+  const detailImage = page.getByAltText("Private submitted photograph preview");
+  await expect(detailImage).toBeVisible();
+  await expect(detailImage).toHaveAttribute("width", "900");
+  await expect(page.getByText("Private original · signed for 10 minutes")).toBeVisible();
   await expect(page.getByRole("group", { name: "Public card focal point" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Choose image focal point" })).toHaveCount(0);
   await page.keyboard.press("Tab");
@@ -51,14 +55,17 @@ test("Reviewer is denied deliveries while Admin can operate the Delivery Center"
   await expect(page.getByText("404", { exact:true })).toBeVisible();
 
   await signInAs(page, "admin");
-  await page.goto("/admin/deliveries");
+  await page.goto("/admin");
+  await page.getByRole("link", { name:"Deliveries", exact:true }).click();
+  await expect(page).toHaveURL(/\/admin\/deliveries$/);
   await expect(page.getByRole("heading", { name:"Deliveries" })).toBeVisible();
-  await expect(page.getByRole("heading", { name:"Failed delivery records" })).toBeVisible();
+  await expect(page.getByRole("heading", { name:"Delivery records" })).toBeVisible();
   await expect(page.getByRole("heading", { name:"Email worker health" })).toBeVisible();
-  await page.getByRole("link", { name:"View all records" }).click();
+  await expect(page.getByLabel("Status")).toHaveValue("all");
   await expect(page.getByRole("link", { name:"Download" })).toBeVisible();
   await page.getByRole("button", { name:"Send new attempt" }).click();
   await expect(page.getByText(/delivery action completed: email retry/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name:"Delivery records" })).toBeVisible();
 });
 
 test("Admin can confirm, approve instead, Trash, restore, delete, and manage controls", async ({ page }) => {

@@ -23,7 +23,7 @@ describe("Campaign Desk navigation", () => {
     render(<AdminNav session={{ ...reviewer, role: "admin" }} />);
     expect(screen.getByRole("link", { name: "Team" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Campaign Settings" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Deliveries" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Deliveries" })).toHaveAttribute("href", "/admin/deliveries");
     expect(screen.queryByRole("link", { name: "Trash" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Rejection Review" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link")).toHaveLength(5);

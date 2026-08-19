@@ -44,14 +44,26 @@ function ReelSequence({ images, duplicate = false }: ReelSequenceProps) {
           className={`promise-ribbon__card promise-ribbon__card--${image.aspect}`}
           key={`${duplicate ? "duplicate-" : ""}${image.id}`}
         >
-          <Image
-            src={image.src}
-            alt={duplicate ? "" : image.alt}
-            width={image.width}
-            height={image.height}
-            sizes={reelImageSizes[image.aspect]}
-            loading="lazy"
-          />
+          {image.src.startsWith("/") ? (
+            <Image
+              src={image.src}
+              alt={duplicate ? "" : image.alt}
+              width={image.width}
+              height={image.height}
+              sizes={reelImageSizes[image.aspect]}
+              loading="lazy"
+            />
+          ) : (
+            // Already resized, stripped and published as an immutable public WebP by moderation.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={image.src}
+              alt={duplicate ? "" : image.alt}
+              width={image.width}
+              height={image.height}
+              loading="lazy"
+            />
+          )}
         </figure>
       ))}
     </div>
@@ -92,11 +104,10 @@ export function PromiseReel({ images }: PromiseReelProps) {
         type="button"
         hidden={!isHydrated}
         aria-label={isPlaying ? "Pause promise reel" : "Play promise reel"}
-        aria-pressed={!isPlaying}
+        title={isPlaying ? "Pause moving photographs" : "Play moving photographs"}
         onClick={() => setPlaybackOverride(!isPlaying)}
       >
         {isPlaying ? <Pause aria-hidden="true" size={14} /> : <Play aria-hidden="true" size={14} />}
-        <span>{isPlaying ? "Pause" : "Play"}</span>
       </button>
 
       <div

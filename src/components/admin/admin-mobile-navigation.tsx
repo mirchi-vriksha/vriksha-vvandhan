@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { logoutAction } from "@/app/auth/actions";
+import { AdminActionButton } from "@/components/admin/admin-action-button";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { LogoLockup } from "@/components/shared/logo-lockup";
 import type { StaffSession } from "@/lib/auth/types";
@@ -58,7 +59,7 @@ export function AdminMobileNavigation({ session }: { session: StaffSession }) {
       <div ref={panelRef} id="admin-mobile-navigation" className="admin-mobile-drawer" role="dialog" aria-modal="true" aria-label="Campaign Desk navigation" onMouseDown={(event) => event.stopPropagation()}>
         <div className="admin-mobile-drawer__heading"><div><p>Campaign Desk</p><strong>{session.displayName}</strong><span>{session.role === "admin" ? "Admin" : "Reviewer"}</span></div><button type="button" aria-label="Close desk navigation" onClick={() => close()}><X aria-hidden="true" size={22} /></button></div>
         <AdminNav session={session} onNavigate={() => close(false)} />
-        <form action={logoutAction}><button className="admin-mobile-drawer__signout" type="submit">Sign out</button></form>
+        <form action={logoutAction}><AdminActionButton className="admin-mobile-drawer__signout" label="Sign out" pendingLabel="Signing out…" /></form>
       </div>
     </div>}
   </header>;

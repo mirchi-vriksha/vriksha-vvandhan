@@ -4,7 +4,14 @@ import { HeroMedia } from "@/components/home/hero-media";
 import { PromiseRibbon } from "@/components/home/promise-ribbon";
 import { RakhiPromiseCounter } from "@/components/home/rakhi-promise-counter";
 import { heroContent, heroPromiseImages, promiseMetric } from "@/content/campaign";
-import type { CampaignMetric } from "@/types/campaign";
+import type { CampaignMetric, PromiseReelImage } from "@/types/campaign";
+
+type CampaignHeroProps = {
+  metric?: CampaignMetric;
+  reelImages?: readonly PromiseReelImage[];
+  ribbonDescription?: string | null;
+  ribbonHeading?: string;
+};
 
 function BotanicalDetail({ side }: { side: "left" | "right" }) {
   return (
@@ -23,7 +30,12 @@ function BotanicalDetail({ side }: { side: "left" | "right" }) {
   );
 }
 
-export function CampaignHero({ metric = promiseMetric }: { metric?: CampaignMetric }) {
+export function CampaignHero({
+  metric = promiseMetric,
+  reelImages = heroPromiseImages,
+  ribbonDescription = heroContent.ribbonFallbackDescription,
+  ribbonHeading = heroContent.ribbonFallbackLabel,
+}: CampaignHeroProps) {
   return (
     <section className="campaign-hero" id="movement" aria-labelledby="campaign-title">
       <BotanicalDetail side="left" />
@@ -45,7 +57,11 @@ export function CampaignHero({ metric = promiseMetric }: { metric?: CampaignMetr
             <HeroActions primary={heroContent.primaryCta} secondary={heroContent.secondaryCta} />
           </div>
         </div>
-        <PromiseRibbon heading={heroContent.ribbonLabel} images={heroPromiseImages} />
+        <PromiseRibbon
+          description={ribbonDescription}
+          heading={ribbonHeading}
+          images={reelImages}
+        />
       </div>
     </section>
   );

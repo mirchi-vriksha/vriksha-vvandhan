@@ -5,13 +5,15 @@ export const PUBLIC_SUBMISSION = {
   preparedTargetBytes: Math.round(1.5 * 1024 * 1024),
   preparedMaxBytes: 2 * 1024 * 1024,
   maximumDimension: 2560,
-  acceptedInputExtensions: ["jpg", "jpeg", "png", "webp", "heic", "heif"],
+  acceptedInputExtensions: ["jpg", "jpeg", "png", "webp", "heic", "heif", "hif"],
   acceptedInputMimeTypes: [
     "image/jpeg",
     "image/png",
     "image/webp",
     "image/heic",
     "image/heif",
+    "image/heic-sequence",
+    "image/heif-sequence",
   ],
   preferredOutputMime: "image/webp",
   jpegFallbackMime: "image/jpeg",
@@ -28,6 +30,6 @@ export const PUBLIC_SUBMISSION_COPY = {
 } as const;
 
 export const PUBLIC_SUBMISSION_ACCEPT =
-  ".jpg,.jpeg,.png,.webp,.heic,.heif,image/jpeg,image/png,image/webp,image/heic,image/heif";
+  ".jpg,.jpeg,.png,.webp,.heic,.heif,.hif,image/jpeg,image/png,image/webp,image/heic,image/heif,image/heic-sequence,image/heif-sequence";
 
 export type PreparedImageExtension = "webp" | "jpg";

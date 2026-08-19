@@ -1,0 +1,9 @@
+.tmp/
+.next/
+node_modules/
+coverage/
+playwright-report/
+test-results/
+supabase/.temp/
+.env.local
+.env.*.local

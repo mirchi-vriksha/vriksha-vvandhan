@@ -16,7 +16,7 @@ test("join page reflects the connected campaign availability and has no console 
   const form = page.locator("form.public-submission-form");
   if (await form.count()) {
     await expect(form).toBeVisible();
-    await expect(page.getByLabel("Display name")).toBeVisible();
+    await expect(page.getByLabel("Display name", { exact: true })).toBeVisible();
     const instructionBeforeForm = await page.evaluate(() => {
       const instructions = document.querySelector("#submission-instructions");
       const formElement = document.querySelector("form.public-submission-form");
@@ -80,6 +80,7 @@ test("join page remains readable at 200 percent text size", async ({ page }) => 
       content: document.documentElement.scrollWidth,
       overflowing: Array.from(document.querySelectorAll<HTMLElement>("body *"))
         .filter((element) => {
+          if (element.classList.contains("visually-hidden")) return false;
           const bounds = element.getBoundingClientRect();
           return bounds.right > viewport + 1 || bounds.left < -1 || element.scrollWidth > element.clientWidth + 1;
         })
@@ -97,5 +98,5 @@ test("join page remains readable at 200 percent text size", async ({ page }) => 
   expect(layout.overflowing).toEqual([]);
   expect(layout.content).toBeLessThanOrEqual(layout.viewport);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Back to the Movement" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Your submission" })).toBeVisible();
 });
