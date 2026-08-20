@@ -6,9 +6,9 @@ select ok(not has_table_privilege('authenticated', 'private.email_daily_quotas',
 select ok(not has_function_privilege('authenticated', 'public.claim_email_delivery(uuid,boolean,date,integer,timestamp with time zone)', 'execute'), 'staff cannot claim quota-controlled email work');
 select ok(has_function_privilege('service_role', 'public.claim_email_delivery(uuid,boolean,date,integer,timestamp with time zone)', 'execute'), 'service role can claim quota-controlled email work');
 
-insert into public.submissions(id) values
-('68000000-0000-4000-8000-000000000001'),
-('68000000-0000-4000-8000-000000000002');
+insert into public.submissions(id,status) values
+('68000000-0000-4000-8000-000000000001','pending_review'),
+('68000000-0000-4000-8000-000000000002','pending_review');
 insert into public.submission_contacts(submission_id,email) values
 ('68000000-0000-4000-8000-000000000001','quota-one@example.test'),
 ('68000000-0000-4000-8000-000000000002','quota-two@example.test');

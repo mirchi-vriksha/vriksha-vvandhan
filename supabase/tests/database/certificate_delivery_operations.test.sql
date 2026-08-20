@@ -9,14 +9,14 @@ select has_column('public','email_deliveries','claim_token','email claims have a
 select has_function('public','claim_certificate_generation',array['uuid','text','boolean','boolean'],'certificate claim function exists');
 select has_function('public','complete_certificate_generation',array['uuid','uuid','text','text','bigint','text'],'certificate completion function exists');
 select has_function('public','fail_certificate_generation',array['uuid','uuid','text'],'certificate failure function exists');
-select has_function('public','claim_email_delivery',array['uuid','boolean'],'email claim function exists');
+select has_function('public','claim_email_delivery',array['uuid','boolean','date','integer','timestamp with time zone'],'email claim function exists');
 select has_function('public','complete_email_delivery',array['uuid','uuid','text','text'],'email completion function exists');
 select has_function('public','fail_email_delivery',array['uuid','uuid','text'],'email failure function exists');
 select has_function('public','record_campaign_data_export',array['integer'],'export audit function exists');
 select ok(not has_function_privilege('authenticated','public.claim_certificate_generation(uuid,text,boolean,boolean)','execute'),'authenticated staff cannot claim certificate work');
-select ok(not has_function_privilege('authenticated','public.claim_email_delivery(uuid,boolean)','execute'),'authenticated staff cannot claim email work');
+select ok(not has_function_privilege('authenticated','public.claim_email_delivery(uuid,boolean,date,integer,timestamp with time zone)','execute'),'authenticated staff cannot claim email work');
 select ok(has_function_privilege('service_role','public.claim_certificate_generation(uuid,text,boolean,boolean)','execute'),'trusted service can claim certificate work');
-select ok(has_function_privilege('service_role','public.claim_email_delivery(uuid,boolean)','execute'),'trusted service can claim email work');
+select ok(has_function_privilege('service_role','public.claim_email_delivery(uuid,boolean,date,integer,timestamp with time zone)','execute'),'trusted service can claim email work');
 
 insert into auth.users(id,instance_id,aud,role,email,encrypted_password,created_at,updated_at) values
 ('52000000-0000-4000-8000-000000000001','00000000-0000-0000-0000-000000000000','authenticated','authenticated','reviewer-section5@example.test','',now(),now()),
