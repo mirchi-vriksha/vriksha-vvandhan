@@ -755,6 +755,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      begin_email_worker_run: { Args: never; Returns: string }
       claim_certificate_generation: {
         Args: {
           p_allow_exhausted: boolean
@@ -809,15 +810,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      confirm_submission_rejection: {
-        Args: {
-          p_internal_note: string
-          p_participant_note: string
-          p_reason_code: string
-          p_submission_id: string
-        }
-        Returns: undefined
-      }
       complete_email_worker_run: {
         Args: {
           p_error_code?: string
@@ -829,7 +821,15 @@ export type Database = {
         }
         Returns: boolean
       }
-      begin_email_worker_run: { Args: never; Returns: string }
+      confirm_submission_rejection: {
+        Args: {
+          p_internal_note: string
+          p_participant_note: string
+          p_reason_code: string
+          p_submission_id: string
+        }
+        Returns: undefined
+      }
       consume_application_rate_limit: {
         Args: {
           p_key_hash: string
@@ -846,18 +846,6 @@ export type Database = {
           p_role: Database["public"]["Enums"]["staff_role"]
           p_staff_id: string
         }
-        Returns: undefined
-      }
-      prepare_staff_removal: {
-        Args: { p_staff_id: string }
-        Returns: undefined
-      }
-      mark_staff_auth_cleanup_pending: {
-        Args: { p_error_code: string; p_staff_id: string }
-        Returns: undefined
-      }
-      record_staff_removal: {
-        Args: { p_staff_id: string }
         Returns: undefined
       }
       delete_trashed_submission: {
@@ -967,6 +955,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      mark_staff_auth_cleanup_pending: {
+        Args: { p_error_code: string; p_staff_id: string }
+        Returns: undefined
+      }
+      prepare_email_admin_retry: {
+        Args: { p_delivery_id: string }
+        Returns: boolean
+      }
       prepare_public_submission: {
         Args: {
           p_consent_version: string
@@ -984,6 +980,10 @@ export type Database = {
           status: Database["public"]["Enums"]["submission_status"]
           submission_id: string
         }[]
+      }
+      prepare_staff_removal: {
+        Args: { p_staff_id: string }
+        Returns: undefined
       }
       publish_submission: {
         Args: {
@@ -1007,15 +1007,11 @@ export type Database = {
           guardian_number: number
         }[]
       }
-      purge_expired_rate_limits: { Args: { p_limit?: number }; Returns: number }
       purge_email_webhook_events: {
         Args: { p_limit?: number; p_retention_days?: number }
         Returns: number
       }
-      prepare_email_admin_retry: {
-        Args: { p_delivery_id: string }
-        Returns: boolean
-      }
+      purge_expired_rate_limits: { Args: { p_limit?: number }; Returns: number }
       recommend_submission_rejection: {
         Args: {
           p_internal_note: string
@@ -1029,6 +1025,10 @@ export type Database = {
         Args: { p_row_count: number }
         Returns: undefined
       }
+      record_delivery_admin_action: {
+        Args: { p_action: string; p_delivery_id: string }
+        Returns: undefined
+      }
       record_resend_webhook_event: {
         Args: {
           p_event_created_at: string
@@ -1039,8 +1039,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      record_delivery_admin_action: {
-        Args: { p_action: string; p_delivery_id: string }
+      record_staff_removal: {
+        Args: { p_staff_id: string }
         Returns: undefined
       }
       recover_stale_delivery_claims: {
