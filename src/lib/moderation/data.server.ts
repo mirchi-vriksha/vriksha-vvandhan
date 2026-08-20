@@ -1,7 +1,10 @@
 import "server-only";
 
 import { requireStaff } from "@/lib/auth/dal";
-import { createReviewThumbnailUrls } from "@/lib/storage/signed-review-url.server";
+import {
+  createOriginalReviewUrl,
+  createReviewThumbnailUrls,
+} from "@/lib/storage/signed-review-url.server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isStaffE2EAdapterEnabled } from "@/lib/testing/staff-adapter";
 
@@ -218,10 +221,10 @@ export async function getSubmissionDetail(id: string) {
       submission_media:{status:fixture.status === "published" ? "published" : "uploaded",original_path:`${fixture.id}/original.webp`,original_mime_type:"image/webp",original_bytes:2048,original_width:900,original_height:900,review_thumbnail_path:`${fixture.id}/review-thumb.webp`,review_thumbnail_width:240,review_thumbnail_height:300,review_thumbnail_bytes:4096,focal_x:.5,focal_y:.5,published_card_path:null,published_full_path:null},
       certificates:{id:"c1000000-0000-4000-8000-000000000001",status:"not_started",template_version:null,generated_at:null,last_error_code:null},email_deliveries:[{id:"d1000000-0000-4000-8000-000000000001",kind:"approval_certificate",status:"not_started",sent_at:null,last_error_code:null}],
     };
-    return { record, reviewThumbnail:{bucket:"submission-originals",path:`${fixture.id}/review-thumb.webp`,signedUrl:"/campaign/guardian-preview.webp",expiresIn:600}, email:session.role === "admin" ? "participant@example.test" : null, audit:session.role === "admin" ? [{id:1,action:"submission.test_fixture",created_at:E2E_SUBMITTED_AT}] : [], session };
+    return { record, reviewImage:{bucket:"submission-originals",path:`${fixture.id}/original.webp`,signedUrl:"/campaign/guardian-preview.webp",expiresIn:600,source:"original" as const}, email:session.role === "admin" ? "participant@example.test" : null, audit:session.role === "admin" ? [{id:1,action:"submission.test_fixture",created_at:E2E_SUBMITTED_AT}] : [], session };
   }
   const client = await createServerSupabaseClient();
-  const { data, error } = await client.from("submissions").select("id,status,display_name,submitted_at,guardian_number,rejection_comment,rejection_recommended_at,rejected_at,trashed_at,submission_consents(publication_consent,terms_accepted,accepted_at),submission_media(status,original_path,original_mime_type,original_bytes,original_width,original_height,review_thumbnail_path,review_thumbnail_width,review_thumbnail_height,review_thumbnail_bytes,focal_x,focal_y,published_card_path,published_full_path),certificates(id,status,template_version,generated_at,last_error_code),email_deliveries(id,kind,status,sent_at,last_error_code)").eq("id", id).maybeSingle();
+  const { data, error } = await client.from("submissions").select("id,status,display_name,submitted_at,guardian_number,rejection_comment,rejection_reason_code,rejection_participant_note,rejection_internal_note,rejection_recommended_at,rejected_at,trashed_at,submission_consents(publication_consent,terms_accepted,accepted_at),submission_media(status,original_path,original_mime_type,original_bytes,original_width,original_height,review_thumbnail_path,review_thumbnail_width,review_thumbnail_height,review_thumbnail_bytes,focal_x,focal_y,published_card_path,published_full_path),certificates(id,status,template_version,generated_at,last_error_code),email_deliveries(id,kind,status,sent_at,last_error_code)").eq("id", id).maybeSingle();
   if (error || !data) return null;
   const record = data as unknown as Record<string, unknown> & {
     submission_media:
@@ -236,16 +239,20 @@ export async function getSubmissionDetail(id: string) {
         client.from("audit_logs").select("id,action,reason,before_data,after_data,created_at").eq("entity_id", id).order("created_at", { ascending: false }).limit(30),
       ])
     : Promise.resolve(null);
-  const [reviewThumbnail, adminData] = await Promise.all([
-    reviewThumbnailPath
-      ? createReviewThumbnailUrls([reviewThumbnailPath]).then((urls) => {
-          const signedUrl = urls.get(reviewThumbnailPath);
-          return signedUrl ? { bucket: "submission-originals" as const, path: reviewThumbnailPath, signedUrl, expiresIn: 600 } : null;
-        }).catch(() => null)
-      : null,
+  const [reviewImage, adminData] = await Promise.all([
+    createOriginalReviewUrl(media.original_path)
+      .then((descriptor) => ({ ...descriptor, source: "original" as const }))
+      .catch(() => reviewThumbnailPath
+        ? createReviewThumbnailUrls([reviewThumbnailPath]).then((urls) => {
+            const signedUrl = urls.get(reviewThumbnailPath);
+            return signedUrl
+              ? { bucket: "submission-originals" as const, path: reviewThumbnailPath, signedUrl, expiresIn: 600, source: "thumbnail" as const }
+              : null;
+          }).catch(() => null)
+        : null),
     adminDataPromise,
   ]);
   const email = adminData?.[0].data?.email ?? null;
   const audit = adminData?.[1].data ?? [];
-  return { record, reviewThumbnail, email, audit, session };
+  return { record, reviewImage, email, audit, session };
 }

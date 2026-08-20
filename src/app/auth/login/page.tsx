@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { loginAction } from "@/app/auth/actions";
+import { LoginForm } from "@/components/auth/login-form";
 import { LoginRecoveryNotice } from "@/components/auth/login-recovery-notice";
 import { LogoLockup } from "@/components/shared/logo-lockup";
 import { getOptionalStaffSession } from "@/lib/auth/dal";
@@ -31,12 +31,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <p>Use the company-managed account assigned to the Campaign Desk.</p>
         <LoginRecoveryNotice kind={recoveryNotice} />
         {query.error && <div className="auth-error" role="alert">Unable to sign in with those credentials.</div>}
-        <form action={loginAction}>
-          <input type="hidden" name="next" value={next} />
-          <label>Email address<input name="email" type="email" autoComplete="username" required /></label>
-          <label>Password<input name="password" type="password" autoComplete="current-password" minLength={8} required /></label>
-          <button className="button button--primary" type="submit">Sign in securely</button>
-        </form>
+        <LoginForm next={next} />
         <Link className="auth-card__secondary-link" href="/auth/forgot-password">Forgot password?</Link>
         <small>There is no public staff registration. Access is managed by Mirchi.</small>
       </section>

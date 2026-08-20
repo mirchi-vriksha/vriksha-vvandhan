@@ -29,6 +29,11 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  outputFileTracingIncludes: {
+    "/vendor/heic-to-1.5.2.min.js": [
+      "node_modules/heic-to/dist/csp/heic-to.min.js",
+    ],
+  },
   async headers() {
     const headers = [
       { key: "Content-Security-Policy", value: contentSecurityPolicy },

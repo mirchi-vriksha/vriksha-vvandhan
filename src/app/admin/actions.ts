@@ -2,9 +2,9 @@
 
 import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { after } from "next/server";
 
 import { requireRole, requireStaff } from "@/lib/auth/dal";
+import { createStaffMemberSchema } from "@/lib/auth/staff-management";
 import { processApprovalDelivery, processSubmissionDelivery } from "@/lib/email/delivery-orchestration.server";
 import { publishSubmission } from "@/lib/moderation/publication.server";
 import { generatePublicVariants } from "@/lib/moderation/publication-image.server";
@@ -17,6 +17,22 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getServiceSupabaseClient } from "@/lib/supabase/service";
 import { isStaffE2EAdapterEnabled } from "@/lib/testing/staff-adapter";
 
+type ImmediateDeliveryResult = "sent" | "disabled" | "retrying";
+
+async function attemptImmediateDelivery(
+  attempt: () => Promise<{ outcome: "disabled" | "not_eligible" | "sent" }>,
+  failureMessage: string,
+): Promise<ImmediateDeliveryResult> {
+  try {
+    const result = await attempt();
+    if (result.outcome === "sent") return "sent";
+    if (result.outcome === "disabled") return "disabled";
+  } catch {
+    console.error(failureMessage);
+  }
+  return "retrying";
+}
+
 export async function saveReviewFieldsAction(formData: FormData) {
   await requireStaff();
   const input = reviewFieldsSchema.parse({ submissionId: formData.get("submissionId"), displayName: formData.get("displayName"), focalX: formData.get("focalX"), focalY: formData.get("focalY") });
@@ -25,6 +41,7 @@ export async function saveReviewFieldsAction(formData: FormData) {
   const { error } = await callUntypedRpc(client, "update_submission_review_fields", { p_submission_id: input.submissionId, p_display_name: input.displayName, p_focal_x: input.focalX, p_focal_y: input.focalY });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/submissions/${input.submissionId}`);
+  redirect(`/admin/submissions/${input.submissionId}?success=fields-saved`);
 }
 
 export async function approveSubmissionAction(formData: FormData) {
@@ -33,20 +50,19 @@ export async function approveSubmissionAction(formData: FormData) {
   if (isStaffE2EAdapterEnabled()) redirect(`/admin/submissions/${submissionId}?success=published`);
   const client = await createServerSupabaseClient();
   await publishSubmission(client, session, submissionId);
-  after(async () => {
-    await processApprovalDelivery(submissionId).catch(() => {
-      console.error("Approval delivery attempt failed.");
-    });
-  });
-  redirect(`/admin/submissions/${submissionId}?success=published`);
+  const delivery = await attemptImmediateDelivery(
+    () => processApprovalDelivery(submissionId),
+    "Approval delivery attempt failed; durable retry remains queued.",
+  );
+  redirect(`/admin/submissions/${submissionId}?success=published&delivery=${delivery}`);
 }
 
 export async function recommendRejectionAction(formData: FormData) {
   await requireRole("reviewer");
-  const input = rejectionSchema.parse({ submissionId: formData.get("submissionId"), comment: formData.get("comment") });
+  const input = rejectionSchema.parse({ submissionId: formData.get("submissionId"), reasonCode: formData.get("reasonCode"), participantNote: formData.get("participantNote") ?? "", internalNote: formData.get("internalNote") });
   if (isStaffE2EAdapterEnabled()) redirect(`/admin/submissions/${input.submissionId}?testAction=recommended`);
   const client = await createServerSupabaseClient();
-  const { error } = await callUntypedRpc(client, "recommend_submission_rejection", { p_submission_id: input.submissionId, p_comment: input.comment });
+  const { error } = await callUntypedRpc(client, "recommend_submission_rejection", { p_submission_id: input.submissionId, p_reason_code: input.reasonCode, p_participant_note: input.participantNote, p_internal_note: input.internalNote });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/submissions/${input.submissionId}`);
   redirect(`/admin/submissions/${input.submissionId}?success=rejection-recommended`);
@@ -54,18 +70,17 @@ export async function recommendRejectionAction(formData: FormData) {
 
 export async function confirmRejectionAction(formData: FormData) {
   await requireRole("admin");
-  const input = rejectionSchema.parse({ submissionId: formData.get("submissionId"), comment: formData.get("comment") });
+  const input = rejectionSchema.parse({ submissionId: formData.get("submissionId"), reasonCode: formData.get("reasonCode"), participantNote: formData.get("participantNote") ?? "", internalNote: formData.get("internalNote") });
   if (isStaffE2EAdapterEnabled()) redirect(`/admin/submissions/${input.submissionId}?testAction=rejected`);
   const client = await createServerSupabaseClient();
-  const { error } = await callUntypedRpc(client, "confirm_submission_rejection", { p_submission_id: input.submissionId, p_comment: input.comment });
+  const { error } = await callUntypedRpc(client, "confirm_submission_rejection", { p_submission_id: input.submissionId, p_reason_code: input.reasonCode, p_participant_note: input.participantNote, p_internal_note: input.internalNote });
   if (error) throw new Error(error.message);
-  after(async () => {
-    await processSubmissionDelivery(input.submissionId, "rejection").catch(() => {
-      console.error("Rejection delivery attempt failed.");
-    });
-  });
+  const delivery = await attemptImmediateDelivery(
+    () => processSubmissionDelivery(input.submissionId, "rejection"),
+    "Rejection delivery attempt failed; durable retry remains queued.",
+  );
   revalidatePath(`/admin/submissions/${input.submissionId}`);
-  redirect(`/admin/submissions/${input.submissionId}?success=rejected`);
+  redirect(`/admin/submissions/${input.submissionId}?success=rejected&delivery=${delivery}`);
 }
 
 export async function trashSubmissionAction(formData: FormData) {
@@ -82,7 +97,7 @@ export async function trashSubmissionAction(formData: FormData) {
     if (cleanup.error) redirect(`/admin/submissions/${id}?cleanup=required`);
   }
   revalidatePath("/admin");
-  redirect("/admin/submissions?status=trashed");
+  redirect("/admin/submissions?status=trashed&result=trashed");
 }
 
 export async function restoreNonpublishedAction(formData: FormData) {
@@ -93,6 +108,7 @@ export async function restoreNonpublishedAction(formData: FormData) {
   const { error } = await callUntypedRpc(client, "restore_nonpublished_submission", { p_submission_id: id });
   if (error) throw new Error(error.message);
   revalidatePath("/admin/submissions");
+  redirect(`/admin/submissions/${id}?success=restored`);
 }
 
 export async function restorePublishedAction(formData: FormData) {
@@ -123,7 +139,7 @@ export async function restorePublishedAction(formData: FormData) {
     throw error;
   }
   revalidateTag(CAMPAIGN_PUBLIC_TAG, "max");
-  redirect(`/admin/submissions/${id}`);
+  redirect(`/admin/submissions/${id}?success=restored`);
 }
 
 export async function deleteTrashedAction(formData: FormData) {
@@ -157,7 +173,7 @@ export async function deleteTrashedAction(formData: FormData) {
   const { error } = await callUntypedRpc(client, "delete_trashed_submission", { p_submission_id: input.submissionId, p_reason: input.reason });
   if (error) throw new Error(error.message);
   revalidateTag(CAMPAIGN_PUBLIC_TAG, "max");
-  redirect("/admin/submissions?status=trashed");
+  redirect("/admin/submissions?status=trashed&result=deleted");
 }
 
 export async function manageStaffAction(formData: FormData) {
@@ -170,6 +186,132 @@ export async function manageStaffAction(formData: FormData) {
   const { error } = await callUntypedRpc(client, "manage_staff_profile", { p_staff_id: id, p_display_name: String(formData.get("displayName") ?? ""), p_role: role, p_active: formData.get("active") === "on" });
   if (error) throw new Error(error.message);
   revalidatePath("/admin/team");
+  redirect("/admin/team?saved=1");
+}
+
+export async function removeStaffAction(formData: FormData) {
+  const session = await requireRole("admin");
+  const id = submissionIdSchema.parse(formData.get("staffId"));
+
+  if (id === session.userId) throw new Error("self_removal_forbidden");
+  if (isStaffE2EAdapterEnabled()) redirect("/admin/team?removed=1");
+
+  const client = await createServerSupabaseClient();
+  const { error: prepareError } = await callUntypedRpc(client, "prepare_staff_removal", {
+    p_staff_id: id,
+  });
+  if (prepareError) throw new Error(prepareError.message);
+
+  const service = getServiceSupabaseClient();
+  const { error: softDeleteError } = await service.auth.admin.deleteUser(id, true);
+  let cleanupErrorCode = softDeleteError?.code ?? null;
+
+  const { error: auditError } = await callUntypedRpc(client, "record_staff_removal", {
+    p_staff_id: id,
+  });
+  if (!auditError) cleanupErrorCode = null;
+
+  if (cleanupErrorCode || auditError) {
+    const errorCode = cleanupErrorCode ?? "removal_audit_pending";
+    const { error: queueError } = await callUntypedRpc(client, "mark_staff_auth_cleanup_pending", {
+      p_staff_id: id,
+      p_error_code: errorCode,
+    });
+    console.error(JSON.stringify({
+      level: "error",
+      message: "Staff Auth cleanup pending",
+      errorCode,
+      queueRecorded: !queueError,
+    }));
+    revalidatePath("/admin/team");
+    redirect("/admin/team?removed=1&cleanup=pending");
+  }
+
+  revalidatePath("/admin/team");
+  redirect("/admin/team?removed=1");
+}
+
+export type CreateStaffState = {
+  status: "idle" | "invalid" | "error" | "success";
+  message: string;
+  revision: number;
+};
+
+export async function createStaffAction(
+  previousState: CreateStaffState,
+  formData: FormData,
+): Promise<CreateStaffState> {
+  await requireRole("admin");
+  const parsed = createStaffMemberSchema.safeParse({
+    displayName: formData.get("displayName"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    role: formData.get("role"),
+    active: formData.get("active") === "on",
+  });
+
+  if (!parsed.success) {
+    return {
+      status: "invalid",
+      message: "Check the name, email, password length, role, and access setting.",
+      revision: previousState.revision,
+    };
+  }
+
+  if (isStaffE2EAdapterEnabled()) {
+    return {
+      status: "success",
+      message: "Team member created.",
+      revision: previousState.revision + 1,
+    };
+  }
+
+  const service = getServiceSupabaseClient();
+  const { data: authData, error: authError } = await service.auth.admin.createUser({
+    email: parsed.data.email,
+    password: parsed.data.password,
+    email_confirm: true,
+  });
+
+  if (authError || !authData.user) {
+    return {
+      status: "error",
+      message: "The member could not be created. That email may already be registered.",
+      revision: previousState.revision,
+    };
+  }
+
+  const client = await createServerSupabaseClient();
+  const { error: profileError } = await callUntypedRpc(client, "create_staff_profile", {
+    p_staff_id: authData.user.id,
+    p_display_name: parsed.data.displayName,
+    p_role: parsed.data.role,
+    p_active: parsed.data.active,
+  });
+
+  if (profileError) {
+    const { error: rollbackError } = await service.auth.admin.deleteUser(authData.user.id);
+    if (rollbackError) {
+      console.error("Staff provisioning rollback failed.");
+      return {
+        status: "error",
+        message: "Member setup did not finish. Check Supabase before retrying this email.",
+        revision: previousState.revision,
+      };
+    }
+    return {
+      status: "error",
+      message: "Member setup could not be completed. No account was kept.",
+      revision: previousState.revision,
+    };
+  }
+
+  revalidatePath("/admin/team");
+  return {
+    status: "success",
+    message: "Team member created and ready to sign in.",
+    revision: previousState.revision + 1,
+  };
 }
 
 export async function updateCampaignSettingsAction(formData: FormData) {

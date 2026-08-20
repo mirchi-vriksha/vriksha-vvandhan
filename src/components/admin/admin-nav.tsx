@@ -18,7 +18,7 @@ export function getAdminNavItems(role: StaffSession["role"]): readonly AdminNavI
     { href: "/admin", label: "Dashboard", icon: Gauge, section: "workflow" },
     { href: "/admin/submissions?status=pending_review", label: "Review Queue", icon: ClipboardList, section: "workflow" },
     ...(role === "admin" ? [
-      { href: "/admin/deliveries?status=failed", label: "Deliveries", icon: Send, section: "admin" as const },
+      { href: "/admin/deliveries", label: "Deliveries", icon: Send, section: "admin" as const },
       { href: "/admin/team", label: "Team", icon: Users, section: "admin" as const },
       { href: "/admin/settings", label: "Campaign Settings", icon: Settings, section: "admin" as const },
     ] : []),

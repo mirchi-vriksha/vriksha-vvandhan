@@ -24,6 +24,8 @@ export const heroContent = {
   primaryCta: { label: "Tie a Rakhi to a Tree", href: "/join" },
   secondaryCta: { label: "How It Works", href: "/join#how-to-participate" },
   ribbonLabel: "Mumbai’s growing wall of gratitude",
+  ribbonFallbackLabel: "Vriksha Bandhan campaign moments",
+  ribbonFallbackDescription: "Approved community photographs will appear here as the wall grows.",
 } as const satisfies HeroContent;
 
 export const heroImage: CampaignImage = {

@@ -1,14 +1,81 @@
-import { manageStaffAction } from "@/app/admin/actions";
 import { notFound } from "next/navigation";
+
+import { CreateStaffForm } from "@/components/admin/create-staff-form";
+import { TeamMemberCard } from "@/components/admin/team-member-card";
 import { requireStaff } from "@/lib/auth/dal";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getServiceSupabaseClient } from "@/lib/supabase/service";
 import { isStaffE2EAdapterEnabled } from "@/lib/testing/staff-adapter";
 
-export default async function TeamPage() {
+export default async function TeamPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ removed?: string; remove?: string; cleanup?: string; saved?: string }>;
+}) {
   const session = await requireStaff();
   if (session.role !== "admin") notFound();
-  const data = isStaffE2EAdapterEnabled()
-    ? [{id:"e2000000-0000-4000-8000-000000000001",display_name:"Test Reviewer",role:"reviewer" as const,active:true,updated_at:"2026-08-06T10:00:00.000Z"}]
-    : (await (await createServerSupabaseClient()).from("staff_profiles").select("id,display_name,role,active,updated_at").order("display_name")).data;
-  return <><header className="admin-page-header"><div><p>Admin tools</p><h1>Team</h1><span>Manage the role and access state of existing company staff.</span></div></header><p className="admin-intro">Staff accounts are created and password-managed outside this desk. Only active company profiles can sign in.</p><div className="team-grid">{data?.map(profile => <form className="admin-panel team-card" action={manageStaffAction} key={profile.id}><div className="team-card__heading"><div><strong>{profile.display_name}</strong><span>{profile.role}</span></div><span className={`team-card__status ${profile.active ? "is-active" : ""}`}>{profile.active ? "Active" : "Inactive"}</span></div><input type="hidden" name="staffId" value={profile.id} /><label>Display name<input name="displayName" defaultValue={profile.display_name} maxLength={120} required /></label><label>Role<select name="role" defaultValue={profile.role}><option value="reviewer">Reviewer</option><option value="admin">Admin</option></select></label><label className="team-card__active"><input type="checkbox" name="active" defaultChecked={profile.active} /> Active staff profile</label><small>Last updated {new Date(profile.updated_at).toLocaleString("en-IN")}</small><button className="button button--light" type="submit">Save changes</button></form>)}</div></>;
+  const query = await searchParams;
+
+  const adapterEnabled = isStaffE2EAdapterEnabled();
+  const profiles = adapterEnabled
+    ? query.removed === "1"
+      ? []
+      : [{ id: "e2000000-0000-4000-8000-000000000001", display_name: "Test Reviewer", role: "reviewer" as const, active: true, updated_at: "2026-08-06T10:00:00.000Z" }]
+    : (await (await createServerSupabaseClient()).from("staff_profiles").select("id,display_name,role,active,updated_at").is("removed_at", null).order("display_name")).data ?? [];
+
+  const emailById = new Map<string, string>();
+  const profileIds = new Set(profiles.map((profile) => profile.id));
+  if (adapterEnabled && profiles[0]) {
+    emailById.set(profiles[0].id, "reviewer@example.test");
+  } else {
+    let page = 1;
+    const perPage = 1000;
+    while (emailById.size < profiles.length) {
+      const { data, error } = await getServiceSupabaseClient().auth.admin.listUsers({ page, perPage });
+      if (error) break;
+      for (const user of data.users) {
+        if (user.email && profileIds.has(user.id)) emailById.set(user.id, user.email);
+      }
+      if (data.users.length < perPage) break;
+      page += 1;
+    }
+  }
+
+  return (
+    <>
+      <header className="admin-page-header">
+        <div>
+          <p>Admin tools</p>
+          <h1>Team</h1>
+          <span>Create staff sign-ins and manage each member&apos;s role and access state.</span>
+        </div>
+      </header>
+      <p className="admin-intro">
+        Only active company profiles can sign in. Passwords are accepted only during account
+        creation and are never shown here afterward.
+      </p>
+      {query.removed === "1" ? (
+        <p className="admin-success" role="status">Team member removed.</p>
+      ) : null}
+      {query.saved === "1" ? (
+        <p className="admin-success" role="status">Team member changes saved.</p>
+      ) : null}
+      {query.cleanup === "pending" || query.remove === "cleanup-required" ? (
+        <p className="admin-notice" role="alert">
+          The member is gone from Team. Auth account cleanup is safely queued for retry.
+        </p>
+      ) : null}
+      <CreateStaffForm />
+      <div className="team-grid">
+        {profiles.map((profile) => (
+          <TeamMemberCard
+            key={profile.id}
+            profile={profile}
+            email={emailById.get(profile.id) ?? null}
+            isCurrentUser={profile.id === session.userId}
+          />
+        ))}
+      </div>
+    </>
+  );
 }

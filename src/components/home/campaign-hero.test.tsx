@@ -45,10 +45,35 @@ describe("CampaignHero", () => {
   it("renders the typed Promise Ribbon without the retired Promise Halo", () => {
     const { container } = render(<CampaignHero />);
 
-    const ribbon = screen.getByRole("region", { name: "Mumbai’s growing wall of gratitude" });
+    const ribbon = screen.getByRole("region", { name: "Vriksha Bandhan campaign moments" });
+    expect(screen.getByText("Approved community photographs will appear here as the wall grows.")).toBeInTheDocument();
     expect(ribbon.querySelectorAll(".promise-reel__sequence:not([aria-hidden]) figure")).toHaveLength(
       heroPromiseImages.length,
     );
     expect(container.querySelector(".promise-halo")).toBeNull();
+  });
+
+  it("renders an approved public reel without fallback messaging", () => {
+    render(
+      <CampaignHero
+        reelImages={[{
+          id: "guardian-21",
+          src: "https://project.supabase.co/storage/v1/object/public/published-images/card/21-v1.webp",
+          width: 640,
+          height: 800,
+          alt: "A participant tying a Rakhi to a tree",
+          aspect: "portrait",
+        }]}
+        ribbonHeading="Mumbai’s growing wall of gratitude"
+        ribbonDescription={null}
+      />,
+    );
+
+    expect(screen.getByRole("region", { name: "Mumbai’s growing wall of gratitude" })).toBeInTheDocument();
+    expect(screen.queryByText("Approved community photographs will appear here as the wall grows.")).not.toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "A participant tying a Rakhi to a tree" })).toHaveAttribute(
+      "src",
+      expect.stringContaining("published-images/card/21-v1.webp"),
+    );
   });
 });

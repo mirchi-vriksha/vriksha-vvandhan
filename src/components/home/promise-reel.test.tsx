@@ -43,6 +43,7 @@ describe("PromiseReel", () => {
     const track = container.querySelector(".promise-ribbon__track");
     const pauseButton = await screen.findByRole("button", { name: "Pause promise reel" });
 
+    expect(pauseButton).toHaveTextContent("");
     expect(track).toHaveAttribute("data-playing", "true");
     await user.click(pauseButton);
     expect(track).toHaveAttribute("data-playing", "false");

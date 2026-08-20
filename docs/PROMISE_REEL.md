@@ -2,7 +2,7 @@
 
 ## Intent
 
-The “Mumbai’s growing wall of gratitude” strip is a slow editorial film reel that carries several campaign photographs from right to left. It extends the existing light hero without changing the masthead, tracker, hero image, actions or downstream sections.
+The homepage strip is a slow editorial film reel that carries several photographs from right to left. Below six approved public submissions it uses the existing curated campaign photographs and labels them as campaign moments. At six or more approved submissions it switches to the trusted public card derivatives and restores the “Mumbai’s growing wall of gratitude” heading.
 
 ## Architecture
 
@@ -22,10 +22,10 @@ After hydration, the duplicate sequence is added and the transform animation sta
 - Pointer hover pauses playback until the pointer leaves.
 - Keyboard focus inside the image viewport pauses playback until focus leaves.
 - Pointer or touch contact pauses playback while direct manipulation is active.
-- The visible Pause/Play button sets an explicit user override.
+- A compact icon-only Pause/Play control overlays the lower-right corner and sets an explicit user override without competing with the section heading.
 - `prefers-reduced-motion: reduce` starts with the reel paused and a visible Play control; an explicit Play action can opt back into the reel.
 - The native viewport remains horizontally scrollable and never widens the document.
 
 ## Content and accessibility
 
-`heroPromiseImages` is a typed `PromiseReelImage[]` collection with stable IDs, intrinsic dimensions, meaningful alternative text and a controlled portrait, square or landscape aspect class. The control has a changing accessible label, the original sequence remains the only semantic image set, focus styles are preserved and the animation does not rotate or flip cards.
+`heroPromiseImages` is the typed curated fallback. Approved public entries are mapped from immutable `published-images/card` WebPs to the same serializable `PromiseReelImage` shape with Guardian-derived stable IDs, intrinsic dimensions and moderation-approved alternative text. Pending/private originals and full-size derivatives never enter the homepage reel. The control has a changing accessible label, the original sequence remains the only semantic image set, focus styles are preserved and the animation does not rotate or flip cards.

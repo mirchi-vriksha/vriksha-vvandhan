@@ -1,6 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { processEmailDelivery, safeEmailErrorCode, type EmailClaim } from "@/lib/email/process-email-delivery.server";
+const mocks = vi.hoisted(() => ({
+  createTransport: vi.fn(),
+  sendMail: vi.fn(),
+}));
+
+vi.mock("nodemailer", () => ({
+  default: { createTransport: mocks.createTransport },
+}));
+
+import { processEmailDelivery, ResendProviderError, safeEmailErrorCode, SmtpProviderError, type EmailClaim } from "@/lib/email/process-email-delivery.server";
 
 const claim: EmailClaim = {
   delivery_id: "d1000000-0000-4000-8000-000000000001",
@@ -12,17 +21,22 @@ const claim: EmailClaim = {
   display_name: "Asha Test",
   guardian_number: null,
   rejection_comment: null,
+  rejection_reason_code: null,
+  rejection_participant_note: null,
   certificate_bucket: null,
   certificate_path: null,
 };
 
 const enabledConfiguration = {
   enabled: true,
+  provider: "resend" as const,
   apiKey: "test-key",
+  smtpUser: null,
+  smtpPassword: null,
   from: "Vriksha Test <test@example.test>",
   replyTo: "reply@example.test",
   targetEnvironment: "local" as const,
-  testRecipient: null,
+  testRecipients: [],
 };
 
 describe("processEmailDelivery", () => {
@@ -30,7 +44,7 @@ describe("processEmailDelivery", () => {
     const claimDelivery = vi.fn();
     const send = vi.fn();
     const result = await processEmailDelivery(claim.delivery_id, {
-      configuration: () => ({ ...enabledConfiguration, enabled: false, apiKey: null, from: null, replyTo: null }),
+      configuration: () => ({ ...enabledConfiguration, enabled: false, provider: null, apiKey: null, from: null, replyTo: null }),
       claim: claimDelivery,
       send,
     });
@@ -50,7 +64,36 @@ describe("processEmailDelivery", () => {
     });
     expect(result).toEqual({ outcome: "sent", providerMessageId: "provider-message-1" });
     expect(send.mock.calls[0][2]).toBe(claim.idempotency_key);
-    expect(complete).toHaveBeenCalledWith(claim, "submission-received-v2", "provider-message-1");
+    expect(complete).toHaveBeenCalledWith(claim, "submission-received-v3", "provider-message-1");
+  });
+
+  it("sends through Gmail SMTP with a deterministic message ID", async () => {
+    mocks.sendMail.mockResolvedValue({ messageId: "gmail-message-1" });
+    mocks.createTransport.mockReturnValue({ sendMail: mocks.sendMail });
+    const complete = vi.fn().mockResolvedValue(true);
+
+    const result = await processEmailDelivery(claim.delivery_id, {
+      configuration: () => ({
+        ...enabledConfiguration,
+        provider: "gmail_smtp",
+        apiKey: null,
+        smtpUser: "sender@example.test",
+        smtpPassword: "app-password",
+      }),
+      claim: vi.fn().mockResolvedValue(claim),
+      complete,
+    });
+
+    expect(result).toEqual({ outcome: "sent", providerMessageId: "gmail-message-1" });
+    expect(mocks.createTransport).toHaveBeenCalledWith(expect.objectContaining({
+      service: "gmail",
+      auth: { user: "sender@example.test", pass: "app-password" },
+    }));
+    expect(mocks.sendMail).toHaveBeenCalledWith(expect.objectContaining({
+      to: [claim.recipient_email],
+      messageId: expect.stringMatching(/^<[a-f0-9]{64}@example\.test>$/),
+    }));
+    expect(complete).toHaveBeenCalledWith(claim, "submission-received-v3", "gmail-message-1");
   });
 
   it("treats an unclaimable sent delivery as permanently ineligible", async () => {
@@ -67,7 +110,7 @@ describe("processEmailDelivery", () => {
     const send = vi.fn().mockResolvedValue("provider-message-2");
     const log = vi.fn();
     await processEmailDelivery(claim.delivery_id, {
-      configuration: () => ({ ...enabledConfiguration, targetEnvironment: "staging", testRecipient: "approved-test@example.test" }),
+      configuration: () => ({ ...enabledConfiguration, targetEnvironment: "staging", testRecipients: ["approved-test@example.test"] }),
       claim: vi.fn().mockResolvedValue(claim),
       send,
       complete: vi.fn().mockResolvedValue(true),
@@ -94,5 +137,11 @@ describe("processEmailDelivery", () => {
     expect(safeEmailErrorCode(new Error("429 rate limited"))).toBe("resend_rate_limited");
     expect(safeEmailErrorCode(new Error("sender domain not verified"))).toBe("resend_invalid_sender");
     expect(safeEmailErrorCode(new Error("participant@example.test failed"))).toBe("resend_provider_error");
+    expect(safeEmailErrorCode(new ResendProviderError({ name: "rate_limit_exceeded", message: "slow down", statusCode: 429 }))).toBe("resend_rate_limited");
+    expect(safeEmailErrorCode(new ResendProviderError({ name: "invalid_from_address", message: "bad sender", statusCode: 422 }))).toBe("resend_invalid_sender");
+    expect(safeEmailErrorCode(new ResendProviderError({ name: "internal_server_error", message: "provider unavailable", statusCode: 503 }))).toBe("resend_internal_server_error");
+    expect(safeEmailErrorCode(new SmtpProviderError("ETIMEDOUT", null))).toBe("resend_timeout");
+    expect(safeEmailErrorCode(new SmtpProviderError("EAUTH", 535))).toBe("resend_invalid_api_key");
+    expect(safeEmailErrorCode(new SmtpProviderError(null, 450))).toBe("resend_temporary_error");
   });
 });

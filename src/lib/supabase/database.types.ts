@@ -33,6 +33,63 @@ export type Database = {
         }
         Relationships: []
       }
+      email_suppressions: {
+        Row: {
+          normalized_email: string
+          provider_message_id: string | null
+          reason: string
+          source_event_id: string | null
+          suppressed_at: string
+        }
+        Insert: {
+          normalized_email: string
+          provider_message_id?: string | null
+          reason: string
+          source_event_id?: string | null
+          suppressed_at?: string
+        }
+        Update: {
+          normalized_email?: string
+          provider_message_id?: string | null
+          reason?: string
+          source_event_id?: string | null
+          suppressed_at?: string
+        }
+        Relationships: []
+      }
+      staff_auth_cleanup_queue: {
+        Row: {
+          attempt_count: number
+          display_name: string
+          last_attempt_at: string | null
+          last_error_code: string | null
+          requested_at: string
+          requested_by: string | null
+          requested_role: Database["public"]["Enums"]["staff_role"]
+          staff_id: string
+        }
+        Insert: {
+          attempt_count?: number
+          display_name: string
+          last_attempt_at?: string | null
+          last_error_code?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          requested_role: Database["public"]["Enums"]["staff_role"]
+          staff_id: string
+        }
+        Update: {
+          attempt_count?: number
+          display_name?: string
+          last_attempt_at?: string | null
+          last_error_code?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          requested_role?: Database["public"]["Enums"]["staff_role"]
+          staff_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -205,8 +262,10 @@ export type Database = {
           created_at: string
           delivered_at: string | null
           delivery_delayed_at: string | null
+          first_attempt_at: string | null
           id: string
           idempotency_key: string
+          idempotency_version: number
           kind: Database["public"]["Enums"]["email_delivery_kind"]
           last_attempt_at: string | null
           last_error_code: string | null
@@ -217,6 +276,8 @@ export type Database = {
           sent_at: string | null
           status: Database["public"]["Enums"]["email_delivery_status"]
           submission_id: string
+          suppressed_at: string | null
+          suppression_reason: string | null
           template_version: string | null
           updated_at: string
         }
@@ -228,8 +289,10 @@ export type Database = {
           created_at?: string
           delivered_at?: string | null
           delivery_delayed_at?: string | null
+          first_attempt_at?: string | null
           id?: string
           idempotency_key: string
+          idempotency_version?: number
           kind: Database["public"]["Enums"]["email_delivery_kind"]
           last_attempt_at?: string | null
           last_error_code?: string | null
@@ -240,6 +303,8 @@ export type Database = {
           sent_at?: string | null
           status?: Database["public"]["Enums"]["email_delivery_status"]
           submission_id: string
+          suppressed_at?: string | null
+          suppression_reason?: string | null
           template_version?: string | null
           updated_at?: string
         }
@@ -251,8 +316,10 @@ export type Database = {
           created_at?: string
           delivered_at?: string | null
           delivery_delayed_at?: string | null
+          first_attempt_at?: string | null
           id?: string
           idempotency_key?: string
+          idempotency_version?: number
           kind?: Database["public"]["Enums"]["email_delivery_kind"]
           last_attempt_at?: string | null
           last_error_code?: string | null
@@ -263,6 +330,8 @@ export type Database = {
           sent_at?: string | null
           status?: Database["public"]["Enums"]["email_delivery_status"]
           submission_id?: string
+          suppressed_at?: string | null
+          suppression_reason?: string | null
           template_version?: string | null
           updated_at?: string
         }
@@ -279,6 +348,7 @@ export type Database = {
       email_webhook_events: {
         Row: {
           event_created_at: string
+          event_detail_code: string | null
           event_id: string
           event_type: string
           provider_message_id: string
@@ -286,6 +356,7 @@ export type Database = {
         }
         Insert: {
           event_created_at: string
+          event_detail_code?: string | null
           event_id: string
           event_type: string
           provider_message_id: string
@@ -293,10 +364,44 @@ export type Database = {
         }
         Update: {
           event_created_at?: string
+          event_detail_code?: string | null
           event_id?: string
           event_type?: string
           provider_message_id?: string
           received_at?: string
+        }
+        Relationships: []
+      }
+      email_worker_runs: {
+        Row: {
+          completed_at: string | null
+          error_code: string | null
+          failed_count: number
+          id: string
+          outcome: string
+          processed_count: number
+          sent_count: number
+          started_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_code?: string | null
+          failed_count?: number
+          id?: string
+          outcome?: string
+          processed_count?: number
+          sent_count?: number
+          started_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_code?: string | null
+          failed_count?: number
+          id?: string
+          outcome?: string
+          processed_count?: number
+          sent_count?: number
+          started_at?: string
         }
         Relationships: []
       }
@@ -306,6 +411,8 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          removed_at: string | null
+          removed_by: string | null
           role: Database["public"]["Enums"]["staff_role"]
           updated_at: string
         }
@@ -314,6 +421,8 @@ export type Database = {
           created_at?: string
           display_name: string
           id: string
+          removed_at?: string | null
+          removed_by?: string | null
           role: Database["public"]["Enums"]["staff_role"]
           updated_at?: string
         }
@@ -322,6 +431,8 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
+          removed_at?: string | null
+          removed_by?: string | null
           role?: Database["public"]["Enums"]["staff_role"]
           updated_at?: string
         }
@@ -531,6 +642,9 @@ export type Database = {
           rejection_comment: string | null
           rejection_confirmed_at: string | null
           rejection_confirmed_by: string | null
+          rejection_internal_note: string | null
+          rejection_participant_note: string | null
+          rejection_reason_code: string | null
           rejection_recommended_at: string | null
           rejection_recommended_by: string | null
           source: Database["public"]["Enums"]["submission_source"]
@@ -557,6 +671,9 @@ export type Database = {
           rejection_comment?: string | null
           rejection_confirmed_at?: string | null
           rejection_confirmed_by?: string | null
+          rejection_internal_note?: string | null
+          rejection_participant_note?: string | null
+          rejection_reason_code?: string | null
           rejection_recommended_at?: string | null
           rejection_recommended_by?: string | null
           source?: Database["public"]["Enums"]["submission_source"]
@@ -583,6 +700,9 @@ export type Database = {
           rejection_comment?: string | null
           rejection_confirmed_at?: string | null
           rejection_confirmed_by?: string | null
+          rejection_internal_note?: string | null
+          rejection_participant_note?: string | null
+          rejection_reason_code?: string | null
           rejection_recommended_at?: string | null
           rejection_recommended_by?: string | null
           source?: Database["public"]["Enums"]["submission_source"]
@@ -635,6 +755,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      begin_email_worker_run: { Args: never; Returns: string }
       claim_certificate_generation: {
         Args: {
           p_allow_exhausted: boolean
@@ -664,6 +785,8 @@ export type Database = {
           kind: Database["public"]["Enums"]["email_delivery_kind"]
           recipient_email: string
           rejection_comment: string
+          rejection_participant_note: string
+          rejection_reason_code: string
           submission_id: string
         }[]
       }
@@ -687,8 +810,24 @@ export type Database = {
         }
         Returns: boolean
       }
+      complete_email_worker_run: {
+        Args: {
+          p_error_code?: string
+          p_failed_count: number
+          p_outcome: string
+          p_processed_count: number
+          p_run_id: string
+          p_sent_count: number
+        }
+        Returns: boolean
+      }
       confirm_submission_rejection: {
-        Args: { p_comment: string; p_submission_id: string }
+        Args: {
+          p_internal_note: string
+          p_participant_note: string
+          p_reason_code: string
+          p_submission_id: string
+        }
         Returns: undefined
       }
       consume_application_rate_limit: {
@@ -699,6 +838,15 @@ export type Database = {
           p_window_seconds: number
         }
         Returns: boolean
+      }
+      create_staff_profile: {
+        Args: {
+          p_active: boolean
+          p_display_name: string
+          p_role: Database["public"]["Enums"]["staff_role"]
+          p_staff_id: string
+        }
+        Returns: undefined
       }
       delete_trashed_submission: {
         Args: { p_reason: string; p_submission_id: string }
@@ -807,6 +955,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      mark_staff_auth_cleanup_pending: {
+        Args: { p_error_code: string; p_staff_id: string }
+        Returns: undefined
+      }
+      prepare_email_admin_retry: {
+        Args: { p_delivery_id: string }
+        Returns: boolean
+      }
       prepare_public_submission: {
         Args: {
           p_consent_version: string
@@ -824,6 +980,10 @@ export type Database = {
           status: Database["public"]["Enums"]["submission_status"]
           submission_id: string
         }[]
+      }
+      prepare_staff_removal: {
+        Args: { p_staff_id: string }
+        Returns: undefined
       }
       publish_submission: {
         Args: {
@@ -847,24 +1007,39 @@ export type Database = {
           guardian_number: number
         }[]
       }
+      purge_email_webhook_events: {
+        Args: { p_limit?: number; p_retention_days?: number }
+        Returns: number
+      }
       purge_expired_rate_limits: { Args: { p_limit?: number }; Returns: number }
       recommend_submission_rejection: {
-        Args: { p_comment: string; p_submission_id: string }
+        Args: {
+          p_internal_note: string
+          p_participant_note: string
+          p_reason_code: string
+          p_submission_id: string
+        }
         Returns: undefined
       }
       record_campaign_data_export: {
         Args: { p_row_count: number }
         Returns: undefined
       }
+      record_delivery_admin_action: {
+        Args: { p_action: string; p_delivery_id: string }
+        Returns: undefined
+      }
       record_resend_webhook_event: {
         Args: {
           p_event_created_at: string
+          p_event_detail_code: string
           p_event_id: string
           p_event_type: string
           p_provider_message_id: string
         }
         Returns: boolean
       }
+      record_staff_removal: { Args: { p_staff_id: string }; Returns: undefined }
       recover_stale_delivery_claims: {
         Args: { p_stale_minutes?: number }
         Returns: {
@@ -929,7 +1104,13 @@ export type Database = {
         | "submission_received"
         | "approval_certificate"
         | "rejection"
-      email_delivery_status: "not_started" | "queued" | "sent" | "failed"
+      email_delivery_status:
+        | "not_started"
+        | "queued"
+        | "sent"
+        | "failed"
+        | "suppressed"
+        | "manual_review"
       media_status: "reserved" | "uploaded" | "published" | "removed"
       staff_role: "admin" | "reviewer"
       submission_source: "website" | "internal_test"
@@ -1075,7 +1256,14 @@ export const Constants = {
         "approval_certificate",
         "rejection",
       ],
-      email_delivery_status: ["not_started", "queued", "sent", "failed"],
+      email_delivery_status: [
+        "not_started",
+        "queued",
+        "sent",
+        "failed",
+        "suppressed",
+        "manual_review",
+      ],
       media_status: ["reserved", "uploaded", "published", "removed"],
       staff_role: ["admin", "reviewer"],
       submission_source: ["website", "internal_test"],

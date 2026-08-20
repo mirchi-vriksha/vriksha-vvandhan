@@ -1,4 +1,5 @@
 import { updateCampaignSettingsAction } from "@/app/admin/actions";
+import { AdminActionButton } from "@/components/admin/admin-action-button";
 import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/auth/dal";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -24,7 +25,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
       <label className="team-card__active"><input name="movementWallEnabled" type="checkbox" defaultChecked={data.movement_wall_enabled} /> Display the public Movement Wall</label>
       <small>When disabled, the Movement Wall link and page are removed publicly. Published records, images, Guardian numbers, and the campaign count remain unchanged.</small>
       <small>Last changed {new Date(data.updated_at).toLocaleString("en-IN")}. Changes are audited and invalidate public campaign data.</small>
-      <button className="button button--primary" type="submit">Save campaign controls</button>
+      <AdminActionButton className="button button--primary" label="Save campaign controls" pendingLabel="Saving campaign controls…" />
     </form>
     <section className="admin-panel admin-settings" aria-labelledby="delivery-configuration-title">
       <div><p>Operational health</p><h2 id="delivery-configuration-title">Delivery configuration</h2></div>

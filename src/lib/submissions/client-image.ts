@@ -46,7 +46,10 @@ export function validateImageInput(file: File): void {
     extension as (typeof PUBLIC_SUBMISSION.acceptedInputExtensions)[number],
   );
 
-  if ((!file.type && !validExtension) || (file.type && !validMime)) {
+  // File MIME reporting differs across browsers and operating systems. Some
+  // valid camera files arrive as application/octet-stream, so accept a known
+  // extension or a known image MIME and let decoding validate the bytes.
+  if (!validMime && !validExtension) {
     throw new ClientImageError(
       "unsupported_image",
       "Choose a JPEG, PNG, WebP, HEIC or HEIF photograph.",
@@ -55,8 +58,9 @@ export function validateImageInput(file: File): void {
 }
 
 function isHeic(file: File): boolean {
-  return ["heic", "heif"].includes(extensionOf(file.name)) ||
-    ["image/heic", "image/heif"].includes(file.type.toLowerCase());
+  return ["heic", "heif", "hif"].includes(extensionOf(file.name)) ||
+    ["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"]
+      .includes(file.type.toLowerCase());
 }
 
 async function supportsWebpOutput(): Promise<boolean> {
@@ -98,11 +102,15 @@ function compressInProjectWorker(
       name: "vriksha-image-preparation",
     });
 
-    const stop = () => worker.terminate();
-    signal.addEventListener("abort", () => {
+    const stop = () => {
+      signal.removeEventListener("abort", abort);
+      worker.terminate();
+    };
+    const abort = () => {
       stop();
       reject(signal.reason ?? new DOMException("Image preparation cancelled.", "AbortError"));
-    }, { once: true });
+    };
+    signal.addEventListener("abort", abort, { once: true });
 
     worker.onerror = () => {
       stop();
@@ -134,10 +142,46 @@ export async function prepareImage(
   const outputMime = (await supportsWebpOutput()) ? "image/webp" : "image/jpeg";
 
   try {
-    const prepared =
-      typeof Worker === "function"
-        ? await compressInProjectWorker(file, outputMime, options.signal, options.onProgress)
-        : await compressOnMainThread(file, outputMime, options.signal, options.onProgress);
+    const heicInput = isHeic(file);
+    if (heicInput) options.onProgress?.(5);
+    const compressionInput = heicInput
+      ? await import("@/lib/submissions/client-heic").then(({ convertHeicToJpeg }) =>
+          convertHeicToJpeg(file, options.signal),
+        )
+      : file;
+    if (heicInput) options.onProgress?.(25);
+    const reportProgress = heicInput
+      ? (progress: number) => options.onProgress?.(25 + progress * 0.75)
+      : options.onProgress;
+
+    let prepared: File;
+    if (typeof Worker === "function") {
+      try {
+        prepared = await compressInProjectWorker(
+          compressionInput,
+          outputMime,
+          options.signal,
+          reportProgress,
+        );
+      } catch (workerError) {
+        if (options.signal.aborted) throw workerError;
+        // Safari and some embedded browsers expose Worker without the canvas
+        // APIs required for image compression. Retry on the browser main thread.
+        prepared = await compressOnMainThread(
+          compressionInput,
+          outputMime,
+          options.signal,
+          reportProgress,
+        );
+      }
+    } else {
+      prepared = await compressOnMainThread(
+        compressionInput,
+        outputMime,
+        options.signal,
+        reportProgress,
+      );
+    }
 
     if (prepared.size > PUBLIC_SUBMISSION.preparedMaxBytes) {
       throw new ClientImageError(
@@ -177,4 +221,3 @@ export async function prepareImage(
 export function revokePreviewUrl(url: string | null): void {
   if (url) URL.revokeObjectURL(url);
 }
-

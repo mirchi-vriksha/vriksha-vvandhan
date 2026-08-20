@@ -33,4 +33,6 @@ export type HeroContent = {
   primaryCta: CampaignLink;
   secondaryCta: CampaignLink;
   ribbonLabel: string;
+  ribbonFallbackLabel: string;
+  ribbonFallbackDescription: string;
 };

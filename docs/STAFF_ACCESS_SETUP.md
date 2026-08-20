@@ -30,6 +30,14 @@ npm run staff:bootstrap -- --email=staff@example.com --display-name="Staff name"
 
 Repeat with `--role=reviewer` for a Reviewer. Create at least one Admin and one Reviewer staging test account. The script refuses non-staging environments and never creates an Auth user or changes a password/token.
 
+To rotate an existing staging staff password without placing it in shell history, arguments, logs or chat, run the interactive command below in a local terminal. It accepts the password only through two hidden prompts, requires 8 to 256 matching characters, verifies the email-confirmed Auth user and active Admin or Reviewer profile without changing its role, performs a normal password sign-in, and signs the verification session out locally:
+
+```bash
+npm run staff:password -- --email=staff@example.com
+```
+
+Never reuse a value that has appeared in chat, terminal output, screenshots or documentation.
+
 ## Ongoing access
 
 Admin manages display name, role and active state in `/admin/team`. Deactivate access instead of deleting history. The database prevents self-deactivation and removal of the final active Admin. Staff sign in at `/auth/login` and sign out from the Campaign Desk sidebar. Invalid credentials use generic copy, and internal redirect destinations are allowlisted to prevent open redirects.

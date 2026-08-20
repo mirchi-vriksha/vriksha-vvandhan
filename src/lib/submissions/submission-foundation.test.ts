@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const imageCompression = vi.fn();
+const convertHeicToJpeg = vi.fn();
 vi.mock("browser-image-compression", () => ({ default: imageCompression }));
+vi.mock("@/lib/submissions/client-heic", () => ({ convertHeicToJpeg }));
 
 import { toPublicApiError, mapDatabaseError } from "@/lib/submissions/api-errors";
 import {
@@ -25,6 +27,7 @@ import {
 const originalWorker = globalThis.Worker;
 
 beforeEach(() => {
+  convertHeicToJpeg.mockReset();
   vi.stubGlobal("Worker", undefined);
   vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockReturnValue("data:image/webp;base64,");
 });
@@ -144,7 +147,7 @@ describe("client image preparation", () => {
       { signal: new AbortController().signal },
     )).rejects.toMatchObject({ code: "prepared_too_large" });
 
-    imageCompression.mockRejectedValueOnce(new Error("decoder unavailable"));
+    convertHeicToJpeg.mockRejectedValueOnce(new Error("decoder unavailable"));
     await expect(prepareImage(
       new File(["input"], "photo.heic", { type: "image/heic" }),
       { signal: new AbortController().signal },
