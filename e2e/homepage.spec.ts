@@ -47,19 +47,18 @@ test("homepage uses the warm campaign canvas and transparent rakhi ornament", as
   expect(surfaces.trackerText).toContain("983");
 });
 
-test("homepage provides concise navigation and keeps both hero journeys", async ({ page }) => {
+test("homepage keeps the primary join journey without duplicate navigation", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
 
   await expect(page.locator(".site-header")).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
-
-  await page.locator(".campaign-hero").getByRole("link", { name: "How It Works" }).click();
-  await expect(page).toHaveURL(/\/join#how-to-participate$/);
-  await expect(page.locator("#how-to-participate")).toBeInViewport();
-
-  await page.goto("/");
-  await page.locator(".campaign-hero").getByRole("link", { name: "Tie a Rakhi to a Tree" }).click();
+  const navigation = page.getByRole("navigation", { name: "Primary navigation" });
+  await expect(navigation).toBeVisible();
+  await expect(navigation.getByRole("link", { name: "Join", exact: true })).toHaveCount(0);
+  await expect(page.locator(".campaign-hero").getByRole("link", { name: "How It Works" })).toHaveCount(0);
+  const heroCta = page.locator(".campaign-hero").getByRole("link", { name: "Tie a Rakhi to a Tree" });
+  await expect(heroCta).toHaveCount(1);
+  await heroCta.click();
   await expect(page).toHaveURL(/\/join$/);
 });
 
@@ -71,6 +70,7 @@ test("mobile navigation opens as an opaque full-height drawer", async ({ page })
   const drawer = page.getByRole("dialog", { name: "Site navigation" });
   await expect(drawer).toBeVisible();
   await expect(drawer.getByRole("link", { name: "Home" })).toBeVisible();
+  await expect(drawer.getByRole("link", { name: "Join", exact: true })).toHaveCount(0);
   await expect(drawer.getByRole("link", { name: "Tie a Rakhi to a Tree" })).toBeVisible();
 
   const geometry = await drawer.evaluate((element) => {
@@ -161,9 +161,8 @@ test("hero remains usable at a 200 percent layout-equivalent viewport", async ({
 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.locator(".hero-media__frame")).toBeVisible();
-  await expect(
-    page.locator(".campaign-hero").getByRole("link", { name: "Tie a Rakhi to a Tree" }),
-  ).toBeVisible();
+  await expect(page.locator(".campaign-hero").getByRole("link", { name: "Tie a Rakhi to a Tree" })).toBeVisible();
+  await expect(page.locator(".campaign-hero").getByRole("link", { name: "How It Works" })).toHaveCount(0);
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
     content: document.documentElement.scrollWidth,

@@ -590,6 +590,55 @@ button:has(> .admin-action-spinner) {
   gap: 0.75rem;
 }
 
+.campaign-hero__actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.campaign-hero__action {
+  min-height: 58px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.7rem 0.65rem 1.25rem;
+  font-size: clamp(0.82rem, 2.7vw, 0.94rem);
+  font-weight: 800;
+  line-height: 1;
+  transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.campaign-hero__action:hover {
+  transform: translateY(-2px);
+}
+
+.campaign-hero__action--primary {
+  width: min(100%, 315px);
+  background: var(--action-red);
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(219, 42, 42, 0.2);
+}
+
+.campaign-hero__action--primary:hover {
+  background: var(--action-red-hover);
+  box-shadow: 0 15px 32px rgba(219, 42, 42, 0.24);
+}
+
+.campaign-hero__action-arrow {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+}
+
 .hero-media {
   grid-area: media;
   position: relative;
@@ -717,45 +766,6 @@ button:has(> .admin-action-spinner) {
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.2;
-}
-
-.campaign-hero__actions {
-  width: min(100%, 29rem);
-  display: grid;
-  grid-template-columns: 1fr;
-  align-items: center;
-  justify-content: center;
-  gap: 0.7rem;
-}
-
-@media (min-width: 370px) {
-  .campaign-hero__actions {
-    grid-template-columns: minmax(0, 1.16fr) minmax(0, 0.9fr);
-  }
-}
-
-.campaign-hero__actions .button {
-  width: 100%;
-  min-height: 48px;
-  border-radius: 0.8rem;
-  padding-inline: 1.15rem;
-}
-
-.campaign-hero__primary-action {
-  box-shadow: 0 12px 28px rgba(185, 31, 36, 0.18);
-}
-
-.campaign-hero__action-arrow {
-  margin-left: auto;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 50%;
-  box-sizing: content-box;
-  padding: 0.35rem;
-}
-
-.campaign-hero__secondary-action {
-  background: rgba(250, 248, 242, 0.72);
-  color: var(--forest-accent);
 }
 
 .promise-ribbon {
@@ -1030,10 +1040,6 @@ button:has(> .admin-action-spinner) {
     width: clamp(230px, 34vw, 270px);
   }
 
-  .campaign-hero__actions .button {
-    width: 100%;
-  }
-
   .promise-ribbon__card {
     height: 142px;
   }
@@ -1145,10 +1151,6 @@ button:has(> .admin-action-spinner) {
 
   .rakhi-counter__copy strong {
     font-size: 5rem;
-  }
-
-  .campaign-hero__actions {
-    width: min(100%, 29rem);
   }
 
   .promise-ribbon__card {

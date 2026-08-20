@@ -8,7 +8,6 @@ import type {
 
 export const navigationItems = [
   { label: "Home", href: "/" },
-  { label: "Join", href: "/join" },
   { label: "Movement Wall", href: "/movement" },
 ] as const satisfies readonly NavigationItem[];
 
