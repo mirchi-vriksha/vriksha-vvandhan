@@ -16,21 +16,15 @@ describe("CampaignHero", () => {
     expect(screen.queryByText("This Raksha Bandhan")).not.toBeInTheDocument();
   });
 
-  it("renders the honest tracker fallback and both valid hero actions", () => {
+  it("renders the honest tracker fallback with only the primary hero action", () => {
     render(<CampaignHero />);
 
     expect(screen.getByText("—")).toBeInTheDocument();
     expect(screen.getByRole("img", {
       name: "Campaign promise count is currently unavailable. Target: 983 trees celebrated.",
     })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Tie a Rakhi to a Tree" })).toHaveAttribute(
-      "href",
-      "/join",
-    );
-    expect(screen.getByRole("link", { name: "How It Works" })).toHaveAttribute(
-      "href",
-      "/join#how-to-participate",
-    );
+    expect(screen.getByRole("link", { name: "Tie a Rakhi to a Tree" })).toHaveAttribute("href", "/join");
+    expect(screen.queryByRole("link", { name: "How It Works" })).not.toBeInTheDocument();
   });
 
   it("renders live count and target values in the rakhi counter", () => {

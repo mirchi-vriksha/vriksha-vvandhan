@@ -1,5 +1,5 @@
-import { HeroActions } from "@/components/home/hero-actions";
 import { HeroBrandMasthead } from "@/components/home/hero-brand-masthead";
+import { HeroActions } from "@/components/home/hero-actions";
 import { HeroMedia } from "@/components/home/hero-media";
 import { PromiseRibbon } from "@/components/home/promise-ribbon";
 import { RakhiPromiseCounter } from "@/components/home/rakhi-promise-counter";
@@ -54,7 +54,7 @@ export function CampaignHero({
           <HeroMedia />
           <div className="campaign-hero__engagement">
             <RakhiPromiseCounter metric={metric} />
-            <HeroActions primary={heroContent.primaryCta} secondary={heroContent.secondaryCta} />
+            <HeroActions primary={heroContent.primaryCta} />
           </div>
         </div>
         <PromiseRibbon
