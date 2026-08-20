@@ -640,11 +640,11 @@ export type Database = {
           published_at: string | null
           rejected_at: string | null
           rejection_comment: string | null
+          rejection_confirmed_at: string | null
+          rejection_confirmed_by: string | null
           rejection_internal_note: string | null
           rejection_participant_note: string | null
           rejection_reason_code: string | null
-          rejection_confirmed_at: string | null
-          rejection_confirmed_by: string | null
           rejection_recommended_at: string | null
           rejection_recommended_by: string | null
           source: Database["public"]["Enums"]["submission_source"]
@@ -669,11 +669,11 @@ export type Database = {
           published_at?: string | null
           rejected_at?: string | null
           rejection_comment?: string | null
+          rejection_confirmed_at?: string | null
+          rejection_confirmed_by?: string | null
           rejection_internal_note?: string | null
           rejection_participant_note?: string | null
           rejection_reason_code?: string | null
-          rejection_confirmed_at?: string | null
-          rejection_confirmed_by?: string | null
           rejection_recommended_at?: string | null
           rejection_recommended_by?: string | null
           source?: Database["public"]["Enums"]["submission_source"]
@@ -698,11 +698,11 @@ export type Database = {
           published_at?: string | null
           rejected_at?: string | null
           rejection_comment?: string | null
+          rejection_confirmed_at?: string | null
+          rejection_confirmed_by?: string | null
           rejection_internal_note?: string | null
           rejection_participant_note?: string | null
           rejection_reason_code?: string | null
-          rejection_confirmed_at?: string | null
-          rejection_confirmed_by?: string | null
           rejection_recommended_at?: string | null
           rejection_recommended_by?: string | null
           source?: Database["public"]["Enums"]["submission_source"]
