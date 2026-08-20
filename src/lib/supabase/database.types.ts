@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.15"
+  }
   private: {
     Tables: {
       application_rate_limits: {
@@ -30,6 +35,24 @@ export type Database = {
           request_count?: number
           scope?: string
           window_started_at?: string
+        }
+        Relationships: []
+      }
+      email_daily_quotas: {
+        Row: {
+          quota_date: string
+          reserved_count: number
+          updated_at: string
+        }
+        Insert: {
+          quota_date: string
+          reserved_count?: number
+          updated_at?: string
+        }
+        Update: {
+          quota_date?: string
+          reserved_count?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -773,7 +796,13 @@ export type Database = {
         }[]
       }
       claim_email_delivery: {
-        Args: { p_allow_exhausted: boolean; p_delivery_id: string }
+        Args: {
+          p_allow_exhausted?: boolean
+          p_daily_limit?: number
+          p_delivery_id: string
+          p_next_window?: string
+          p_quota_date?: string
+        }
         Returns: {
           certificate_bucket: string
           certificate_path: string

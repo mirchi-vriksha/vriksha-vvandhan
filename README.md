@@ -72,11 +72,17 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
 SUPABASE_TARGET_ENVIRONMENT=
+EMAIL_PROVIDER=resend
 RESEND_API_KEY=
+GMAIL_SMTP_USER=
+GMAIL_SMTP_APP_PASSWORD=
 EMAIL_FROM=
 EMAIL_REPLY_TO=
 EMAIL_SENDING_ENABLED=
 EMAIL_TEST_RECIPIENT=
+EMAIL_DAILY_LIMIT=350
+EMAIL_BATCH_SIZE=5
+EMAIL_TIMEZONE=Asia/Kolkata
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
 TURNSTILE_ENABLED=false
@@ -86,7 +92,7 @@ CRON_SECRET=
 RESEND_WEBHOOK_SECRET=
 ```
 
-Only `NEXT_PUBLIC_*` values are browser-visible. Supabase/Resend/Turnstile/cron/abuse secrets remain server-only. Staging sends additionally require `EMAIL_SENDING_ENABLED=true` and an explicit `EMAIL_TEST_RECIPIENT`; production rejects that override and stored contacts are never rewritten.
+Only `NEXT_PUBLIC_*` values are browser-visible. Supabase/provider/Turnstile/cron/abuse secrets remain server-only. `EMAIL_PROVIDER` may be `resend` or `gmail_smtp`; Gmail SMTP additionally requires its mailbox and 16-character App Password. Staging sends require `EMAIL_SENDING_ENABLED=true` and an explicit `EMAIL_TEST_RECIPIENT`; production rejects that override and stored contacts are never rewritten. The database reserves the configured daily capacity atomically and defers overflow until the next calendar day in `EMAIL_TIMEZONE`.
 
 Guarded staging scripts additionally require `SUPABASE_TARGET_ENVIRONMENT=staging` in the untracked local environment. Never configure this marker for production.
 
