@@ -1039,10 +1039,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      record_staff_removal: {
-        Args: { p_staff_id: string }
-        Returns: undefined
-      }
+      record_staff_removal: { Args: { p_staff_id: string }; Returns: undefined }
       recover_stale_delivery_claims: {
         Args: { p_stale_minutes?: number }
         Returns: {
