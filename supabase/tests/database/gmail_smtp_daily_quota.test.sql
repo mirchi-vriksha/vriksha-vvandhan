@@ -108,6 +108,9 @@ select ok(
 
 update private.email_smtp_quota_reservations
    set reserved_at = now() - interval '25 hours';
+update public.email_deliveries
+   set next_attempt_at = now()
+ where id = '68000000-0000-4000-8000-000000000012';
 set local role service_role;
 select is(
   (select count(*) from public.claim_email_delivery_rolling(
