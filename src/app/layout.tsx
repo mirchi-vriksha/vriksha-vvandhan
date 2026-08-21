@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Manrope } from "next/font/google";
 
+import { absoluteUrl, organizationName, siteName, siteUrl } from "@/lib/seo";
+
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -15,25 +17,45 @@ const manrope = Manrope({
   display: "swap",
 });
 
-const campaignTitle = "Vriksha Bandhan by Mirchi | A Bond of Gratitude";
+const campaignTitle = "Mirchi Vriksha Bandhan | Tie a Rakhi to a Tree";
 const campaignDescription =
-  "Celebrate the trees that have always been there for us with Mirchi’s Vriksha Bandhan movement.";
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  "Join Mirchi’s Vriksha Bandhan movement in Mumbai. Tie a Rakhi to a tree, share your moment and become a Vriksha Guardian this Raksha Bandhan.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: campaignTitle,
-  description: campaignDescription,
-  alternates: {
-    canonical: "/",
+  title: {
+    default: campaignTitle,
+    template: `%s | ${siteName}`,
   },
+  description: campaignDescription,
+  applicationName: siteName,
+  authors: [{ name: organizationName }],
+  creator: organizationName,
+  publisher: organizationName,
+  category: "Environment",
+  formatDetection: { email: false, address: false, telephone: false },
+  manifest: "/manifest.webmanifest",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
   openGraph: {
     type: "website",
     locale: "en_IN",
     title: campaignTitle,
     description: campaignDescription,
-    url: "/",
-    siteName: "Vriksha Bandhan",
+    url: absoluteUrl("/"),
+    siteName,
   },
   twitter: {
     card: "summary_large_image",

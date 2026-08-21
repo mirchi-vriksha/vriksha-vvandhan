@@ -7,8 +7,8 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { getPublicCampaignSummary, getPublicMovementEntries } from "@/lib/public-campaign/data";
 
 export const metadata: Metadata = {
-  title: "A Wall of Gratitude | Vriksha Bandhan",
-  description: "Every Rakhi tells a story on Mumbai’s growing Wall of Gratitude.",
+  title: { absolute: "Vriksha Bandhan Movement Wall | Mirchi Mumbai" },
+  description: "See Mumbai’s Vriksha Guardians and their approved Rakhi-for-trees moments on Mirchi’s growing Vriksha Bandhan Wall of Gratitude.",
   alternates: { canonical: "/movement" },
   openGraph: {
     title: "A Wall of Gratitude | Vriksha Bandhan",

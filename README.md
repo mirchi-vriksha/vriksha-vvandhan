@@ -68,6 +68,7 @@ npm run test:staging:certificate-email -- --recipient=approved-test@example.com
 
 ```dotenv
 NEXT_PUBLIC_SITE_URL=
+GOOGLE_SITE_VERIFICATION=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
@@ -93,6 +94,8 @@ RESEND_WEBHOOK_SECRET=
 ```
 
 Only `NEXT_PUBLIC_*` values are browser-visible. Supabase/provider/Turnstile/cron/abuse secrets remain server-only. `EMAIL_PROVIDER` may be `resend` or `gmail_smtp`; Gmail SMTP additionally requires its mailbox and 16-character App Password. Staging sends require `EMAIL_SENDING_ENABLED=true` and an explicit `EMAIL_TEST_RECIPIENT`; production rejects that override and stored contacts are never rewritten. The database reserves the configured daily capacity atomically and defers overflow until the next calendar day in `EMAIL_TIMEZONE`.
+
+The public SEO canonical is `https://mirchivrikshabandhan.online`. Set `NEXT_PUBLIC_SITE_URL` to the same value in production so authentication links and public canonical URLs stay aligned. Google Search Console Domain properties should be verified with Google's exact DNS TXT record. If the URL-prefix HTML-tag method is used instead, set `GOOGLE_SITE_VERIFICATION` to the tag's `content` value before verification. After deployment, submit `https://mirchivrikshabandhan.online/sitemap.xml`.
 
 Guarded staging scripts additionally require `SUPABASE_TARGET_ENVIRONMENT=staging` in the untracked local environment. Never configure this marker for production.
 
