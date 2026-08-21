@@ -56,6 +56,35 @@ export type Database = {
         }
         Relationships: []
       }
+      email_smtp_quota_reservations: {
+        Row: {
+          claim_token: string
+          delivery_id: string
+          id: number
+          reserved_at: string
+        }
+        Insert: {
+          claim_token: string
+          delivery_id: string
+          id?: never
+          reserved_at?: string
+        }
+        Update: {
+          claim_token?: string
+          delivery_id?: string
+          id?: never
+          reserved_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_smtp_quota_reservations_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "email_deliveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_suppressions: {
         Row: {
           normalized_email: string
@@ -802,6 +831,28 @@ export type Database = {
           p_delivery_id: string
           p_next_window?: string
           p_quota_date?: string
+        }
+        Returns: {
+          certificate_bucket: string
+          certificate_path: string
+          claim_token: string
+          delivery_id: string
+          display_name: string
+          guardian_number: number
+          idempotency_key: string
+          kind: Database["public"]["Enums"]["email_delivery_kind"]
+          recipient_email: string
+          rejection_comment: string
+          rejection_participant_note: string
+          rejection_reason_code: string
+          submission_id: string
+        }[]
+      }
+      claim_email_delivery_rolling: {
+        Args: {
+          p_allow_exhausted: boolean
+          p_delivery_id: string
+          p_rolling_limit: number
         }
         Returns: {
           certificate_bucket: string

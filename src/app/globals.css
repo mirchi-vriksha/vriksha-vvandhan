@@ -1676,7 +1676,7 @@ button:has(> .admin-action-spinner) {
   line-height: 1.05;
 }
 .submission-availability > p:last-of-type,
-.submission-success > p { max-width: 650px; margin: 1rem auto 1.5rem; color: var(--muted-ink); }
+.submission-success__intro { max-width: 650px; margin: 1rem auto 1.5rem; color: var(--muted-ink); }
 .submission-availability .button,
 .submission-success .button {
   max-width: 100%;
@@ -1690,14 +1690,77 @@ button:has(> .admin-action-spinner) {
   overflow-wrap: anywhere;
 }
 
-.submission-success aside {
-  max-width: 620px;
-  margin: 1.5rem auto;
-  border-left: 3px solid var(--gold-accent);
+.submission-success__delivery {
+  max-width: 650px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+  margin: 1.6rem auto 1rem;
+  border: 1px solid rgba(98, 126, 67, 0.24);
+  border-radius: 0.9rem;
+  background: #f1f3df;
+  color: var(--forest-accent);
+  padding: clamp(1rem, 3vw, 1.35rem);
+  text-align: left;
+}
+
+.submission-success__delivery > svg {
+  margin-top: 0.1rem;
+}
+
+.submission-success__delivery h3 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-editorial), Georgia, serif;
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
+  line-height: 1.15;
+}
+
+.submission-success__delivery p,
+.submission-success__details p {
+  margin: 0.45rem 0 0;
+  color: var(--muted-ink);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.submission-success__details {
+  max-width: 650px;
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 auto 0.9rem;
+}
+
+.submission-success__details aside {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  margin: 0;
+  border-radius: 0.75rem;
   background: var(--surface-soft);
   color: var(--muted-ink);
   padding: 1rem;
   text-align: left;
+}
+
+.submission-success__details aside > svg {
+  color: var(--forest-accent);
+}
+
+.submission-success__details strong {
+  display: block;
+  color: var(--ink);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.submission-success__inbox-note {
+  border-left: 3px solid var(--action-red);
+}
+
+.submission-success__privacy-note {
+  border-left: 3px solid var(--gold-accent);
 }
 
 .legal-page__article {
@@ -1744,6 +1807,7 @@ button:has(> .admin-action-spinner) {
   .submission-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .submission-progress ol { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .submission-progress li { align-items: flex-start; flex-direction: column; }
+  .submission-success__details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 420px) {
@@ -1751,6 +1815,8 @@ button:has(> .admin-action-spinner) {
   .submission-availability,
   .submission-success { border-radius: 0.65rem; }
   .photo-preview__actions .button { width: 100%; }
+  .submission-success__delivery,
+  .submission-success__details aside { border-radius: 0.6rem; }
 }
 
 /* Public Movement Wall */

@@ -12,7 +12,7 @@ vi.mock("nodemailer", () => ({
 
 import { GmailSmtpProviderError, processEmailDelivery, ResendProviderError, safeEmailErrorCode, type EmailClaim } from "@/lib/email/process-email-delivery.server";
 
-const claim: EmailClaim = {
+const receiptClaim: EmailClaim = {
   delivery_id: "d1000000-0000-4000-8000-000000000001",
   claim_token: "c1000000-0000-4000-8000-000000000001",
   submission_id: "s1000000-0000-4000-8000-000000000001",
@@ -26,6 +26,15 @@ const claim: EmailClaim = {
   rejection_participant_note: null,
   certificate_bucket: null,
   certificate_path: null,
+};
+
+const approvalClaim: EmailClaim = {
+  ...receiptClaim,
+  kind: "approval_certificate",
+  idempotency_key: "approval_certificate:s1000000-0000-4000-8000-000000000001",
+  guardian_number: 27,
+  certificate_bucket: "certificates",
+  certificate_path: "s1000000-0000-4000-8000-000000000001/vriksha-guardian-27-v1.pdf",
 };
 
 const enabledConfiguration = {
@@ -47,7 +56,7 @@ describe("processEmailDelivery", () => {
   it("does not claim or send while email delivery is disabled", async () => {
     const claimDelivery = vi.fn();
     const send = vi.fn();
-    const result = await processEmailDelivery(claim.delivery_id, {
+    const result = await processEmailDelivery(receiptClaim.delivery_id, {
       configuration: () => ({ ...enabledConfiguration, enabled: false, apiKey: null, from: null, replyTo: null }),
       claim: claimDelivery,
       send,
@@ -60,15 +69,41 @@ describe("processEmailDelivery", () => {
   it("reuses the stable database key and stores the provider ID", async () => {
     const send = vi.fn().mockResolvedValue("provider-message-1");
     const complete = vi.fn().mockResolvedValue(true);
-    const result = await processEmailDelivery(claim.delivery_id, {
+    const certificate = Buffer.from("test-certificate");
+    const result = await processEmailDelivery(approvalClaim.delivery_id, {
       configuration: () => enabledConfiguration,
-      claim: vi.fn().mockResolvedValue(claim),
+      claim: vi.fn().mockResolvedValue(approvalClaim),
+      downloadCertificate: vi.fn().mockResolvedValue(certificate),
       send,
       complete,
     });
     expect(result).toEqual({ outcome: "sent", providerMessageId: "provider-message-1" });
-    expect(send.mock.calls[0][2]).toBe(claim.idempotency_key);
-    expect(complete).toHaveBeenCalledWith(claim, "submission-received-v3", "provider-message-1");
+    expect(send.mock.calls[0][2]).toBe(approvalClaim.idempotency_key);
+    expect(send.mock.calls[0][1].attachments).toEqual([{
+      filename: "Vriksha-Guardian-27.pdf",
+      content: certificate,
+    }]);
+    expect(complete).toHaveBeenCalledWith(approvalClaim, "approval-certificate-v4", "provider-message-1");
+  });
+
+  it("never sends the disabled submission confirmation email", async () => {
+    const send = vi.fn();
+    const complete = vi.fn();
+    const fail = vi.fn();
+    const log = vi.fn();
+    const result = await processEmailDelivery(receiptClaim.delivery_id, {
+      configuration: () => enabledConfiguration,
+      claim: vi.fn().mockResolvedValue(receiptClaim),
+      send,
+      complete,
+      fail,
+      log,
+    });
+    expect(result).toEqual({ outcome: "suppressed" });
+    expect(send).not.toHaveBeenCalled();
+    expect(complete).not.toHaveBeenCalled();
+    expect(fail).not.toHaveBeenCalled();
+    expect(log).toHaveBeenCalledWith("submission confirmation email suppressed");
   });
 
   it("sends through Gmail SMTP with a deterministic message ID", async () => {
@@ -76,7 +111,7 @@ describe("processEmailDelivery", () => {
     mocks.createTransport.mockReturnValue({ sendMail: mocks.sendMail, close: mocks.close });
     const complete = vi.fn().mockResolvedValue(true);
 
-    const result = await processEmailDelivery(claim.delivery_id, {
+    const result = await processEmailDelivery(approvalClaim.delivery_id, {
       configuration: () => ({
         ...enabledConfiguration,
         provider: "gmail_smtp",
@@ -84,7 +119,8 @@ describe("processEmailDelivery", () => {
         smtpUser: "sender@example.test",
         smtpAppPassword: "app-password",
       }),
-      claim: vi.fn().mockResolvedValue(claim),
+      claim: vi.fn().mockResolvedValue(approvalClaim),
+      downloadCertificate: vi.fn().mockResolvedValue(Buffer.from("test-certificate")),
       complete,
     });
 
@@ -96,15 +132,20 @@ describe("processEmailDelivery", () => {
       auth: { user: "sender@example.test", pass: "app-password" },
     }));
     expect(mocks.sendMail).toHaveBeenCalledWith(expect.objectContaining({
-      to: [claim.recipient_email],
+      to: [approvalClaim.recipient_email],
       messageId: expect.stringMatching(/^<[a-f0-9]{64}@example\.test>$/),
+      attachments: [expect.objectContaining({
+        filename: "Vriksha-Guardian-27.pdf",
+        contentType: "application/pdf",
+        contentDisposition: "attachment",
+      })],
     }));
-    expect(complete).toHaveBeenCalledWith(claim, "submission-received-v3", "gmail-message-1");
+    expect(complete).toHaveBeenCalledWith(approvalClaim, "approval-certificate-v4", "gmail-message-1");
   });
 
   it("treats an unclaimable sent delivery as permanently ineligible", async () => {
     const send = vi.fn();
-    expect(await processEmailDelivery(claim.delivery_id, {
+    expect(await processEmailDelivery(receiptClaim.delivery_id, {
       configuration: () => enabledConfiguration,
       claim: vi.fn().mockResolvedValue(null),
       send,
@@ -115,24 +156,25 @@ describe("processEmailDelivery", () => {
   it("redirects staging sends only to the explicit test recipient without logging PII", async () => {
     const send = vi.fn().mockResolvedValue("provider-message-2");
     const log = vi.fn();
-    await processEmailDelivery(claim.delivery_id, {
+    await processEmailDelivery(approvalClaim.delivery_id, {
       configuration: () => ({ ...enabledConfiguration, targetEnvironment: "staging", testRecipients: ["approved-test@example.test"] }),
-      claim: vi.fn().mockResolvedValue(claim),
+      claim: vi.fn().mockResolvedValue(approvalClaim),
+      downloadCertificate: vi.fn().mockResolvedValue(Buffer.from("test-certificate")),
       send,
       complete: vi.fn().mockResolvedValue(true),
       log,
     });
     expect(send.mock.calls[0][1].to).toEqual(["approved-test@example.test"]);
-    expect(send.mock.calls[0][1].to).not.toContain(claim.recipient_email);
+    expect(send.mock.calls[0][1].to).not.toContain(approvalClaim.recipient_email);
     expect(log).toHaveBeenCalledWith("staging recipient override active");
     expect(JSON.stringify(log.mock.calls)).not.toContain("@");
   });
 
   it("fails safely when an approval attachment is unavailable", async () => {
     const fail = vi.fn().mockResolvedValue(undefined);
-    await expect(processEmailDelivery(claim.delivery_id, {
+    await expect(processEmailDelivery(receiptClaim.delivery_id, {
       configuration: () => enabledConfiguration,
-      claim: vi.fn().mockResolvedValue({ ...claim, kind: "approval_certificate", guardian_number: 42 }),
+      claim: vi.fn().mockResolvedValue({ ...approvalClaim, certificate_path: null }),
       fail,
     })).rejects.toThrow("attachment_missing");
     expect(fail).toHaveBeenCalledWith(expect.anything(), "attachment_missing");
@@ -147,8 +189,20 @@ describe("processEmailDelivery", () => {
     expect(safeEmailErrorCode(new ResendProviderError({ name: "invalid_from_address", message: "bad sender", statusCode: 422 }))).toBe("resend_invalid_sender");
     expect(safeEmailErrorCode(new ResendProviderError({ name: "internal_server_error", message: "provider unavailable", statusCode: 503 }))).toBe("resend_internal_server_error");
     expect(safeEmailErrorCode(new GmailSmtpProviderError("EAUTH", 535))).toBe("gmail_smtp_authentication_failed");
-    expect(safeEmailErrorCode(new GmailSmtpProviderError("EENVELOPE", 550))).toBe("gmail_smtp_invalid_recipient");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("EENVELOPE", 550, "5.1.1"))).toBe("gmail_smtp_invalid_recipient");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("ESMTP", 550, "5.4.5"))).toBe("gmail_smtp_quota_exceeded");
+    expect(safeEmailErrorCode(new GmailSmtpProviderError("ESMTP", 550))).toBe("gmail_smtp_provider_error");
     expect(safeEmailErrorCode(new GmailSmtpProviderError("ETIMEDOUT", null))).toBe("gmail_smtp_ambiguous");
     expect(safeEmailErrorCode(new GmailSmtpProviderError("ESMTP", 421))).toBe("gmail_smtp_temporary_error");
+  });
+
+  it("extracts Gmail enhanced status codes without retaining provider response text", () => {
+    const error = GmailSmtpProviderError.from({
+      code: "ESMTP",
+      responseCode: 550,
+      response: "550 5.4.5 Daily user sending limit exceeded for participant@example.test",
+    });
+    expect(error).toMatchObject({ code: "ESMTP", responseCode: 550, enhancedCode: "5.4.5" });
+    expect(JSON.stringify(error)).not.toContain("participant@example.test");
   });
 });

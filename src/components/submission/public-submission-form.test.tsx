@@ -143,11 +143,14 @@ describe("public submission form", () => {
       },
     }), { status: 200, headers: { "Content-Type": "application/json" } }));
 
-    const heading = await screen.findByRole("heading", { name: "Your submission has been received." });
+    const heading = await screen.findByRole("heading", { name: "Thank you. Your moment is now under review." });
     await waitFor(() => expect(heading).toHaveFocus());
     expect(mocks.upload).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(screen.getByText("Your image is not public yet.")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Certificate by email after approval" })).toBeVisible();
+    expect(screen.getByText("You will not receive a separate submission confirmation email.", { exact: false })).toBeVisible();
+    expect(screen.getByText("Check your spam or junk folder.").tagName).toBe("STRONG");
+    expect(screen.getByText("Private until approved.")).toBeVisible();
   });
 
   it("keeps all form state and offers one clear retry after a transient failure", async () => {
