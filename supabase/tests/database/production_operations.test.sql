@@ -41,7 +41,7 @@ insert into public.submissions(id) values ('61000000-0000-4000-8000-000000000003
 insert into public.certificates(submission_id,status,claim_token,queued_at,attempt_count)
 values ('61000000-0000-4000-8000-000000000003','queued','61000000-0000-4000-8000-000000000004',now()-interval '20 minutes',1);
 insert into public.email_deliveries(submission_id,kind,status,idempotency_key,claim_token,queued_at,last_attempt_at,attempt_count)
-values ('61000000-0000-4000-8000-000000000003','submission_received','queued','stale-section6','61000000-0000-4000-8000-000000000005',now()-interval '20 minutes',now()-interval '20 minutes',1);
+values ('61000000-0000-4000-8000-000000000003','rejection','queued','stale-section6','61000000-0000-4000-8000-000000000005',now()-interval '20 minutes',now()-interval '20 minutes',1);
 set local role service_role;
 select is(
   (select row(certificates_recovered,emails_recovered)::text from public.recover_stale_delivery_claims(15)),

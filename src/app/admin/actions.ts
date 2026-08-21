@@ -20,7 +20,7 @@ import { isStaffE2EAdapterEnabled } from "@/lib/testing/staff-adapter";
 type ImmediateDeliveryResult = "sent" | "disabled" | "retrying";
 
 async function attemptImmediateDelivery(
-  attempt: () => Promise<{ outcome: "disabled" | "not_eligible" | "sent" }>,
+  attempt: () => Promise<{ outcome: "disabled" | "not_eligible" | "suppressed" | "sent" }>,
   failureMessage: string,
 ): Promise<ImmediateDeliveryResult> {
   try {

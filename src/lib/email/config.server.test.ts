@@ -14,7 +14,7 @@ describe("email delivery configuration", () => {
       replyTo: null,
       targetEnvironment: "staging",
       testRecipients: [],
-      dailyLimit: 350,
+      dailyLimit: 450,
       batchSize: 5,
       timeZone: "Asia/Kolkata",
     });
@@ -30,7 +30,7 @@ describe("email delivery configuration", () => {
       EMAIL_FROM: "Vriksha Bandhan <vrikshabandhan@gmail.com>",
       EMAIL_REPLY_TO: "vrikshabandhan@gmail.com",
       EMAIL_TEST_RECIPIENT: "approved@example.test",
-      EMAIL_DAILY_LIMIT: "350",
+      EMAIL_DAILY_LIMIT: "450",
       EMAIL_BATCH_SIZE: "5",
       EMAIL_TIMEZONE: "Asia/Kolkata",
     });
@@ -39,7 +39,7 @@ describe("email delivery configuration", () => {
       apiKey: null,
       smtpUser: "vrikshabandhan@gmail.com",
       smtpAppPassword: "abcdefghijklmnop",
-      dailyLimit: 350,
+      dailyLimit: 450,
       batchSize: 5,
       timeZone: "Asia/Kolkata",
     });
@@ -56,6 +56,19 @@ describe("email delivery configuration", () => {
       EMAIL_REPLY_TO: "vrikshabandhan@gmail.com",
       EMAIL_TEST_RECIPIENT: "approved@example.test",
     })).toThrow("gmail_sender_mismatch");
+  });
+
+  it("rejects a Gmail reply-to that differs from the authenticated mailbox", () => {
+    expect(() => getEmailConfiguration({
+      EMAIL_SENDING_ENABLED: "true",
+      EMAIL_PROVIDER: "gmail_smtp",
+      SUPABASE_TARGET_ENVIRONMENT: "staging",
+      GMAIL_SMTP_USER: "vrikshabandhan@gmail.com",
+      GMAIL_SMTP_APP_PASSWORD: "abcdefghijklmnop",
+      EMAIL_FROM: "Vriksha Bandhan <vrikshabandhan@gmail.com>",
+      EMAIL_REPLY_TO: "different@gmail.com",
+      EMAIL_TEST_RECIPIENT: "approved@example.test",
+    })).toThrow("gmail_reply_to_mismatch");
   });
 
   it("rejects invalid quota and timezone settings", () => {

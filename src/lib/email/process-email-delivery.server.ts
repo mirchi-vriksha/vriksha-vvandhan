@@ -8,10 +8,8 @@ import { Resend, type ErrorResponse } from "resend";
 
 import { buildCertificateFilename } from "@/lib/certificates/certificate-format";
 import { getEmailConfiguration, type EmailConfiguration } from "@/lib/email/config.server";
-import { emailQuotaWindow } from "@/lib/email/quota-window.server";
 import { approvalCertificateEmail } from "@/lib/email/templates/approval-certificate";
-import { rejectionEmail, type RejectionReasonCode } from "@/lib/email/templates/rejection";
-import { submissionReceivedEmail } from "@/lib/email/templates/submission-received";
+import { rejectionEmail } from "@/lib/email/templates/rejection";
 import type { TransactionalEmail } from "@/lib/email/templates/shared";
 import { CERTIFICATES_BUCKET } from "@/lib/storage/buckets";
 import { callUntypedRpc } from "@/lib/supabase/rpc.server";
@@ -43,17 +41,23 @@ export class ResendProviderError extends Error {
 }
 
 export class GmailSmtpProviderError extends Error {
-  constructor(readonly code: string | null, readonly responseCode: number | null) {
+  constructor(
+    readonly code: string | null,
+    readonly responseCode: number | null,
+    readonly enhancedCode: string | null = null,
+  ) {
     super("gmail_smtp_provider_error");
     this.name = "GmailSmtpProviderError";
   }
 
   static from(error: unknown): GmailSmtpProviderError {
     if (!error || typeof error !== "object") return new GmailSmtpProviderError(null, null);
-    const candidate = error as { code?: unknown; responseCode?: unknown };
+    const candidate = error as { code?: unknown; response?: unknown; responseCode?: unknown };
+    const response = typeof candidate.response === "string" ? candidate.response : "";
     return new GmailSmtpProviderError(
       typeof candidate.code === "string" ? candidate.code.slice(0, 40) : null,
       typeof candidate.responseCode === "number" ? candidate.responseCode : null,
+      response.match(/\b[245]\.\d+\.\d+\b/)?.[0] ?? null,
     );
   }
 }
@@ -79,20 +83,18 @@ type ProcessorDependencies = {
 };
 
 function templateFor(claim: EmailClaim): TransactionalEmail {
-  if (claim.kind === "submission_received") return submissionReceivedEmail(claim.display_name);
   if (claim.kind === "approval_certificate") {
     if (!claim.guardian_number) throw new Error("attachment_missing");
     return approvalCertificateEmail(claim.display_name, claim.guardian_number);
   }
-  const reasonCode = claim.rejection_reason_code as RejectionReasonCode | null;
-  if (!reasonCode) throw new Error("rejection_reason_missing");
-  return rejectionEmail(claim.display_name, reasonCode, claim.rejection_participant_note);
+  return rejectionEmail(claim.display_name);
 }
 
 export function safeEmailErrorCode(error: unknown): string {
   if (error instanceof GmailSmtpProviderError) {
     if (error.code === "EAUTH" || error.responseCode === 535) return "gmail_smtp_authentication_failed";
-    if (error.code === "EENVELOPE" || error.responseCode === 550 || error.responseCode === 551 || error.responseCode === 553) return "gmail_smtp_invalid_recipient";
+    if (error.enhancedCode === "5.4.5") return "gmail_smtp_quota_exceeded";
+    if (error.code === "EENVELOPE" || error.enhancedCode?.startsWith("5.1.")) return "gmail_smtp_invalid_recipient";
     if (error.responseCode === 421 || error.responseCode === 450 || error.responseCode === 451 || error.responseCode === 452) return "gmail_smtp_temporary_error";
     if (["ETIMEDOUT", "ECONNECTION", "ECONNRESET", "ESOCKET"].includes(error.code ?? "")) return "gmail_smtp_ambiguous";
     return "gmail_smtp_provider_error";
@@ -109,7 +111,7 @@ export function safeEmailErrorCode(error: unknown): string {
     }
   }
   if (error instanceof Error) {
-    if (["attachment_missing", "rejection_reason_missing", "email_completion_failed", "provider_message_id_missing"].includes(error.message)) return error.message;
+    if (["attachment_missing", "email_completion_failed", "provider_message_id_missing"].includes(error.message)) return error.message;
     const message = error.message.toLowerCase();
     if (message.includes("timeout") || message.includes("timed out")) return "resend_timeout";
     if (message.includes("rate") || message.includes("429")) return "resend_rate_limited";
@@ -123,13 +125,10 @@ export function safeEmailErrorCode(error: unknown): string {
 const defaults: ProcessorDependencies = {
   configuration: getEmailConfiguration,
   async claim(deliveryId, configuration, allowExhausted) {
-    const quota = emailQuotaWindow(new Date(), configuration.timeZone);
-    const result = await callUntypedRpc<EmailClaim[]>(getServiceSupabaseClient(), "claim_email_delivery", {
+    const result = await callUntypedRpc<EmailClaim[]>(getServiceSupabaseClient(), "claim_email_delivery_rolling", {
       p_delivery_id: deliveryId,
       p_allow_exhausted: allowExhausted,
-      p_quota_date: quota.quotaDate,
-      p_daily_limit: configuration.dailyLimit,
-      p_next_window: quota.nextWindow,
+      p_rolling_limit: configuration.provider === "gmail_smtp" ? configuration.dailyLimit : null,
     });
     if (result.error) throw new Error("email_claim_failed");
     return result.data?.[0] ?? null;
@@ -156,6 +155,11 @@ const defaults: ProcessorDependencies = {
       try {
         const result = await transport.sendMail({
           ...input,
+          attachments: input.attachments?.map((attachment) => ({
+            ...attachment,
+            contentType: "application/pdf",
+            contentDisposition: "attachment" as const,
+          })),
           messageId: `<${messageIdHash}@${messageDomain}>`,
         });
         if (!result.messageId) throw new Error("provider_message_id_missing");
@@ -197,12 +201,16 @@ export async function processEmailDelivery(
   deliveryId: string,
   dependencies: Partial<ProcessorDependencies> = {},
   options: { allowExhaustedRetry?: boolean } = {},
-): Promise<{ outcome: "disabled" | "not_eligible" | "sent"; providerMessageId?: string }> {
+): Promise<{ outcome: "disabled" | "not_eligible" | "suppressed" | "sent"; providerMessageId?: string }> {
   const processor = { ...defaults, ...dependencies };
   const configuration = processor.configuration();
   if (!configuration.enabled) return { outcome: "disabled" };
   const claim = await processor.claim(deliveryId, configuration, options.allowExhaustedRetry === true);
   if (!claim) return { outcome: "not_eligible" };
+  if (claim.kind === "submission_received") {
+    processor.log("submission confirmation email suppressed");
+    return { outcome: "suppressed" };
+  }
 
   try {
     const template = templateFor(claim);

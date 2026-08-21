@@ -59,7 +59,7 @@ export function getEmailConfiguration(environment: Record<string, string | undef
   const provider = emailProvider(environment);
   const target = environment.SUPABASE_TARGET_ENVIRONMENT;
   const targetEnvironment = target === "staging" || target === "production" ? target : "local";
-  const dailyLimit = positiveInteger.max(500).parse(environment.EMAIL_DAILY_LIMIT ?? "350");
+  const dailyLimit = positiveInteger.max(500).parse(environment.EMAIL_DAILY_LIMIT ?? "450");
   const batchSize = positiveInteger.max(25).parse(environment.EMAIL_BATCH_SIZE ?? "5");
   const configuredTimeZone = timeZone(environment.EMAIL_TIMEZONE);
   if (!enabled) {
@@ -89,6 +89,9 @@ export function getEmailConfiguration(environment: Record<string, string | undef
     : null;
   if (provider === "gmail_smtp" && senderAddress(from) !== smtpUser) {
     throw new Error("gmail_sender_mismatch");
+  }
+  if (provider === "gmail_smtp" && replyTo.toLowerCase() !== smtpUser) {
+    throw new Error("gmail_reply_to_mismatch");
   }
   const testRecipients = stagingRecipients(environment);
   if (targetEnvironment === "staging" && testRecipients.length === 0) {
