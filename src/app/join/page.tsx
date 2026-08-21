@@ -5,6 +5,7 @@ import { PublicSubmissionForm } from "@/components/submission/public-submission-
 import { SubmissionAvailability } from "@/components/submission/submission-availability";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { JsonLd } from "@/components/shared/json-ld";
 import { hasServerSupabaseEnvironment } from "@/lib/env/server";
 import {
   getPublicTurnstileConfiguration,
@@ -12,19 +13,24 @@ import {
 } from "@/lib/security/turnstile.server";
 import { getPublicSubmissionAvailability } from "@/lib/submissions/service.server";
 import { getPublicCampaignSummary } from "@/lib/public-campaign/data";
+import { absoluteUrl } from "@/lib/seo";
+
+const title = "Join Mirchi Vriksha Bandhan | Tie a Rakhi to a Tree";
+const description =
+  "Tie a Rakhi to a tree in Mumbai, upload your Vriksha Bandhan moment and become a Vriksha Guardian with a personalised certificate.";
 
 export const metadata: Metadata = {
-  title: "Become a Vriksha Guardian | Vriksha Bandhan",
-  description: "Celebrate a tree with a Rakhi and share your Vriksha Bandhan moment for private review.",
+  title: { absolute: title },
+  description,
   alternates: { canonical: "/join" },
   openGraph: {
-    title: "Become a Vriksha Guardian | Vriksha Bandhan",
-    description: "Celebrate a tree with a Rakhi and share your Vriksha Bandhan moment for private review.",
+    title,
+    description,
     url: "/join",
   },
   twitter: {
-    title: "Become a Vriksha Guardian | Vriksha Bandhan",
-    description: "Celebrate a tree with a Rakhi and share your Vriksha Bandhan moment for private review.",
+    title,
+    description,
   },
 };
 
@@ -42,8 +48,40 @@ export default async function JoinPage() {
     availability = "unavailable";
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Vriksha Bandhan", item: absoluteUrl("/") },
+          { "@type": "ListItem", position: 2, name: "Join", item: absoluteUrl("/join") },
+        ],
+      },
+      {
+        "@type": "HowTo",
+        name: "How to join Mirchi Vriksha Bandhan",
+        description,
+        totalTime: "PT10M",
+        step: [
+          "Register and get your Rakhi",
+          "Choose a tree to celebrate",
+          "Tie the Rakhi gently without harming the tree",
+          "Take a clear photograph of your Vriksha Bandhan moment",
+          "Upload the photograph for review",
+        ].map((name, index) => ({
+          "@type": "HowToStep",
+          position: index + 1,
+          name,
+          url: absoluteUrl(`/join#how-to-participate`),
+        })),
+      },
+    ],
+  };
+
   return (
     <>
+      <JsonLd data={jsonLd} />
       <a className="skip-link" href="#main-content">Skip to main content</a>
       <SiteHeader movementWallEnabled={summary?.movement_wall_enabled ?? false} />
       <main className="join-page" id="main-content">

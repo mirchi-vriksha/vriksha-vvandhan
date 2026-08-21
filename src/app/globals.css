@@ -2249,6 +2249,175 @@ button:has(> .admin-action-spinner) {
   justify-self: start;
 }
 
+.campaign-guide {
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 90% 10%, rgba(180, 138, 69, 0.11), transparent 24rem),
+    var(--surface);
+  padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+.campaign-guide__inner {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.5rem);
+}
+
+.campaign-guide__header {
+  max-width: 780px;
+}
+
+.campaign-guide__header > p:first-child,
+.campaign-faq header > p {
+  margin: 0 0 0.65rem;
+  color: var(--action-red);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.campaign-guide__header h2,
+.campaign-faq h2 {
+  margin: 0;
+  font-family: var(--font-editorial), Georgia, serif;
+  font-size: clamp(2.4rem, 5.5vw, 4.8rem);
+  font-weight: 560;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.campaign-guide__header > p:last-child {
+  max-width: 66ch;
+  margin: 1.25rem 0 0;
+  color: var(--muted-ink);
+  font-size: clamp(1rem, 1.5vw, 1.12rem);
+}
+
+.campaign-guide__cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.campaign-guide__cards article {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: rgba(248, 247, 243, 0.76);
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.campaign-guide__cards article > span {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--forest-soft);
+  color: var(--forest-accent);
+}
+
+.campaign-guide__cards h3 {
+  margin: 1.1rem 0 0;
+  font-family: var(--font-editorial), Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.campaign-guide__cards p {
+  margin: 0.65rem 0 0;
+  color: var(--muted-ink);
+  font-size: 0.86rem;
+}
+
+.campaign-guide__care {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid #ccd8c9;
+  border-radius: 0.85rem;
+  background: #edf3ea;
+  color: var(--forest-accent);
+  padding: clamp(1.1rem, 2.5vw, 1.65rem);
+}
+
+.campaign-guide__care h3,
+.campaign-guide__care p {
+  margin: 0;
+}
+
+.campaign-guide__care h3 {
+  font-size: 0.9rem;
+}
+
+.campaign-guide__care p {
+  max-width: 70ch;
+  margin-top: 0.3rem;
+  color: var(--muted-ink);
+  font-size: 0.8rem;
+}
+
+.campaign-guide__care .text-link {
+  white-space: nowrap;
+}
+
+.campaign-faq {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.6fr) minmax(0, 1.4fr);
+  gap: clamp(1.5rem, 5vw, 5rem);
+  border-top: 1px solid var(--line);
+  padding-top: clamp(2rem, 4vw, 3.5rem);
+}
+
+.campaign-faq h2 {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+}
+
+.campaign-faq details {
+  border-bottom: 1px solid var(--line);
+}
+
+.campaign-faq details:first-child {
+  border-top: 1px solid var(--line);
+}
+
+.campaign-faq summary {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 850;
+  list-style: none;
+  padding-block: 0.85rem;
+}
+
+.campaign-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.campaign-faq summary::after {
+  content: "+";
+  color: var(--action-red);
+  font-size: 1.35rem;
+  font-weight: 500;
+}
+
+.campaign-faq details[open] summary::after {
+  content: "−";
+}
+
+.campaign-faq details p {
+  max-width: 68ch;
+  margin: -0.15rem 0 1.2rem;
+  color: var(--muted-ink);
+  font-size: 0.85rem;
+}
+
 .join-page {
   padding-bottom: clamp(3rem, 7vw, 6rem);
 }
@@ -2541,6 +2710,23 @@ button:has(> .admin-action-spinner) {
 @media (min-width: 960px) {
   .join-content {
     grid-template-columns: minmax(0, 1fr) minmax(390px, 0.9fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .campaign-guide__cards,
+  .campaign-faq {
+    grid-template-columns: 1fr;
+  }
+
+  .campaign-guide__care {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .campaign-guide__care .text-link {
+    grid-column: 1 / -1;
+    justify-self: start;
+    white-space: normal;
   }
 }
 

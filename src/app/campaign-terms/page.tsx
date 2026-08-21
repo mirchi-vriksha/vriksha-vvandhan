@@ -5,7 +5,7 @@ import { legalContent } from "@/content/legal";
 
 export const metadata: Metadata = {
   title: "Campaign Terms | Vriksha Bandhan",
-  robots: { index: false, follow: false },
+  robots: { index: false, follow: true },
   alternates: { canonical: "/campaign-terms" },
 };
 
