@@ -29,10 +29,10 @@ export const heroContent = {
 
 export const heroImage: CampaignImage = {
   src: "/campaign/hero-tree-rakhi.webp",
-  width: 688,
-  height: 720,
-  alt: "A ceremonial Rakhi tied around the trunk of a sunlit tree",
-  objectPosition: "50% 52%",
+  width: 1440,
+  height: 1921,
+  alt: "The Mirchi team celebrating Vriksha Bandhan beside a decorated tree",
+  objectPosition: "50% 50%",
 };
 
 export const heroPromiseImages = [
