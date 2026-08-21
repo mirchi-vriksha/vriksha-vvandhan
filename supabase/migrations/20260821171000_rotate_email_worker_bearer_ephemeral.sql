@@ -1,0 +1,3 @@
+-- Operational placeholder: the production email worker bearer was rotated
+-- through an approved secret-only release step. The value is intentionally
+-- excluded from source control; this file preserves migration-version parity.
