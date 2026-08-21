@@ -75,15 +75,7 @@ export type Database = {
           id?: never
           reserved_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "email_smtp_quota_reservations_delivery_id_fkey"
-            columns: ["delivery_id"]
-            isOneToOne: false
-            referencedRelation: "email_deliveries"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       email_suppressions: {
         Row: {
