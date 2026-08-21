@@ -62,6 +62,7 @@ select is(
   1::bigint,
   'the first eligible delivery reserves rolling capacity'
 );
+reset role;
 select ok(
   public.fail_email_delivery(
     '68000000-0000-4000-8000-000000000011',
@@ -70,6 +71,7 @@ select ok(
   ),
   'a provider quota response safely releases the delivery claim'
 );
+set local role service_role;
 select is(
   (select count(*) from public.claim_email_delivery_rolling(
     '68000000-0000-4000-8000-000000000012', false, 1

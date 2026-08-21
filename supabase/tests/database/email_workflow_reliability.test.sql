@@ -38,11 +38,11 @@ select is((select status::text from public.email_deliveries where id='62000000-0
 
 insert into public.submissions(id) values ('62000000-0000-4000-8000-000000000003');
 insert into public.email_deliveries(id,submission_id,kind,status,idempotency_key,claim_token,queued_at,last_attempt_at,attempt_count) values
-('62000000-0000-4000-8000-000000000013','62000000-0000-4000-8000-000000000003','submission_received','queued','reliability-race','62000000-0000-4000-8000-000000000014',now(),now(),1);
+('62000000-0000-4000-8000-000000000013','62000000-0000-4000-8000-000000000003','rejection','queued','reliability-race','62000000-0000-4000-8000-000000000014',now(),now(),1);
 set local role service_role;
 select ok(public.record_resend_webhook_event('event-race','provider-race','email.delivered',now(),null),'webhook may arrive before completion');
 select ok(public.complete_email_delivery(
-  '62000000-0000-4000-8000-000000000013','62000000-0000-4000-8000-000000000014','submission-received-v3','provider-race'
+  '62000000-0000-4000-8000-000000000013','62000000-0000-4000-8000-000000000014','rejection-v4','provider-race'
 ),'delivery completion succeeds after early webhook');
 reset role;
 select isnt((select delivered_at from public.email_deliveries where id='62000000-0000-4000-8000-000000000013'),null,'completion reconciles the early webhook');
